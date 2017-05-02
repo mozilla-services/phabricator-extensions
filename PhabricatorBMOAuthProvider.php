@@ -46,6 +46,15 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     );
   }
 
+  public function getDefaultProviderConfig() {
+    return parent::getDefaultProviderConfig()
+      ->setProperty(self::CONFIG_KEY_DEBUG_MODE, 0)
+      ->setProperty(self::CONFIG_KEY_BUGZILLA_DOMAIN, 'bugzilla.mozilla.org')
+      ->setProperty(self::CONFIG_KEY_BUGZILLA_PROTOCOL, 'https')
+      ->setProperty(self::CONFIG_KEY_APP_NAME, 'MozPhabricator')
+      ->setProperty(self::CONFIG_KEY_TRANSACTION_CODE_LENGTH, 32);
+  }
+
   public function extendEditForm(
     AphrontRequest $request,
     AphrontFormView $form,

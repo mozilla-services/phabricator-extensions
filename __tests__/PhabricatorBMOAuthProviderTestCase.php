@@ -5,7 +5,6 @@ final class PhabricatorBMOAuthProviderTestCase extends PhabricatorTestCase {
   public function testThrowExceptionShowsGenericErrorWhenDebugIsOff() {
     $provider = new PhabricatorBMOAuthProvider();
     $config = $provider->getDefaultProviderConfig();
-    $config->setProperty(PhabricatorBMOAuthProvider::CONFIG_KEY_DEBUG_MODE, 0);
     $provider->attachProviderConfig($config);
 
     try {
@@ -23,11 +22,7 @@ final class PhabricatorBMOAuthProviderTestCase extends PhabricatorTestCase {
   public function testUniqueAuthTokenGenerated() {
     $provider = new PhabricatorBMOAuthProvider();
     $config = $provider->getDefaultProviderConfig();
-    $config->setProperty(
-      PhabricatorBMOAuthProvider::CONFIG_KEY_TRANSACTION_CODE_LENGTH, 32
-    );
     $provider->attachProviderConfig($config);
-
 
     $tokens = array();
     $num_tokens = 100000;
@@ -40,5 +35,4 @@ final class PhabricatorBMOAuthProviderTestCase extends PhabricatorTestCase {
       pht('Validate that %s unique tokens are generated', $num_tokens)
     );
   }
-
 }
