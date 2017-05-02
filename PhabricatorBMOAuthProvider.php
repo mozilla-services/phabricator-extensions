@@ -51,7 +51,6 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     AphrontFormView $form,
     array $values,
     array $issues) {
-
       $protocol_values = array_values(self::PROTOCOL_OPTIONS);
       $default_protocol = $protocol_values[0];
 
@@ -214,7 +213,6 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
 
   public function processLoginRequest(
     PhabricatorAuthLoginController $controller) {
-
     $request = $controller->getRequest();
 
     // When Bugzilla sends us a "back channel" POST during registration...
@@ -253,11 +251,9 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
 
     // Generate a transaction code which we'll receive back from Bugzilla
     // To confirm the API and Client Login information which we saved
-    // In PHP7 this becomes: bin2hex(random_bytes(self::TRANSACTION_CODE_LENGTH))
-    $trans_code = bin2hex(openssl_random_pseudo_bytes(
-      $config->getProperty(self::CONFIG_KEY_TRANSACTION_CODE_LENGTH)
-    ));
+    $trans_code = $this->generateAuthToken();
 
+    // TODO:  Validate that a CSRF was passed here
     $csrf = $controller->getExtraURIData();
 
     // Create a temporary auth token to save the user info JSON provided
@@ -288,14 +284,14 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
 
   private function processLoginRequestConfirmationGet($controller, $request) {
     $response = null;
+    $csrf = $controller->getExtraURIData();
 
     // Verify with CSRF as an additional security measure
-    $this->verifyAuthCSRFCode($request, $controller->getExtraURIData());
+    $this->verifyAuthCSRFCode($request, $csrf);
 
     // Match result token and client_api_login to find client_api_key
     $provided_trans_code = $request->getStr('callback_result');
     $provided_api_login = $request->getStr('client_api_login');
-    $csrf = $controller->getExtraURIData();
 
     $token = id(new PhabricatorAuthTemporaryTokenQuery())
       ->setViewer(PhabricatorUser::getOmnipotentUser())
@@ -396,5 +392,12 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     throw new Exception(pht(
       $config->getProperty(self::CONFIG_KEY_DEBUG_MODE) ? $text : self::GENERIC_ERROR
     ));
+  }
+
+  public function generateAuthToken() {
+    $config = $this->getConfig();
+    return Filesystem::readRandomCharacters(
+      $config->getProperty(self::CONFIG_KEY_TRANSACTION_CODE_LENGTH)
+    );
   }
 }
