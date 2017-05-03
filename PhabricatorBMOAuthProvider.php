@@ -155,8 +155,9 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
       $issues[self::CONFIG_KEY_APP_NAME] = pht('Required');
     }
 
-    $trans_code_length =
-      (int) self::getArrayValueOrDefault($values, self::CONFIG_KEY_TRANSACTION_CODE_LENGTH);
+    $trans_code_length = (int) self::getArrayValueOrDefault(
+      $values, self::CONFIG_KEY_TRANSACTION_CODE_LENGTH
+    );
     if($trans_code_length < 16 || $trans_code_length > 64) {
       $errors[] = pht('Transaction Code Length must be between 16 and 64.');
       $issues[self::CONFIG_KEY_TRANSACTION_CODE_LENGTH] = pht('Invalid');
@@ -190,15 +191,17 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     $config = $this->getConfig();
 
     $adapter->setAdapterType(self::ADAPTER_TYPE);
-    $adapter->setAdapterDomain($config->getProperty(self::CONFIG_KEY_BUGZILLA_DOMAIN));
+    $adapter->setAdapterDomain(
+      $config->getProperty(self::CONFIG_KEY_BUGZILLA_DOMAIN)
+    );
     $adapter->setAuthenticateURI(
       id(new PhutilURI(''))
-        ->setProtocol(
-          $config->getProperty(self::CONFIG_KEY_BUGZILLA_PROTOCOL)
-        )
+        ->setProtocol($config->getProperty(self::CONFIG_KEY_BUGZILLA_PROTOCOL))
         ->setDomain($adapter->getAdapterDomain())
         ->setPath('/auth.cgi')
-        ->setQueryParam('description', $config->getProperty(self::CONFIG_KEY_APP_NAME))
+        ->setQueryParam(
+          'description', $config->getProperty(self::CONFIG_KEY_APP_NAME)
+        )
     );
   }
 
@@ -261,9 +264,12 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     // Generate a transaction code which we'll receive back from Bugzilla
     // To confirm the API and Client Login information which we saved
     $trans_code = $this->generateAuthToken();
-
-    // TODO:  Validate that a CSRF was passed here
     $csrf = $controller->getExtraURIData();
+    if(!strlen($csrf)) {
+      $this->throwException(
+        pht('No CSRF was provided by Bugzilla in the URL.')
+      );
+    }
 
     // Create a temporary auth token to save the user info JSON provided
     // by the POST from Bugzilla.  Implicitly validates CSRF.
