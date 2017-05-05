@@ -380,7 +380,6 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
 
     // Create or load the user account and refresh the page
     $account = $this->loadOrCreateAccount($user_json['id']);
-    $account->setProperty('api_key', $api_key);
 
     return array($account, $response);
   }
