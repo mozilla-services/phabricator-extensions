@@ -6,7 +6,7 @@ import os
 
 from invoke import task
 
-DOCKER_IMAGE_NAME = os.getenv('DOCKERHUB_REPO', 'mozilla/conduit-phabricator-extensions')
+DOCKER_IMAGE_NAME = os.getenv('DOCKERHUB_REPO', 'mozilla/phabext')
 
 
 @task
