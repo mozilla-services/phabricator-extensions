@@ -1,0 +1,4 @@
+invoke==0.13.0 \
+    --hash=sha256:1ffaaba734fb5419d2f58b3ccf6c51d6cbb0c0bc9ba24c69f6a8b8c3a93b323a \
+    --hash=sha256:ad6aaeb46bc17c3c0542935138b46b82c2486f65709eb27315ff8f4ab9b2b3e7 \
+    --hash=sha256:1a1992fac5292b97448d1c85dc0793e309c4c376acbc39ff067056d71fdc241d
