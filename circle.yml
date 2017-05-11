@@ -20,8 +20,8 @@ dependencies:
 compile:
   override:
     # create version.json
-    - invoke version >> circle.json
-    - cp circle.json $CIRCLE_ARTIFACTS
+    - invoke version >> version.json
+    - cp version.json $CIRCLE_ARTIFACTS
 
     # build the image
     - invoke build
