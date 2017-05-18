@@ -31,7 +31,7 @@ final class BMOExternalAccountSearchConduitAPIMethod
     foreach ($handles as $user => $handle) {
       $result[] = array(
         'id' => $handle->getAccountID(),  // The BMO ID
-        'phid' => $handle->getPHID()      // The Phabricator PHID
+        'phid' => $handle->getUserPHID()  // The Phabricator User PHID
       );
     }
 
