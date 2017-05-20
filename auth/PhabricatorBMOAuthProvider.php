@@ -217,7 +217,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     $uri = new PhutilURI($adapter->getAuthenticateURI());
 
     $uri->setQueryParam('callback',
-      PhabricatorEnv::getURI($login_uri).$csrf.'/');
+      PhabricatorEnv::getURI($login_uri) . '?secret=' . $csrf);
 
     $attributes = array('method' => 'GET', 'uri' => (string) $uri);
     return $this->renderStandardLoginButton($request, $mode, $attributes);
@@ -238,6 +238,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
 
   private function processLoginRequestBackChannelPost($controller) {
     $config = $this->getConfig();
+    $request = $controller->getRequest();
     $account = null;
     $response = null;
 
@@ -264,7 +265,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     // Generate a transaction code which we'll receive back from Bugzilla
     // To confirm the API and Client Login information which we saved
     $trans_code = $this->generateAuthToken();
-    $csrf = $controller->getExtraURIData();
+    $csrf = $request->getStr('secret');
     if(!strlen($csrf)) {
       $this->throwException(
         pht('No CSRF was provided by Bugzilla in the URL.')
@@ -299,7 +300,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
 
   private function processLoginRequestConfirmationGet($controller, $request) {
     $response = null;
-    $csrf = $controller->getExtraURIData();
+    $csrf = $request->getStr('secret');
 
     // Verify with CSRF as an additional security measure
     $this->verifyAuthCSRFCode($request, $csrf);
