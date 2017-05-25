@@ -1,9 +1,3 @@
 FROM mozilla/phabext:latest
 USER root
-WORKDIR /app
-COPY build_test.sh .
-RUN /app/build_test.sh
-ARG EXTENSIONS_PATH=/app/phabricator/src/extensions
-COPY . ${EXTENSIONS_PATH}
-VOLUME ["/app"]
-CMD ["/bin/sh"]
+RUN apk --update --no-cache add bash g++ make git > /dev/null 2>&1
