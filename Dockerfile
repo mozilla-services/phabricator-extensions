@@ -1,9 +1,6 @@
-FROM alpine
-
+FROM mozilla/mozphab:latest
 ARG EXTENSIONS_PATH=/app/phabricator/src/extensions
-
-COPY . ${EXTENSIONS_PATH}
-
-VOLUME ["/app/phabricator/src/extensions"]
-
-CMD ["/bin/sh"]
+COPY differential ${EXTENSIONS_PATH}
+COPY conduit ${EXTENSIONS_PATH}
+COPY auth ${EXTENSIONS_PATH}
+VOLUME ["/app"]
