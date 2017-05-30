@@ -1,6 +1,6 @@
 FROM mozilla/mozphab:latest
 ARG EXTENSIONS_PATH=/app/phabricator/src/extensions
-COPY differential ${EXTENSIONS_PATH}
-COPY conduit ${EXTENSIONS_PATH}
-COPY auth ${EXTENSIONS_PATH}
+COPY differential ${EXTENSIONS_PATH}/differential
+COPY conduit ${EXTENSIONS_PATH}/conduit
+COPY auth ${EXTENSIONS_PATH}/auth
 VOLUME ["/app"]
