@@ -26,10 +26,13 @@ compile:
     # build the image
     - invoke build
     - invoke imageid | tee $CIRCLE_ARTIFACTS/docker-image-shasum256.txt
+    - invoke build_test
+    - invoke testimageid | tee $CIRCLE_ARTIFACTS/docker-image-shasum256.txt
 
 test:
   override:
-    - docker inspect $(invoke imageid)
+    - docker inspect $(invoke testimageid)
+    - invoke run_tests
 
 deployment:
   dockerhub_latest:

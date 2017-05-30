@@ -36,9 +36,35 @@ def build(ctx):
 
 
 @task
+def build_test(ctx):
+    """Build the docker test image"""
+    ctx.run('docker build --pull -t {image_name}:test .'.format(
+        image_name=DOCKER_IMAGE_NAME
+    ))
+
+
+@task
 def imageid(ctx):
     """Print the built docker image ID."""
     ctx.run("docker inspect -f '{format}' {image_name}".format(
+        image_name=DOCKER_IMAGE_NAME,
+        format='{{.Id}}'
+    ))
+
+
+@task
+def testimageid(ctx):
+    """Print the test docker image ID."""
+    ctx.run("docker inspect -f '{format}' {image_name}:test".format(
+        image_name=DOCKER_IMAGE_NAME,
+        format='{{.Id}}'
+    ))
+
+
+@task
+def run_tests(ctx):
+    """Test test image"""
+    ctx.run("docker run --rm {image_name}:test test-ext".format(
         image_name=DOCKER_IMAGE_NAME,
         format='{{.Id}}'
     ))
