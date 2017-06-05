@@ -2,5 +2,4 @@ FROM mozilla/phabext:latest
 USER root
 RUN apk --update --no-cache add bash g++ make git > /dev/null 2>&1
 COPY entrypoint.sh .
-COPY phutil_init /app/phabricator/src/__phutil_library_init__.php
-COPY phutil_map /app/phabricator/src/__phutil_library_map__.php
+COPY phabext_map/phutil_init /app/phabricator/src/__phutil_library_init__.php
