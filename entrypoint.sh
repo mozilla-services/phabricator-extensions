@@ -12,7 +12,6 @@ set -ex
 
 cd phabricator
 
-rm src/__phutil_library_map__.php
 ln -fs /phabext_map/phutil_map src/__phutil_library_map__.php
 
 test -n "${MYSQL_HOST}" \
