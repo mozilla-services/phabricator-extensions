@@ -12,6 +12,9 @@ set -ex
 
 cd phabricator
 
+rm src/__phutil_library_map__.php
+ln -fs /phabext_map/phutil_map src/__phutil_library_map__.php
+
 test -n "${MYSQL_HOST}" \
   && /app/wait-for-mysql.php \
   && ./bin/config set mysql.host ${MYSQL_HOST}
@@ -34,8 +37,6 @@ case "$ARG" in
   "test-ext")
 	  # Find all extension tests and call them
 	  cd src
-	  pwd
-	  ls extensions
 	  /app/arcanist/bin/arc unit extensions/*/__tests__/*php extensions/*/*/__tests__/*php
 	  ;;
   *)

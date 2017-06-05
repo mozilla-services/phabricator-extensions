@@ -17,8 +17,7 @@ services:
     depends_on:
       - phabdb
     volumes:
-      # An absolute path is needed for the file volume
-      - /tmp/phutil_map:/app/phabricator/src/__phutil_library_map__.php
+      - ./phabext_map:/phabext_map
 
   phabdb:
     image: mysql:5.5

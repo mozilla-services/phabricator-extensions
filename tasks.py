@@ -43,23 +43,15 @@ def imageid(ctx):
         format='{{.Id}}'
     ))
 
-
-def link_phutil_map(ctx):
-    """Create link to phutil_map"""
-    ctx.run("cp `pwd`/phutil_map /tmp/phutil_map")
-
-
 @task
 def build_test(ctx):
     """Test phabricator extensions."""
-    link_phutil_map(ctx)
     ctx.run("docker-compose -f docker-compose.test.yml build phabricator")
 
 
 @task
 def test(ctx):
     """Test phabricator extensions."""
-    link_phutil_map(ctx)
     ctx.run("docker-compose -f docker-compose.test.yml "
             "run phabricator test-ext")
 
@@ -67,6 +59,5 @@ def test(ctx):
 @task
 def liberate(ctx):
     """Update phutil_map."""
-    link_phutil_map(ctx)
     ctx.run("docker-compose -f docker-compose.test.yml "
             "run --rm phabricator arc-liberate")
