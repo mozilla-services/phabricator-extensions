@@ -48,11 +48,13 @@ def build_test(ctx):
     """Test phabricator extensions."""
     ctx.run("docker-compose -f docker-compose.test.yml build phabricator")
 
+
 @task
 def test(ctx):
     """Test phabricator extensions."""
     ctx.run("docker-compose -f docker-compose.test.yml "
-            "run --rm phabricator test-ext")
+            "run phabricator test-ext")
+
 
 @task
 def liberate(ctx):
