@@ -13,11 +13,11 @@ DOCKER_IMAGE_NAME = os.getenv('DOCKERHUB_REPO', 'mozilla/phabext')
 def version(ctx):
     """Print version information in JSON format."""
     print(json.dumps({
-        'commit':
+        'phabext_commit':
         os.getenv('CIRCLE_SHA1', None),
-        'version':
+        'phabext_version':
         os.getenv('CIRCLE_SHA1', None),
-        'source':
+        'phabext_source':
         'https://github.com/%s/%s' % (
             os.getenv('CIRCLE_PROJECT_USERNAME', 'mozilla-conduit'),
             os.getenv('CIRCLE_PROJECT_REPONAME', 'phabricator-extensions')
@@ -42,6 +42,7 @@ def imageid(ctx):
         image_name=DOCKER_IMAGE_NAME,
         format='{{.Id}}'
     ))
+
 
 @task
 def build_test(ctx):

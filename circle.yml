@@ -1,4 +1,5 @@
 ---
+
 # These environment variables must be set in CircleCI UI
 #
 # DOCKERHUB_REPO - docker hub repo, format: <username>/<repo>
@@ -23,9 +24,8 @@ dependencies:
 
 compile:
   override:
-    # create version.json
-    - invoke version >> version.json
-    - cp version.json $CIRCLE_ARTIFACTS
+    - invoke version >> phabext.json
+    - cp phabext.json $CIRCLE_ARTIFACTS
 
     # build the image
     - invoke build
