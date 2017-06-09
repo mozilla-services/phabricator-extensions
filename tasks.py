@@ -19,7 +19,7 @@ def version(ctx):
         os.getenv('CIRCLE_SHA1', None),
         'phabext_source':
         'https://github.com/%s/%s' % (
-            os.getenv('CIRCLE_PROJECT_USERNAME', 'mozilla-conduit'),
+            os.getenv('CIRCLE_PROJECT_USERNAME', 'mozilla-services'),
             os.getenv('CIRCLE_PROJECT_REPONAME', 'phabricator-extensions')
         ),
         'build':
