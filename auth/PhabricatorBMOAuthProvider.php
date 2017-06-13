@@ -22,6 +22,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
   /*
    *  Required provider setup methods
    */
+
   public function getProviderName() {
     return pht('BMO Auth Delegation');
   }
@@ -210,6 +211,9 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
    */
 
   protected function renderLoginForm(AphrontRequest $request, $mode) {
+    require_celerity_resource('bmo-auth-css');
+    require_celerity_resource('bmo-auth-js');
+
     $adapter = $this->getAdapter();
 
     $csrf = $this->getAuthCSRFCode($request);
@@ -217,10 +221,13 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     $uri = new PhutilURI($adapter->getAuthenticateURI());
 
     $uri->setQueryParam('callback',
-      PhabricatorEnv::getURI($login_uri) . '?secret=' . $csrf);
+      PhabricatorEnv::getURI($login_uri).'?secret='.$csrf);
 
-    $attributes = array('method' => 'GET', 'uri' => (string) $uri);
-    return $this->renderStandardLoginButton($request, $mode, $attributes);
+    return $this->renderStandardLoginButton($request, $mode, array(
+      'method' => 'GET',
+      'uri' => (string) $uri,
+      'sigil' => 'bmo-login'
+    ));
   }
 
   public function processLoginRequest(
