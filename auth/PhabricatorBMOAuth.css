@@ -1,0 +1,10 @@
+/**
+ * @provides bmo-auth-css
+ */
+
+ /* Hide the admin login */
+ form[action="/auth/login/password:self/"] { display: none; }
+ form[action="/auth/login/password:self/"].bmo-show { display: block; }
+
+ /* Center the BMO login button */
+ form[data-sigil="bmo-login"] button { display: block; margin: 20px auto; }
