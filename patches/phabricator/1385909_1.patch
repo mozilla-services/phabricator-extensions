@@ -1,0 +1,13 @@
+diff --git a/src/applications/differential/editor/DifferentialRevisionEditEngine.php b/src/applications/differential/editor/DifferentialRevisionEditEngine.php
+index 9aad031..797def4 100644
+--- a/src/applications/differential/editor/DifferentialRevisionEditEngine.php
++++ b/src/applications/differential/editor/DifferentialRevisionEditEngine.php
+@@ -30,7 +30,7 @@ final class DifferentialRevisionEditEngine
+   }
+ 
+   public function isEngineConfigurable() {
+-    return false;
++    return true;
+   }
+ 
+   protected function newEditableObject() {
