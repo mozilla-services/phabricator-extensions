@@ -20,7 +20,7 @@ final class DifferentialBugzillaBugIDCommitMessageField
   /* -- Commit Message Field descriptions ---------------------------- */
 
   public function getFieldName() {
-    return pht('Bug');
+    return pht('Bug #');
   }
 
   public function getCustomFieldKey() {
@@ -44,16 +44,18 @@ final class DifferentialBugzillaBugIDCommitMessageField
 
   /* -- Parsing commits --------------------------------------------- */
 
-  public function validateFieldValue($value) {
-    if (!strlen($value) or !$value) {
-      $this->raiseValidationException(
-        pht('You need to provide a Bugzilla Bug ID'));
+  public function validateFieldValue($bug_id) {
+
+    // Get the transactor's ExternalAccount->accountID using the author's phid
+    $author_phid = $this->getViewer()->getPHID();
+
+    $bug_id = DifferentialBugzillaBugIDValidator::formatBugID($bug_id);
+    $errors = DifferentialBugzillaBugIDValidator::validate($bug_id, $author_phid);
+
+    foreach($errors as $error) {
+      $this->raiseValidationException($error);
     }
-    if (!ctype_digit($value)) {
-      $this->raiseValidationException(
-        pht('Bugzilla Bug ID should consist of all digits'));
-    }
-    // TODO validate if a public bug with given id exists in Bugzilla.
-    return $value;
+
+    return $bug_id;
   }
 }
