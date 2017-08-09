@@ -13,4 +13,7 @@ RUN cd /app/phabricator && for i in /app/patches/phabricator/*.patch; do patch -
 COPY phabext.json /app
 COPY update_build_url.py /app
 RUN /app/update_build_url.py
+USER root
+RUN chown -R app:app /app
+USER app
 VOLUME ["/app"]
