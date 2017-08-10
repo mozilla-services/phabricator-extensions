@@ -3,6 +3,7 @@ ARG EXTENSIONS_PATH=/app/phabricator/src/extensions
 COPY differential ${EXTENSIONS_PATH}/differential
 COPY conduit ${EXTENSIONS_PATH}/conduit
 COPY auth ${EXTENSIONS_PATH}/auth
+COPY bugzilla ${EXTENSIONS_PATH}/bugzilla
 # Move static resources to phabricator, add files to celerity map array
 COPY auth/PhabricatorBMOAuth.css /app/phabricator/webroot/rsrc/css/PhabricatorBMOAuth.css
 COPY auth/PhabricatorBMOAuth.js /app/phabricator/webroot/rsrc/js/PhabricatorBMOAuth.js
