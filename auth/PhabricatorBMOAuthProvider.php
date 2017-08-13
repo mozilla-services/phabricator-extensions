@@ -8,10 +8,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
   const GENERIC_ERROR = 'Phabricator to Bugzilla login has encountered an error.';
 
   // Keys for database -> provider config
-  const PROTOCOL_OPTIONS = array('https' => 'https', 'http' => 'http');
   const CONFIG_KEY_DEBUG_MODE = 'debug_mode';
-  const CONFIG_KEY_BUGZILLA_DOMAIN = 'bugzilla_domain';
-  const CONFIG_KEY_BUGZILLA_PROTOCOL = 'bugzilla_protocol';
   const CONFIG_KEY_APP_NAME = 'app_name';
   const CONFIG_KEY_TRANSACTION_CODE_LENGTH = 'transaction_code_length';
 
@@ -50,8 +47,6 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
   public function getDefaultProviderConfig() {
     return parent::getDefaultProviderConfig()
       ->setProperty(self::CONFIG_KEY_DEBUG_MODE, 0)
-      ->setProperty(self::CONFIG_KEY_BUGZILLA_DOMAIN, 'bugzilla.mozilla.org')
-      ->setProperty(self::CONFIG_KEY_BUGZILLA_PROTOCOL, 'https')
       ->setProperty(self::CONFIG_KEY_APP_NAME, 'MozPhabricator')
       ->setProperty(self::CONFIG_KEY_TRANSACTION_CODE_LENGTH, 32);
   }
@@ -61,9 +56,6 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     AphrontFormView $form,
     array $values,
     array $issues) {
-      $protocol_values = array_values(self::PROTOCOL_OPTIONS);
-      $default_protocol = $protocol_values[0];
-
       $form
         ->appendChild(
           id(new AphrontFormCheckboxControl())
@@ -77,22 +69,6 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
               ),
               (isset($values[self::CONFIG_KEY_DEBUG_MODE]) && $values[self::CONFIG_KEY_DEBUG_MODE] === '1')
             )
-        )
-        ->appendChild(
-          id(new AphrontFormTextControl())
-            ->setLabel(pht('Bugzilla Domain'))
-            ->setPlaceholder('Example: bugzilla.mozilla.org')
-            ->setName(self::CONFIG_KEY_BUGZILLA_DOMAIN)
-            ->setValue(self::getArrayValueOrDefault($values, self::CONFIG_KEY_BUGZILLA_DOMAIN))
-            ->setError(self::getArrayValueOrDefault($issues, self::CONFIG_KEY_BUGZILLA_DOMAIN))
-        )
-        ->appendChild(
-          id(new AphrontFormSelectControl())
-            ->setLabel(pht('Bugzilla Protocol'))
-            ->setName(self::CONFIG_KEY_BUGZILLA_PROTOCOL)
-            ->setOptions(self::PROTOCOL_OPTIONS)
-            ->setValue(self::getArrayValueOrDefault(
-                $values, self::CONFIG_KEY_BUGZILLA_PROTOCOL), $default_protocol)
         )
         ->appendChild(
           id(new AphrontFormTextControl())
@@ -125,8 +101,6 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
 
     return array(
       self::CONFIG_KEY_DEBUG_MODE => $config->getProperty(self::CONFIG_KEY_DEBUG_MODE),
-      self::CONFIG_KEY_BUGZILLA_DOMAIN => $config->getProperty(self::CONFIG_KEY_BUGZILLA_DOMAIN),
-      self::CONFIG_KEY_BUGZILLA_PROTOCOL => $config->getProperty(self::CONFIG_KEY_BUGZILLA_PROTOCOL),
       self::CONFIG_KEY_APP_NAME => $config->getProperty(self::CONFIG_KEY_APP_NAME),
       self::CONFIG_KEY_TRANSACTION_CODE_LENGTH => (int)$config->getProperty(self::CONFIG_KEY_TRANSACTION_CODE_LENGTH)
     );
@@ -135,8 +109,6 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
   public function readFormValuesFromRequest(AphrontRequest $request) {
     return array(
       self::CONFIG_KEY_DEBUG_MODE => $request->getStr(self::CONFIG_KEY_DEBUG_MODE),
-      self::CONFIG_KEY_BUGZILLA_DOMAIN => $request->getStr(self::CONFIG_KEY_BUGZILLA_DOMAIN),
-      self::CONFIG_KEY_BUGZILLA_PROTOCOL => $request->getStr(self::CONFIG_KEY_BUGZILLA_PROTOCOL),
       self::CONFIG_KEY_APP_NAME => $request->getStr(self::CONFIG_KEY_APP_NAME),
       self::CONFIG_KEY_TRANSACTION_CODE_LENGTH => (int)$request->getStr(self::CONFIG_KEY_TRANSACTION_CODE_LENGTH)
     );
@@ -145,11 +117,6 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
   public function processEditForm(AphrontRequest $request, array $values) {
     $errors = array();
     $issues = array();
-
-    if(!strlen(self::getArrayValueOrDefault($values, self::CONFIG_KEY_BUGZILLA_DOMAIN))) {
-      $errors[] = pht('Bugzilla Domain is required.');
-      $issues[self::CONFIG_KEY_BUGZILLA_DOMAIN] = pht('Required');
-    }
 
     if(!strlen(self::getArrayValueOrDefault($values, self::CONFIG_KEY_APP_NAME))) {
       $errors[] = pht('Application Name is required.');
@@ -164,10 +131,9 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
       $issues[self::CONFIG_KEY_TRANSACTION_CODE_LENGTH] = pht('Invalid');
     }
 
-    // If there are no errors, set the config's providerDomain column
     if(!count($errors)) {
       $config = $this->getProviderConfig();
-      $config->setProviderDomain($values[self::CONFIG_KEY_BUGZILLA_DOMAIN]);
+      $config->setProviderDomain($this->getProviderDomain());
     }
 
     return array($errors, $issues, $values);
@@ -192,13 +158,9 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     $config = $this->getConfig();
 
     $adapter->setAdapterType(self::ADAPTER_TYPE);
-    $adapter->setAdapterDomain(
-      $config->getProperty(self::CONFIG_KEY_BUGZILLA_DOMAIN)
-    );
+    $adapter->setAdapterDomain($config->getProviderDomain());
     $adapter->setAuthenticateURI(
-      id(new PhutilURI(''))
-        ->setProtocol($config->getProperty(self::CONFIG_KEY_BUGZILLA_PROTOCOL))
-        ->setDomain($adapter->getAdapterDomain())
+      id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
         ->setPath('/auth.cgi')
         ->setQueryParam(
           'description', $config->getProperty(self::CONFIG_KEY_APP_NAME)
@@ -342,11 +304,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     $config = $this->getConfig();
     $api_key = $token_props['api_key'];
 
-    $future_uri = id(new PhutilURI(''))
-      ->setProtocol(
-        $config->getProperty(self::CONFIG_KEY_BUGZILLA_PROTOCOL)
-      )
-      ->setDomain($config->getProperty(self::CONFIG_KEY_BUGZILLA_DOMAIN))
+    $future_uri = id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
       ->setPath('/rest/whoami');
 
     $future = id(new HTTPSFuture((string) $future_uri))
@@ -421,5 +379,10 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     return Filesystem::readRandomCharacters(
       $config->getProperty(self::CONFIG_KEY_TRANSACTION_CODE_LENGTH)
     );
+  }
+
+  public function getProviderDomain() {
+    list($bmo_protocol, $bmo_host) = explode('://', PhabricatorEnv::getEnvConfig('bugzilla.url'));
+    return $bmo_host;
   }
 }
