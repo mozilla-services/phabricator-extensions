@@ -32,7 +32,7 @@ final class PhabricatorBMOAuthAdapter extends PhutilAuthAdapter {
   }
 
   public function setAdapterDomain($domain) {
-    $this->domain = $domain;
+   $this->domain = $domain;
   }
 
   public function getAccountEmail() {
