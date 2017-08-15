@@ -16,6 +16,7 @@ final class DifferentialBugzillaBugIDCommitMessageField
   // to prepare the fields and then save in
   // `DifferentialRevisionTransactionType`
   const FIELDKEY = 'bugzilla.bug-id';
+  const CUSTOM_FIELD_KEY = 'differential:bugzilla-bug-id';
 
   /* -- Commit Message Field descriptions ---------------------------- */
 
@@ -25,7 +26,7 @@ final class DifferentialBugzillaBugIDCommitMessageField
 
   public function getCustomFieldKey() {
     // Link to DifferentialBugzillaBugIDField.
-    return 'differential:bugzilla-bug-id';
+    return self::CUSTOM_FIELD_KEY;
   }
 
   // Should Label appear in Arcanist message
