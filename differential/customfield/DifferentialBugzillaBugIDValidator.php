@@ -13,6 +13,17 @@ class DifferentialBugzillaBugIDValidator extends Phobject {
 
     $bug_id = self::formatBugID($bug_id);
 
+    // Check to see if the user is an admin; if so, don't validate bug existence
+    // because the admin account may not have a BMO account ID associated with it
+    $users = id(new PhabricatorPeopleQuery())
+      ->setViewer(PhabricatorUser::getOmnipotentUser())
+      ->withPHIDs(array($account_phid))
+      ->withIsAdmin(true)
+      ->execute();
+    if(count($users)) {
+      return $errors;
+    }
+
     // Get the transactor's ExternalAccount->accountID using the author's phid
     $users = id(new PhabricatorExternalAccountQuery())
       ->setViewer(PhabricatorUser::getOmnipotentUser())
@@ -58,7 +69,7 @@ class DifferentialBugzillaBugIDValidator extends Phobject {
         $status_code = (int) $status->getStatusCode();
 
         if(in_array($status_code, array(100, 101, 404))) {
-          $errors[] = pht('Bugzilla Bug ID: %s does not exist (BMO %s) %s', $bug_id, $status_code, $future_uri);
+          $errors[] = pht('Bugzilla Bug ID: %s does not exist (BMO %s)', $bug_id, $status_code);
         }
         else if($status_code === 102) {
           $errors[] = pht('Bugzilla Bug ID: You do not have permission for this bug.');
