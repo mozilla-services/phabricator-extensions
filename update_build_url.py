@@ -4,10 +4,10 @@ import json
 import sys
 
 try:
-    with open('/app/mozphab.json', 'r') as f:
+    with open('/app/version.json', 'r') as f:
         mozphab_circle_data = json.load(f)
 except IOError:
-    print "mozphab.json not found"
+    print "version.json not found"
     mozphab_circle_data = {}
 try:
     with open('/app/phabext.json', 'r') as g:
@@ -18,8 +18,10 @@ except IOError:
 mozphab_circle_data.update(phabext_circle_data)
 
 try:
-    with open('/app/version.json', 'w') as f:
+    with open('/app/version.json', 'r+') as f:
+        f.seek(0)
         json.dump(mozphab_circle_data, f)
+        f.close()
 except IOError:
     print "Could not create version.json"
     sys.exit()
