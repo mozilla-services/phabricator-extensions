@@ -13,33 +13,6 @@ class DifferentialBugzillaBugIDValidator extends Phobject {
 
     $bug_id = self::formatBugID($bug_id);
 
-    // Check to see if the user is an admin; if so, don't validate bug existence
-    // because the admin account may not have a BMO account ID associated with it
-    $users = id(new PhabricatorPeopleQuery())
-      ->setViewer(PhabricatorUser::getOmnipotentUser())
-      ->withPHIDs(array($account_phid))
-      ->withIsAdmin(true)
-      ->execute();
-    if(count($users)) {
-      return $errors;
-    }
-
-    // Get the transactor's ExternalAccount->accountID using the author's phid
-    $users = id(new PhabricatorExternalAccountQuery())
-      ->setViewer(PhabricatorUser::getOmnipotentUser())
-      ->withAccountTypes(array(PhabricatorBMOAuthProvider::ADAPTER_TYPE))
-      ->withUserPHIDs(array($account_phid))
-      ->execute();
-
-    // The only way this should happen is if the user creating/editing the
-    // revision isn't tied to a BMO account id (i.e. traditional Phab registration)
-    if(!count($users)) {
-      $errors[] = pht('This transaction\'s user\'s account ID could not be found.');
-      return $errors;
-    }
-    $user_detail = reset($users);
-    $user_bmo_id = $user_detail->getAccountID();
-
     if(!strlen($bug_id)) { // A bug ID is required
       $errors[] = pht('Bugzilla Bug ID is required');
     }
@@ -47,6 +20,34 @@ class DifferentialBugzillaBugIDValidator extends Phobject {
       $errors[] = pht('Bugzilla Bug ID must be a number');
     }
     else { // Make a request to BMO to ensure the bug exists and user can see it
+
+      // Check to see if the user is an admin; if so, don't validate bug existence
+      // because the admin account may not have a BMO account ID associated with it
+      $users = id(new PhabricatorPeopleQuery())
+        ->setViewer(PhabricatorUser::getOmnipotentUser())
+        ->withPHIDs(array($account_phid))
+        ->withIsAdmin(true)
+        ->execute();
+      if(count($users)) {
+        return $errors;
+      }
+
+      // Get the transactor's ExternalAccount->accountID using the author's phid
+      $users = id(new PhabricatorExternalAccountQuery())
+        ->setViewer(PhabricatorUser::getOmnipotentUser())
+        ->withAccountTypes(array(PhabricatorBMOAuthProvider::ADAPTER_TYPE))
+        ->withUserPHIDs(array($account_phid))
+        ->execute();
+
+      // The only way this should happen is if the user creating/editing the
+      // revision isn't tied to a BMO account id (i.e. traditional Phab registration)
+      if(!count($users)) {
+        $errors[] = pht('This transaction\'s user\'s account ID could not be found.');
+        return $errors;
+      }
+      $user_detail = reset($users);
+      $user_bmo_id = $user_detail->getAccountID();
+
       $future_uri = id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
         ->setPath('/rest/phabbugz/check_bug/'.$bug_id.'/'.$user_bmo_id);
 
