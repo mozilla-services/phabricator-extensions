@@ -6,28 +6,22 @@
 final class DifferentialBugzillaBugIDCustomFieldTestCase
   extends PhabricatorTestCase {
 
-  public function testBugIdCommitMessageFieldValidation() {
-    $test = array(
-      'false' => array(null, '', '12.3', '1e3'),
-      'true' => array('123')
-    );
+  public function testBugIdCommitMessageFieldBasicValidation() {
+    $invalids = array(null, '', ' ', '12.3', '1e3');
 
     $field = new DifferentialBugzillaBugIDCommitMessageField();
-    foreach ($test as $success => $ids) {
-      foreach ($ids as $value) {
-        $caught = false;
-        try {
-          $result = $field->validateFieldValue($value);
-        } catch (DifferentialFieldValidationException $ex) {
-          $caught = $ex;
-        }
-        if ($success == 'false') {
-          $this->assertTrue(
-            ($caught instanceof DifferentialFieldValidationException));
-        } else {
-          $this->assertEqual($result, $value);
-        }
+    $field->setViewer(PhabricatorUser::getOmnipotentUser());
+
+    foreach ($invalids as $value) {
+      $caught = false;
+      try {
+        $result = $field->validateFieldValue($value);
+      } catch (DifferentialFieldValidationException $ex) {
+        $caught = $ex;
       }
+
+      $this->assertTrue(
+          ($caught instanceof DifferentialFieldValidationException));
     }
   }
 
@@ -36,7 +30,7 @@ final class DifferentialBugzillaBugIDCustomFieldTestCase
     $field->setValue('123');
     $this->assertEqual(
       $field->renderPropertyViewValue(array())->getHTMLContent(),
-      '<a href="https://bugzilla/123" rel="noreferrer">123</a>'
+      '<a href="'.PhabricatorEnv::getEnvConfig('bugzilla.url').'/123" rel="noreferrer">123</a>'
     );
   }
 
