@@ -10,11 +10,11 @@
     const REVISION_REVIEWERS_CHANGED = 'differential.revision.reviewers'; // ex: {"PHID-USER-wtlpjohxmdtz4blbgg5p":"rejected","PHID-USER-w5tmcvhqel3on45s3x2u":"added"}
     // When a reviewer declines to review it
     const REVISION_REVIEWER_RESIGNED = 'differential.revision.resign'; // true|false
-    // When the original revision author reclaims the revision (?)
+    // When the user abandons their revision
     const REVISION_ABANDONED = 'differential.revision.abandon'; // true|false
-    // When the user selects "plan changes", whatever that means
+    // When the user selects "plan changes"
     const REVISION_PLAN_CHANGES = 'differential.revision.plan';
-    // When the user selects "request review", whatever that means
+    // When the user selects "request review"
     const REVISION_REVIEW_REQUEST = 'differential.revision.request';
 
     public function isEnabled() {
@@ -39,7 +39,6 @@
 
       $story = $this->getFeedStory(); // PhabricatorApplicationTransactionFeedStory
 
-      // Debugging
       echo $story->renderText().'('.$story->getURI().')';
 
       // We only care about differential transactions here,
@@ -47,14 +46,13 @@
       $primary_transaction = $story->getPrimaryTransaction();
       $primary_transaction_class = get_class($primary_transaction);
       if($primary_transaction_class != 'DifferentialTransaction') {
-        echo pht('Expected story type DifferentialTransaction, received %s', $primary_transaction_class);
+      echo pht('Expected story type DifferentialTransaction, received %s', $primary_transaction_class);
         return;
       }
 
       // ex: "differential.revision.accept"
       $transaction_type = $primary_transaction->getTransactionType();
 
-      // Debugging
       echo pht('Transaction type: %s', $transaction_type);
       echo pht('Old value: %s / New value: %s',
         $primary_transaction->getOldValue(),
@@ -63,7 +61,7 @@
 
       // Bail if we don't care about this change
       if(!in_array($transaction_type, $handled_differential_transaction_types)) {
-        echo pht('Undesired transaction type: %s', $transaction_type);
+      echo pht('Undesired transaction type: %s', $transaction_type);
         return;
       }
 
@@ -86,29 +84,29 @@
         // This is important because a person who r+'d could be removed from the reviewers list
         // Thuse we'd want to remove them as an R+ on BMO
         case self::REVISION_REVIEWERS_CHANGED:
-          $this->update_review_statuses($revision);
+          $this->updateReviewStatuses($revision);
           break;
 
         // https://trello.com/c/s7sauVAO/286-3-trigger-the-plan-changes-or-request-review-actions-clears-all-r-flags-on-the-revision-attachment-in-the-associated-bug
         case self::REVISION_PLAN_CHANGES:
         case self::REVISION_REVIEW_REQUEST:
-          $this->clear_all_review_statuses($revision);
+          $this->clearAllReviewStatuses($revision);
           break;
 
         // https://trello.com/c/0bbNOGlC/386-3-obsolete-stub-attachment-from-bmo-if-associated-revision-is-abandoned
         case self::REVISION_ABANDONED:
-          $this->obsolete_attachment($revision);
+          $this->obsoleteAttachment($revision);
           break;
 
         default:
-          echo pht('David, you forgot to cover %s', $transaction_type);
+        echo pht('David, you forgot to cover %s', $transaction_type);
           break;
       }
 
       echo '------ /DoorkeeperRevisionFeedWorker ------';
     }
 
-    private function update_review_statuses($revision) {
+    private function updateReviewStatuses($revision) {
       $accepted_bmo_ids = array();
 
       // Grab all reviewers with an "accepted" status
@@ -134,15 +132,15 @@
         }
       }
 
-      $this->send_update_request($revision, $accepted_bmo_ids);
+      $this->sendUpdateRequest($revision, $accepted_bmo_ids);
     }
 
 
-    private function clear_all_review_statuses($revision) {
-      $this->send_update_request($revision, array());
+    private function clearAllReviewStatuses($revision) {
+      $this->sendUpdateRequest($revision, array());
     }
 
-    private function obsolete_attachment($revision) {
+    private function obsoleteAttachment($revision) {
       $request_data = array(
         'revision_id' => $revision->getID(),
         'bug_id' => $this->get_bugzilla_bug_id($revision)
@@ -156,22 +154,23 @@
         ->setData($request_data)
         ->setExpectStatus(array(200));
 
-      // Debugging
       echo pht('Making a request to: %s', (string) $future_uri);
-      echo 'Using data:'.json_encode($request_data, JSON_FORCE_OBJECT);
+      echo 'Using data: '.json_encode($request_data, JSON_FORCE_OBJECT);
 
       try {
         list($status) = $future->resolve();
-        if($status->getStatusCode() != 200) {
-          // TODO:  What should we do in case of failure?  Re-queue?
+        $status_code = $status->getStatusCode();
+        if($status_code != 200) {
+          echo pht('obsoleteAttachment failure: BMO returned code %s', $status_code);
         }
       }
       catch(HTTPFutureResponseStatus $ex) {
-
+        $status_code = $status->getStatusCode();
+        echo pht('obsoleteAttachment exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code));
       }
     }
 
-    private function send_update_request($revision, $accepted_bmo_ids) {
+    private function sendUpdateRequest($revision, $accepted_bmo_ids) {
       // Ship the array to BMO
       $request_data = array(
         'accepted_users' => $accepted_bmo_ids,
@@ -186,21 +185,22 @@
         ->setData($request_data)
         ->setExpectStatus(array(200));
 
-        echo pht('Making a request to: %s', (string) $future_uri);
-        echo 'Using data:'.json_encode($request_data, JSON_FORCE_OBJECT);
+      echo pht('Making a request to: %s', (string) $future_uri);
+      echo 'Using data:'.json_encode($request_data, JSON_FORCE_OBJECT);
 
         try {
           list($status) = $future->resolve();
+          $status_code = $status->getStatusCode();
           if($status->getStatusCode() != 200) {
-            // TODO:  What should we do in case of failure?  Re-queue?
+            echo pht('sendUpdateRequest failure: BMO returned code %s', $status_code);
           }
         }
         catch(HTTPFutureResponseStatus $ex) {
-
+          $status_code = $status->getStatusCode();
+          echo pht('obsoleteAttachment exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code));
         }
     }
 
-    // TODO:  Move this to a utility file, use in auth and differential PHP files
     private function get_http_future($uri) {
       return id(new HTTPSFuture((string) $uri))
         ->addHeader('X-Bugzilla-API-Key', PhabricatorEnv::getEnvConfig('bugzilla.automation_api_key'))
@@ -208,7 +208,6 @@
         ->setTimeout(15);
     }
 
-    // TODO:  Move this to a utility file for future use
     private function get_bugzilla_bug_id($revision) {
       $field = PhabricatorCustomField::getObjectField(
         $revision,
@@ -217,8 +216,8 @@
       );
 
       id(new PhabricatorCustomFieldStorageQuery())
-      ->addField($field)
-      ->execute();
+        ->addField($field)
+        ->execute();
 
       $bug_id = $field->getValueForStorage();
 
