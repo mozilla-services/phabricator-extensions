@@ -355,14 +355,11 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
 
     // Save the user information, then creating or loading the account
     // Example: Array ( [real_name] => Vagrant User [name] => vagrant@bmo-web.vm [id] => 1 )
-    $real_name = $user_json['real_name'];
-    $bugzilla_nick = $adapter->parseBugzillaNick($real_name);
-    if($bugzilla_nick) {
-      $real_name = trim(str_replace(':'.$bugzilla_nick, '', $real_name));
-    }
 
-    $adapter->setAccountName($bugzilla_nick ?: str_replace(' ', '', $real_name));
-    $adapter->setAccountRealName($real_name);
+    $names = $adapter->parseBugzillaNames($real_name);
+
+    $adapter->setAccountName($names['nick']);
+    $adapter->setAccountRealName($names['real']);
     $adapter->setAccountID($user_json['id']);
     $adapter->setAccountEmail($user_json['name']);
   }
