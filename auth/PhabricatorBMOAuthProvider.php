@@ -358,7 +358,8 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     $real_name = $user_json['real_name'];
     $bugzilla_nick = $adapter->parseBugzillaNick($real_name);
     if($bugzilla_nick) {
-      $real_name = trim(str_replace(':'.$bugzilla_nick, '', $real_name));
+      $real_name = str_replace(':'.$bugzilla_nick, '', $real_name);
+      $real_name = trim(str_replace(array('()', '[]'), '', $real_name));
     }
 
     $adapter->setAccountName($bugzilla_nick ?: str_replace(' ', '', $real_name));
