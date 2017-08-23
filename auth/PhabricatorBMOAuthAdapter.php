@@ -67,11 +67,24 @@ final class PhabricatorBMOAuthAdapter extends PhutilAuthAdapter {
     $this->account_real_name = $real_name;
   }
 
-  public function parseBugzillaNick($name) {
+  public function parseBugzillaNames($name) {
     // If possible, use the Bugzilla user name (ex: "First Last :firstlast")
     // Same regex used by version-control-tools
-    preg_match('/:([a-zA-Z0-9\-\_]+)/', $name, $matches);
-    return isset($matches[1]) ? $matches[1] : null;
+    $names = array('nick' => str_replace(' ', '', $name), 'real' => $name);
+
+    // Parse out nickname and real name
+    preg_match("/([\pL' -]+)?\s?\[?\(?:([a-zA-Z0-9\-\_]+)\)?\]?/u", $name, $matches);
+
+    if($matches) {
+      if(isset($matches[1])) {
+        $names['real'] = $matches[1];
+      }
+      if(isset($matches[2])) {
+        $names['nick'] = $matches[2];
+      }
+    }
+
+    return $names;
   }
 
   public function getAuthenticateURI() {
