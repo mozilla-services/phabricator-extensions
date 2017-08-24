@@ -147,7 +147,7 @@
       );
 
       $future_uri = id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
-        ->setPath('/rest/phabbugz/obsolete/');
+        ->setPath('/rest/phabbugz/obsolete');
 
       $future = $this->get_http_future($future_uri)
         ->setMethod('PUT')
