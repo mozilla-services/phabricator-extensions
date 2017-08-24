@@ -35,33 +35,33 @@
         self::REVISION_REVIEW_REQUEST
       );
 
-      echo '------ DoorkeeperRevisionFeedWorker ------';
+      $this->log('------ DoorkeeperRevisionFeedWorker ------');
 
       $story = $this->getFeedStory(); // PhabricatorApplicationTransactionFeedStory
 
-      echo $story->renderText().'('.$story->getURI().')';
+      $this->log($story->renderText().'('.$story->getURI().')');
 
       // We only care about differential transactions here,
       // so bail if something else makes it in
       $primary_transaction = $story->getPrimaryTransaction();
       $primary_transaction_class = get_class($primary_transaction);
       if($primary_transaction_class != 'DifferentialTransaction') {
-      echo pht('Expected story type DifferentialTransaction, received %s', $primary_transaction_class);
+        $this->log(pht('Expected story type DifferentialTransaction, received %s', $primary_transaction_class));
         return;
       }
 
       // ex: "differential.revision.accept"
       $transaction_type = $primary_transaction->getTransactionType();
 
-      echo pht('Transaction type: %s', $transaction_type);
-      echo pht('Old value: %s / New value: %s',
+      $this->log(pht('Transaction type: %s', $transaction_type));
+      $this->log(pht('Old value: %s / New value: %s',
         $primary_transaction->getOldValue(),
         $primary_transaction->getNewValue()
-      );
+      ));
 
       // Bail if we don't care about this change
       if(!in_array($transaction_type, $handled_differential_transaction_types)) {
-      echo pht('Undesired transaction type: %s', $transaction_type);
+        $this->log(pht('Undesired transaction type: %s', $transaction_type));
         return;
       }
 
@@ -99,11 +99,10 @@
           break;
 
         default:
-        echo pht('David, you forgot to cover %s', $transaction_type);
           break;
       }
 
-      echo '------ /DoorkeeperRevisionFeedWorker ------';
+      $this->log('------ /DoorkeeperRevisionFeedWorker ------');
     }
 
     private function updateReviewStatuses($revision) {
@@ -154,19 +153,19 @@
         ->setData($request_data)
         ->setExpectStatus(array(200));
 
-      echo pht('Making a request to: %s', (string) $future_uri);
-      echo 'Using data: '.json_encode($request_data, JSON_FORCE_OBJECT);
+      $this->log(pht('Making a request to: %s', (string) $future_uri));
+      $this->log('Using data: '.json_encode($request_data, JSON_FORCE_OBJECT));
 
       try {
         list($status) = $future->resolve();
         $status_code = $status->getStatusCode();
         if($status_code != 200) {
-          echo pht('obsoleteAttachment failure: BMO returned code %s', $status_code);
+          $this->log(pht('obsoleteAttachment failure: BMO returned code %s', $status_code));
         }
       }
       catch(HTTPFutureResponseStatus $ex) {
         $status_code = $status->getStatusCode();
-        echo pht('obsoleteAttachment exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code));
+        $this->log(pht('obsoleteAttachment exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code)));
       }
     }
 
@@ -185,19 +184,19 @@
         ->setData($request_data)
         ->setExpectStatus(array(200));
 
-      echo pht('Making a request to: %s', (string) $future_uri);
-      echo 'Using data:'.json_encode($request_data, JSON_FORCE_OBJECT);
+      $this->log(pht('Making a request to: %s', (string) $future_uri));
+      $this->log('Using data:'.json_encode($request_data, JSON_FORCE_OBJECT));
 
         try {
           list($status) = $future->resolve();
           $status_code = $status->getStatusCode();
           if($status->getStatusCode() != 200) {
-            echo pht('sendUpdateRequest failure: BMO returned code %s', $status_code);
+            $this->log(pht('sendUpdateRequest failure: BMO returned code %s', $status_code));
           }
         }
         catch(HTTPFutureResponseStatus $ex) {
           $status_code = $status->getStatusCode();
-          echo pht('obsoleteAttachment exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code));
+          $this->log(pht('obsoleteAttachment exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code)));
         }
     }
 
