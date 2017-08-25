@@ -311,7 +311,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
       ->setMethod('GET')
       ->addHeader('X-Bugzilla-API-Key', $api_key)
       ->addHeader('Accept', 'application/json')
-      ->setTimeout(5);
+      ->setTimeout(PhabricatorEnv::getEnvConfig('bugzilla.timeout'));
 
     // Resolve the async HTTPSFuture request and extract JSON body
     $whoami_body = '';

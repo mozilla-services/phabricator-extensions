@@ -36,6 +36,11 @@ final class PhabricatorBugzillaConfigOptions
         'string',
         false)
         ->setDescription(pht('Automation User API Key on Bugzilla.')),
+      $this->newOption(
+        'bugzilla.timeout',
+        'int',
+        15)
+        ->setDescription(pht('Bugzilla timeout in seconds.')),
     );
   }
 
