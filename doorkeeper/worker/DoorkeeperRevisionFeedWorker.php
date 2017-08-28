@@ -35,33 +35,33 @@
         self::REVISION_REVIEW_REQUEST
       );
 
-      $this->log('------ DoorkeeperRevisionFeedWorker ------');
+      echo('------ DoorkeeperRevisionFeedWorker ------');
 
       $story = $this->getFeedStory(); // PhabricatorApplicationTransactionFeedStory
 
-      $this->log($story->renderText().'('.$story->getURI().')');
+      echo($story->renderText().'('.$story->getURI().')');
 
       // We only care about differential transactions here,
       // so bail if something else makes it in
       $primary_transaction = $story->getPrimaryTransaction();
       $primary_transaction_class = get_class($primary_transaction);
       if($primary_transaction_class != 'DifferentialTransaction') {
-        $this->log(pht('Expected story type DifferentialTransaction, received %s', $primary_transaction_class));
+        echo(pht('Expected story type DifferentialTransaction, received %s', $primary_transaction_class));
         return;
       }
 
       // ex: "differential.revision.accept"
       $transaction_type = $primary_transaction->getTransactionType();
 
-      $this->log(pht('Transaction type: %s', $transaction_type));
-      $this->log(pht('Old value: %s / New value: %s',
+      echo(pht('Transaction type: %s', $transaction_type));
+      echo(pht('Old value: %s / New value: %s',
         $primary_transaction->getOldValue(),
         $primary_transaction->getNewValue()
       ));
 
       // Bail if we don't care about this change
       if(!in_array($transaction_type, $handled_differential_transaction_types)) {
-        $this->log(pht('Undesired transaction type: %s', $transaction_type));
+        echo(pht('Undesired transaction type: %s', $transaction_type));
         return;
       }
 
@@ -102,7 +102,7 @@
           break;
       }
 
-      $this->log('------ /DoorkeeperRevisionFeedWorker ------');
+      echo('------ /DoorkeeperRevisionFeedWorker ------');
     }
 
     private function updateReviewStatuses($revision) {
@@ -149,23 +149,21 @@
         ->setPath('/rest/phabbugz/obsolete');
 
       $future = $this->get_http_future($future_uri)
-        ->setMethod('PUT')
-        ->setData($request_data)
-        ->setExpectStatus(array(200));
+        ->setData($request_data);
 
-      $this->log(pht('Making a request to: %s', (string) $future_uri));
-      $this->log('Using data: '.json_encode($request_data, JSON_FORCE_OBJECT));
+      echo(pht('Making a request to: %s', (string) $future_uri));
+      echo('Using data: '.json_encode($request_data));
 
       try {
         list($status) = $future->resolve();
         $status_code = $status->getStatusCode();
         if($status_code != 200) {
-          $this->log(pht('obsoleteAttachment failure: BMO returned code %s', $status_code));
+          echo(pht('obsoleteAttachment failure: BMO returned code %s', $status_code));
         }
       }
       catch(HTTPFutureResponseStatus $ex) {
         $status_code = $status->getStatusCode();
-        $this->log(pht('obsoleteAttachment exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code)));
+        echo(pht('obsoleteAttachment exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code)));
       }
     }
 
@@ -180,30 +178,31 @@
         ->setPath('/rest/phabbugz/update_reviewer_statuses');
 
       $future = $this->get_http_future($future_uri)
-        ->setMethod('PUT')
-        ->setData($request_data)
-        ->setExpectStatus(array(200));
+        ->setData($request_data);
 
-      $this->log(pht('Making a request to: %s', (string) $future_uri));
-      $this->log('Using data:'.json_encode($request_data, JSON_FORCE_OBJECT));
+      echo(pht('Making a request to: %s', (string) $future_uri));
+      echo('Using data:'.json_encode($request_data, JSON_FORCE_OBJECT));
 
         try {
           list($status) = $future->resolve();
           $status_code = $status->getStatusCode();
           if($status->getStatusCode() != 200) {
-            $this->log(pht('sendUpdateRequest failure: BMO returned code %s', $status_code));
+            echo(pht('sendUpdateRequest failure: BMO returned code %s', $status_code));
           }
         }
         catch(HTTPFutureResponseStatus $ex) {
           $status_code = $status->getStatusCode();
-          $this->log(pht('obsoleteAttachment exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code)));
+          echo(pht('obsoleteAttachment exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code)));
         }
     }
 
     private function get_http_future($uri) {
       return id(new HTTPSFuture((string) $uri))
         ->addHeader('X-Bugzilla-API-Key', PhabricatorEnv::getEnvConfig('bugzilla.automation_api_key'))
+        ->setMethod('PUT')
         ->addHeader('Accept', 'application/json')
+        ->addHeader('Content-Type', 'application/json')
+        ->setExpectStatus(array(200))
         ->setTimeout(15);
     }
 
