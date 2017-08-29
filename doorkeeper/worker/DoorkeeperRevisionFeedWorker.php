@@ -174,7 +174,7 @@
     private function sendUpdateRequest($revision, $accepted_bmo_ids) {
       // Ship the array to BMO
       $request_data = array(
-        'accepted_users' => $accepted_bmo_ids,
+        'accepted_users' => implode(':', $accepted_bmo_ids),
         'revision_id' => $revision->getID(),
         'bug_id' => $this->get_bugzilla_bug_id($revision)
       );
