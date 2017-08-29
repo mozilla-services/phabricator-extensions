@@ -163,7 +163,11 @@
       }
       catch(HTTPFutureResponseStatus $ex) {
         $status_code = $status->getStatusCode();
-        echo(pht('obsoleteAttachment exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code)));
+        $exception_message = pht('obsoleteAttachment exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code));
+        echo($exception_message);
+
+        // Re-queue
+        throw new Exception($exception_message);
       }
     }
 
@@ -192,7 +196,11 @@
         }
         catch(HTTPFutureResponseStatus $ex) {
           $status_code = $status->getStatusCode();
-          echo(pht('obsoleteAttachment exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code)));
+          $exception_message = pht('sendUpdateRequest exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code));
+          echo($exception_message);
+
+          // Re-queue
+          throw new Exception($exception_message);
         }
     }
 
