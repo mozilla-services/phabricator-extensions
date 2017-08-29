@@ -209,7 +209,6 @@
         ->addHeader('X-Bugzilla-API-Key', PhabricatorEnv::getEnvConfig('bugzilla.automation_api_key'))
         ->setMethod('PUT')
         ->addHeader('Accept', 'application/json')
-        ->addHeader('Content-Type', 'application/json')
         ->setExpectStatus(array(200))
         ->setTimeout(15);
     }
