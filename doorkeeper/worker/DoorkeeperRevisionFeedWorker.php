@@ -210,7 +210,7 @@
         ->setMethod('PUT')
         ->addHeader('Accept', 'application/json')
         ->setExpectStatus(array(200))
-        ->setTimeout(15);
+        ->setTimeout(PhabricatorEnv::getEnvConfig('bugzilla.timeout'));
     }
 
     private function get_bugzilla_bug_id($revision) {
