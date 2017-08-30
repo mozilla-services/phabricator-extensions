@@ -12,6 +12,8 @@
     const REVISION_REVIEWER_RESIGNED = 'differential.revision.resign'; // true|false
     // When the user abandons their revision
     const REVISION_ABANDONED = 'differential.revision.abandon'; // true|false
+    // When the user reclaims a revision they had abandoned
+    const REVISION_RECLAIMED = 'differential.revision.reclaim'; // true|false
     // When the user selects "plan changes"
     const REVISION_PLAN_CHANGES = 'differential.revision.plan';
     // When the user selects "request review"
@@ -31,6 +33,7 @@
         self::REVISION_REVIEWERS_CHANGED,
         self::REVISION_REVIEWER_RESIGNED,
         self::REVISION_ABANDONED,
+        self::REVISION_RECLAIMED,
         self::REVISION_PLAN_CHANGES,
         self::REVISION_REVIEW_REQUEST
       );
@@ -95,7 +98,12 @@
 
         // https://trello.com/c/0bbNOGlC/386-3-obsolete-stub-attachment-from-bmo-if-associated-revision-is-abandoned
         case self::REVISION_ABANDONED:
-          $this->obsoleteAttachment($revision);
+          $this->obsoleteAttachment($revision, true);
+          break;
+
+        // https://trello.com/c/yIibWslA/508-x-when-a-revision-is-abandoned-bmo-obsoletes-the-attachment-if-the-revision-is-reclaimed-bmo-should-either-unobsolete-the-attach
+        case self::REVISION_RECLAIMED:
+          $this->obsoleteAttachment($revision, false);
           break;
 
         default:
@@ -139,10 +147,11 @@
       $this->sendUpdateRequest($revision, array());
     }
 
-    private function obsoleteAttachment($revision) {
+    private function obsoleteAttachment($revision, $make_obsolete) {
       $request_data = array(
         'revision_id' => $revision->getID(),
-        'bug_id' => $this->get_bugzilla_bug_id($revision)
+        'bug_id' => $this->get_bugzilla_bug_id($revision),
+        'make_obsolete' => $make_obsolete
       );
 
       $future_uri = id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
