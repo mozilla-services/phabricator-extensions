@@ -120,10 +120,16 @@
       $reviewers = $revision->getReviewers();
       $accepted_phids = array();
       foreach($reviewers as $reviewer) {
-        // NOTE:  There's an "STATUS_ACCEPTED_OLDER"...what does that represent?
+        // NOTE:  There's an "STATUS_ACCEPTED_OLDER"
+        // This fires when a revision is R+d by the reviewer, then the
+        // revision author updates their patch
         // https://github.com/phacility/phabricator/blob/48a74de0b64901538feb878e2f12e18e605ca76a/src/applications/differential/editor/DifferentialTransactionEditor.php#L215
-        if($reviewer->getReviewerStatus() === DifferentialReviewerStatus::STATUS_ACCEPTED) {
-          $accepted_phids[] = $reviewer->getReviewerPHID();
+        $reviewer_status = $reviewer->getReviewerStatus();
+        if(
+          $reviewer_status === DifferentialReviewerStatus::STATUS_ACCEPTED ||
+          $reviewer_status === DifferentialReviewerStatus::STATUS_ACCEPTED_OLDER
+          ) {
+            $accepted_phids[] = $reviewer->getReviewerPHID();
         }
       }
 
