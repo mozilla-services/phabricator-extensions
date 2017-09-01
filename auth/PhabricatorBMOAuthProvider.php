@@ -12,6 +12,9 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
   const CONFIG_KEY_APP_NAME = 'app_name';
   const CONFIG_KEY_TRANSACTION_CODE_LENGTH = 'transaction_code_length';
 
+  // Logging error key type
+  const LOGGING_TYPE = 'BMOLogin';
+
   // Need to add this to avoid error during auth addition activation
   protected $adapter;
   protected $providerConfig;
@@ -221,6 +224,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
         pht('Phabricator BMO Authentication failed due to '.
             'invalid JSON from Bugzilla.')
       );
+      MozLogger::log('Invalid JSON provided by Bugzilla', self::LOGGING_TYPE);
     }
 
     // Throw exception if either key is not provided by Bugzilla
@@ -229,6 +233,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
         pht('Phabricator BMO Authentication failed due to '.
             'incomplete JSON from Bugzilla.')
       );
+      MozLogger::log('No client_api_key or client_api_login provided by Bugzilla', self::LOGGING_TYPE);
     }
 
     // Generate a transaction code which we'll receive back from Bugzilla
@@ -239,6 +244,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
       $this->throwException(
         pht('No CSRF was provided by Bugzilla in the URL.')
       );
+      MozLogger::log('Bugzilla did not provide a CSRF token in the URL', self::LOGGING_TYPE);
     }
 
     // Create a temporary auth token to save the user info JSON provided
@@ -289,6 +295,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     // No token means we've received invalid information from Bugzilla
     if(!$token) {
       $this->throwException(pht('No temporary token found for this transaction code (%s) or CSRF token (%s).', $provided_trans_code, $csrf));
+      MozLogger::log(pht('Temporary token not found during account setup (CSRF: )', $csrf), self::LOGGING_TYPE);
     }
 
     // Compare result token and client_api_login to original response
@@ -297,6 +304,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
       $this->throwException(
         pht('Token\'s API Login does not match Bugzilla API Login.')
       );
+      MozLogger::log('Token\'s API Login does not match Bugzilla API Login', self::LOGGING_TYPE);
     }
 
     // Call BMO Who Am I REST resource to validate API Key (X-Bugzilla-API-Key)
@@ -319,6 +327,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
       list($whoami_body) = $future->resolvex();
     } catch (HTTPFutureResponseStatus $ex) {
       $this->throwException(pht('Bugzilla WhoAmI request failed to resolve.'));
+      MozLogger::log('Bugzilla WhoAmI request failed to resolve', self::LOGGING_TYPE);
     }
 
     $user_json = array();
@@ -327,13 +336,15 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     }
     catch(Exception $e) {
       $this->throwException(
-        pht('JSON from Bugzilla WhoAmI could not be parsed: '.$whoami_body)
+        pht('JSON from Bugzilla WhoAmI could not be parsed.')
       );
+      MozLogger::log('JSON from Bugzilla WhoAmI could not be parsed: '.$whoami_body, self::LOGGING_TYPE);
     }
 
     // If there's no "id" key in the JSON, we know something is wrong
     if(!isset($user_json['id'])) {
       $this->throwException(pht('No user ID was provided by Bugzilla.'));
+      MozLogger::log('No user ID was provided by bugzilla', self::LOGGING_TYPE);
     }
 
     // Clean up! Delete temporary token used for this login
@@ -345,6 +356,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     $this->setAccountDetails($user_json);
 
     // Create or load the user account and refresh the page
+    MozLogger::log(pht('Loading or creating account id: %s', $user_json['id']), self::LOGGING_TYPE);
     $account = $this->loadOrCreateAccount($user_json['id']);
 
     return array($account, $response);
