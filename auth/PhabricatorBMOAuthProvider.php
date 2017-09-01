@@ -13,7 +13,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
   const CONFIG_KEY_TRANSACTION_CODE_LENGTH = 'transaction_code_length';
 
   // Logging error key type
-  const LOGGING_TYPE = 'BMOLogin';
+  const LOGGING_TYPE = 'BMOLoginEvent';
 
   // Need to add this to avoid error during auth addition activation
   protected $adapter;

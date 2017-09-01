@@ -19,6 +19,11 @@
     // When the user selects "request review"
     const REVISION_REVIEW_REQUEST = 'differential.revision.request';
 
+    // Logging error key type
+    const LOGGING_TYPE = 'DoorkeeperRevisionFeedWorkerEvent';
+
+    private $story_phid = '';
+
     public function isEnabled() {
       return true;
     }
@@ -38,33 +43,36 @@
         self::REVISION_REVIEW_REQUEST
       );
 
-      echo('------ DoorkeeperRevisionFeedWorker ------');
-
       $story = $this->getFeedStory(); // PhabricatorApplicationTransactionFeedStory
 
-      echo($story->renderText().'('.$story->getURI().')');
+      // Track the story throug multiple log calls using its PHID
+      $this->story_phid = $story->getPrimaryTransaction()->getPHID();
+
+      $this->mozlog(
+        pht('Story received: %s (%s)', $story->renderText(), $story->getURI())
+      );
 
       // We only care about differential transactions here,
       // so bail if something else makes it in
       $primary_transaction = $story->getPrimaryTransaction();
       $primary_transaction_class = get_class($primary_transaction);
       if($primary_transaction_class != 'DifferentialTransaction') {
-        echo(pht('Expected story type DifferentialTransaction, received %s', $primary_transaction_class));
+        $this->mozlog(
+          pht(
+            'Expected story type DifferentialTransaction, received %s',
+            $story->renderText(),
+            $story->getURI()
+          )
+        );
         return;
       }
 
       // ex: "differential.revision.accept"
       $transaction_type = $primary_transaction->getTransactionType();
 
-      echo(pht('Transaction type: %s', $transaction_type));
-      echo(pht('Old value: %s / New value: %s',
-        $primary_transaction->getOldValue(),
-        $primary_transaction->getNewValue()
-      ));
-
       // Bail if we don't care about this change
       if(!in_array($transaction_type, $handled_differential_transaction_types)) {
-        echo(pht('Undesired transaction type: %s', $transaction_type));
+        $this->mozlog(pht('Undesired transaction type: %s', $transaction_type));
         return;
       }
 
@@ -109,8 +117,6 @@
         default:
           break;
       }
-
-      echo('------ /DoorkeeperRevisionFeedWorker ------');
     }
 
     private function updateReviewStatuses($revision) {
@@ -166,20 +172,27 @@
       $future = $this->get_http_future($future_uri)
         ->setData($request_data);
 
-      echo(pht('Making a request to: %s', (string) $future_uri));
-      echo('Using data: '.json_encode($request_data));
+      $this->mozlog(
+        pht(
+          'Making request to %s with data: %s',
+          (string) $future_uri,
+          json_encode($request_data)
+        )
+      );
 
       try {
         list($status) = $future->resolve();
         $status_code = $status->getStatusCode();
         if($status_code != 200) {
-          echo(pht('obsoleteAttachment failure: BMO returned code %s', $status_code));
+          $this->mozlog(
+            pht('obsoleteAttachment failure: BMO returned code: %s', $status_code)
+          );
         }
       }
       catch(HTTPFutureResponseStatus $ex) {
         $status_code = $status->getStatusCode();
         $exception_message = pht('obsoleteAttachment exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code));
-        echo($exception_message);
+        $this->mozlog($exception_message);
 
         // Re-queue
         throw new Exception($exception_message);
@@ -199,24 +212,31 @@
       $future = $this->get_http_future($future_uri)
         ->setData($request_data);
 
-      echo(pht('Making a request to: %s', (string) $future_uri));
-      echo('Using data:'.json_encode($request_data, JSON_FORCE_OBJECT));
+      $this->mozlog(
+        pht(
+          'Making request to %s with data: %s',
+          (string) $future_uri,
+          json_encode($request_data)
+        )
+      );
 
-        try {
-          list($status) = $future->resolve();
-          $status_code = $status->getStatusCode();
-          if($status->getStatusCode() != 200) {
-            echo(pht('sendUpdateRequest failure: BMO returned code %s', $status_code));
-          }
+      try {
+        list($status) = $future->resolve();
+        $status_code = $status->getStatusCode();
+        if($status->getStatusCode() != 200) {
+          $this->mozlog(
+            pht('sendUpdateRequest failure: BMO returned code: %s', $status_code)
+          );
         }
-        catch(HTTPFutureResponseStatus $ex) {
-          $status_code = $status->getStatusCode();
-          $exception_message = pht('sendUpdateRequest exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code));
-          echo($exception_message);
+      }
+      catch(HTTPFutureResponseStatus $ex) {
+        $status_code = $status->getStatusCode();
+        $exception_message = pht('sendUpdateRequest exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code));
+        $this->mozlog($exception_message);
 
-          // Re-queue
-          throw new Exception($exception_message);
-        }
+        // Re-queue
+        throw new Exception($exception_message);
+      }
     }
 
     private function get_http_future($uri) {
@@ -242,5 +262,13 @@
       $bug_id = $field->getValueForStorage();
 
       return $bug_id;
+    }
+
+    private function mozlog($message) {
+      MozLogger::log(
+        $message,
+        self::LOGGING_TYPE,
+        array('Fields' => array('story' => $this->story_phid))
+      );
     }
   }

@@ -29,7 +29,7 @@ class MozLogger extends Phobject {
       'Hostname' => 'phabricator.services.mozilla.com',
       'EnvVersion' => '1.0',
       'Severity' => '3',
-      'Pid' => '0', // Not sure how to get this
+      'Pid' => '0',
       'Fields' => array(
         'agent' => '',
         'errno' => '0',
