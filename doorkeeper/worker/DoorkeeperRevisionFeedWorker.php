@@ -121,10 +121,12 @@
 
     private function updateReviewStatuses($revision) {
       $accepted_bmo_ids = array();
+      $denied_bmo_ids = array();
 
-      // Grab all reviewers with an "accepted" status
+      // Grab all reviewers with an "accepted" or "rejected" status
       $reviewers = $revision->getReviewers();
       $accepted_phids = array();
+      $denied_phids = array();
       foreach($reviewers as $reviewer) {
         // NOTE:  There's an "STATUS_ACCEPTED_OLDER"
         // This fires when a revision is R+d by the reviewer, then the
@@ -136,22 +138,28 @@
           $reviewer_status === DifferentialReviewerStatus::STATUS_ACCEPTED_OLDER
           ) {
             $accepted_phids[] = $reviewer->getReviewerPHID();
+        } elseif(
+          $reviewer_status === DifferentialReviewerStatus::STATUS_REJECTED
+          ) {
+            $denied_phids[] = $reviewer->getReviewerPHID();
         }
       }
 
       // Use the External User Query to get their BMO IDS
       if(count($accepted_phids)) {
-        $bmo_users = id(new PhabricatorExternalAccountQuery())
-          ->setViewer(PhabricatorUser::getOmnipotentUser())
-          ->withAccountTypes(array(PhabricatorBMOAuthProvider::ADAPTER_TYPE))
-          ->withUserPHIDs($accepted_phids)
-          ->execute();
+        $bmo_users = $this->get_bmo_ids($accepted_phids);
         foreach($bmo_users as $user) {
           $accepted_bmo_ids[] = $user->getAccountID();
         }
       }
+      if(count($denied_phids)) {
+        $bmo_users = $this->get_bmo_ids($denied_phids);
+        foreach($bmo_users as $user) {
+          $denied_bmo_ids[] = $user->getAccountID();
+        }
+      }
 
-      $this->sendUpdateRequest($revision, $accepted_bmo_ids);
+      $this->sendUpdateRequest($revision, $accepted_bmo_ids, $denied_bmo_ids);
     }
 
 
@@ -199,10 +207,11 @@
       }
     }
 
-    private function sendUpdateRequest($revision, $accepted_bmo_ids) {
+    private function sendUpdateRequest($revision, $accepted_bmo_ids, $denied_bmo_ids) {
       // Ship the array to BMO
       $request_data = array(
         'accepted_users' => implode(':', $accepted_bmo_ids),
+        'denied_users' => implode(':', $denied_bmo_ids),
         'revision_id' => $revision->getID(),
         'bug_id' => $this->get_bugzilla_bug_id($revision)
       );
@@ -262,6 +271,14 @@
       $bug_id = $field->getValueForStorage();
 
       return $bug_id;
+    }
+
+    private function get_bmo_ids($user_phids) {
+      return id(new PhabricatorExternalAccountQuery())
+          ->setViewer(PhabricatorUser::getOmnipotentUser())
+          ->withAccountTypes(array(PhabricatorBMOAuthProvider::ADAPTER_TYPE))
+          ->withUserPHIDs($user_phids)
+          ->execute();
     }
 
     private function mozlog($message) {
