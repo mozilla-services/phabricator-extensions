@@ -45,7 +45,7 @@
 
       $story = $this->getFeedStory(); // PhabricatorApplicationTransactionFeedStory
 
-      // Track the story throug multiple log calls using its PHID
+      // Track the story through multiple log calls using its PHID
       $this->story_phid = $story->getPrimaryTransaction()->getPHID();
 
       $this->mozlog(
