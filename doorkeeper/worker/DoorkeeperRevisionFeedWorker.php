@@ -23,6 +23,7 @@
     const LOGGING_TYPE = 'DoorkeeperRevisionFeedWorkerEvent';
 
     private $story_phid = '';
+    private $revision_id = '';
 
     public function isEnabled() {
       return true;
@@ -83,6 +84,14 @@
 
       // Get the DifferentialRevision object
       $revision = $this->getStoryObject();
+      $this->revision_id = $revision->getID();
+
+      // Abandon all syncing if the changed revision has no bug number
+      $bug_id = $this->get_bugzilla_bug_id($revision);
+      if(!$bug_id) {
+        $this->mozlog(pht('Revision has no associated bug ID so abandoning sync process'));
+        return;
+      }
 
       // What to do, what to do
       switch($transaction_type) {
@@ -285,7 +294,10 @@
       MozLogger::log(
         $message,
         self::LOGGING_TYPE,
-        array('Fields' => array('story' => $this->story_phid))
+        array('Fields' => array(
+          'story' => $this->story_phid,
+          'revision_id' => $this->revision_id
+        ))
       );
     }
   }

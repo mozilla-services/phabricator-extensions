@@ -41,6 +41,11 @@ final class PhabricatorBugzillaConfigOptions
         'int',
         15)
         ->setDescription(pht('Bugzilla timeout in seconds.')),
+      $this->newOption(
+        'bugzilla.require_bugs',
+        'bool',
+        false)
+        ->setDescription(pht('Require existing Bugzilla bug numbers for revisions.')),
     );
   }
 
