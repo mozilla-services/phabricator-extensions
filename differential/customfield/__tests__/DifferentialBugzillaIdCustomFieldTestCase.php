@@ -7,6 +7,9 @@ final class DifferentialBugzillaBugIDCustomFieldTestCase
   extends PhabricatorTestCase {
 
   public function testBugIdCommitMessageFieldBasicValidation() {
+    $env = PhabricatorEnv::beginScopedEnv();
+    $env->overrideEnvConfig('bugzilla.require_bugs', true);
+
     $invalids = array(null, '', ' ', '12.3', '1e3');
 
     $field = new DifferentialBugzillaBugIDCommitMessageField();
