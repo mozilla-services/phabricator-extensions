@@ -30,7 +30,7 @@
     private $revision_id = '';
 
     public function isEnabled() {
-      return true;
+      return PhabricatorEnv::getEnvConfig('bugzilla.automation_api_key');
     }
 
     // This will be the main worker that publishes information to BMO
@@ -227,7 +227,7 @@
 
 
     private function clearAllReviewStatuses($revision) {
-      $this->sendUpdateRequest($revision, array());
+      $this->sendUpdateRequest($revision, array(), array());
     }
 
     private function obsoleteAttachment($revision, $make_obsolete) {
