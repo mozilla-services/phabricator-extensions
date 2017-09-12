@@ -2,6 +2,10 @@
 
   class DoorkeeperRevisionFeedWorker extends DoorkeeperFeedWorker {
 
+    // When a user creates a new revision
+    const REVISION_CREATED = 'core:create'; // true|false
+    // When a custom field has changed such as the bug id
+    const CUSTOM_FIELD_CHANGED = 'core:customfield'; // true/false
     // When a reviewer rejects (r-) a revision
     const REVISION_REJECTED = 'differential.revision.reject'; // true|false
     // When a reviewer accepts (r+) a revision
@@ -31,9 +35,10 @@
 
     // This will be the main worker that publishes information to BMO
     public function publishFeedStory() {
-
       // These are the transaction types we care to handle
       $handled_differential_transaction_types = array(
+        self::REVISION_CREATED,
+        self::CUSTOM_FIELD_CHANGED,
         self::REVISION_REJECTED,
         self::REVISION_ACCEPTED,
         self::REVISION_REVIEWERS_CHANGED,
@@ -95,6 +100,19 @@
 
       // What to do, what to do
       switch($transaction_type) {
+        // User created a new revision
+        case self::REVISION_CREATED:
+          $this->updateRevisionSecurity($revision);
+          break;
+
+        case self::CUSTOM_FIELD_CHANGED: // differential:bugzilla-bug-id
+          if ($primary_transaction->getMetadataValue('customfield:key') == 'differential:bugzilla-bug-id'
+              && trim($primary_transaction->getNewValue()) != false)
+          {
+	          $this->updateRevisionSecurity($revision);
+          }
+	        break;
+
         // https://trello.com/c/2NXd7Caq/285-8-approving-a-revision-creates-an-r-flag-on-the-revision-attachment-in-the-associated-bug
         case self::REVISION_ACCEPTED:
         // https://trello.com/c/YDugKrFj/405-3-triggering-the-request-changes-or-resign-as-reviewer-actions-clears-that-users-r-flags-if-any-from-the-associated-bug-stub-att
@@ -125,6 +143,42 @@
 
         default:
           break;
+      }
+    }
+
+    private function updateRevisionSecurity($revision) {
+      if (!$this->get_bugzilla_bug_id($revision)) {
+        $this->mozlog(
+          pht('updateRevisionSecurity aborted: No Bugzilla ID attached.'));
+        return;
+      }
+
+      $future_uri = id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
+        ->setPath('/rest/phabbugz/revision/' . $revision->getID());
+
+      $future = $this->get_http_future($future_uri)
+        ->setMethod('POST');
+
+      $this->mozlog(
+        pht('Making request to %s', (string) $future_uri)
+      );
+
+      try {
+        list($status) = $future->resolve();
+        $status_code = $status->getStatusCode();
+        if($status_code != 200) {
+          $exception_message = pht('updateRevisionSecurity failure: BMO returned code: %s', $status_code);
+          $this->mozlog($exception_message);
+          throw new Exception($exception_message);
+        }
+      }
+      catch(HTTPFutureResponseStatus $ex) {
+        $status_code = $status->getStatusCode();
+        $exception_message = pht('updateRevisionSecurity exception: %s %s', $status_code, $ex->getErrorCodeDescription($status_code));
+        $this->mozlog($exception_message);
+
+        // Re-queue
+        throw new Exception($exception_message);
       }
     }
 
