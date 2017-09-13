@@ -28,6 +28,7 @@
 
     private $story_phid = '';
     private $revision_id = '';
+    private $transaction_id = '';
 
     public function isEnabled() {
       return PhabricatorEnv::getEnvConfig('bugzilla.automation_api_key');
@@ -81,6 +82,8 @@
         $this->mozlog(pht('Undesired transaction type: %s', $transaction_type));
         return;
       }
+
+      $this->transaction_id = $primary_transaction->getID();
 
       // TODO:
       // To save a few requests: if it's REJECTED and its previous state wasn't ACCEPTED,
@@ -234,7 +237,8 @@
       $request_data = array(
         'revision_id' => $revision->getID(),
         'bug_id' => $this->get_bugzilla_bug_id($revision),
-        'make_obsolete' => $make_obsolete
+        'make_obsolete' => $make_obsolete,
+        'transaction_id' => $this->transaction_id
       );
 
       $future_uri = id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
@@ -276,7 +280,8 @@
         'accepted_users' => implode(':', $accepted_bmo_ids),
         'denied_users' => implode(':', $denied_bmo_ids),
         'revision_id' => $revision->getID(),
-        'bug_id' => $this->get_bugzilla_bug_id($revision)
+        'bug_id' => $this->get_bugzilla_bug_id($revision),
+        'transaction_id' => $this->transaction_id
       );
       $future_uri = id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
         ->setPath('/rest/phabbugz/update_reviewer_statuses');
