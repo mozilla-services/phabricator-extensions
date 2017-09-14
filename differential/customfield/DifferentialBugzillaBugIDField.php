@@ -107,10 +107,16 @@ final class DifferentialBugzillaBugIDField
   }
 
   public function renderPropertyViewValue(array $handles) {
-    $bug_uri = (string) id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
-      ->setPath($this->getValue());
+    $bug_id = $this->getValue();
 
-    return phutil_tag('a', array('href' => $bug_uri), $this->getValue());
+    if($bug_id) {
+      $bug_uri = (string) id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
+        ->setPath($this->getValue());
+
+      return phutil_tag('a', array('href' => $bug_uri), $this->getValue());
+    }
+
+    return 'Not provided';
   }
 
 /* -(  List View  )---------------------------------------------------------- */
