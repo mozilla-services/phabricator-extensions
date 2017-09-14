@@ -1,0 +1,12 @@
+diff --git a/src/applications/differential/storage/DifferentialRevision.php b/src/applications/differential/storage/DifferentialRevision.php
+index 3615c6e78..d74138dd5 100644
+--- a/src/applications/differential/storage/DifferentialRevision.php
++++ b/src/applications/differential/storage/DifferentialRevision.php
+@@ -69,6 +69,7 @@ final class DifferentialRevision extends DifferentialDAO
+ 
+     return id(new DifferentialRevision())
+       ->setViewPolicy($view_policy)
++      ->setEditPolicy($view_policy)
+       ->setAuthorPHID($actor->getPHID())
+       ->attachRepository(null)
+       ->attachActiveDiff(null)
