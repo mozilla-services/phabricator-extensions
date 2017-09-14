@@ -359,4 +359,32 @@
         ))
       );
     }
+
+    // Per PhabricatorWorker source: "Return `null` to retry indefinitely."
+    public function getMaximumRetryCount() {
+      return null;
+    }
+
+    // Per PhabricatorWorker source: "Return `null` to retry every 60 seconds."
+    public function getWaitBeforeRetry(PhabricatorWorkerTask $task) {
+      $count = $task->getFailureCount();
+      return min(pow(2, $count), 5 * 60); // Maximum 5 minutes
+    }
+
+    // Text output which will be shown in the /daemon/ task screen
+    public function renderForDisplay(PhabricatorUser $viewer) {
+      // We'll build up a message based on all information we currently have:
+      $text = '';
+
+      try {
+        $story = $this->getFeedStory();
+        return phutil_tag(
+          'a',
+          array('target' => '_blank', 'href' => $story->getURI()),
+          $story->renderText()
+        );
+      } catch (Exception $ex) {
+        return phutil_tag('span', array(), 'Error calculating story information');
+      }
+    }
   }
