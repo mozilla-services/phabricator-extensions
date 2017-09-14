@@ -26,8 +26,12 @@
     // Logging error key type
     const LOGGING_TYPE = 'DoorkeeperRevisionFeedWorkerEvent';
 
+    // Used for logging
     private $story_phid = '';
     private $revision_id = '';
+    private $author_phid = '';
+
+    // Used for linking back from BMO
     private $transaction_id = '';
 
     public function isEnabled() {
@@ -53,7 +57,10 @@
       $story = $this->getFeedStory(); // PhabricatorApplicationTransactionFeedStory
 
       // Track the story through multiple log calls using its PHID
-      $this->story_phid = $story->getPrimaryTransaction()->getPHID();
+      $primary_transaction = $story->getPrimaryTransaction();
+      $this->story_phid = $primary_transaction->getPHID();
+      $this->transaction_id = $primary_transaction->getID();
+      $this->author_phid = $primary_transaction->getAuthorPHID();
 
       $this->mozlog(
         pht('Story received: %s (%s)', $story->renderText(), $story->getURI())
@@ -61,14 +68,13 @@
 
       // We only care about differential transactions here,
       // so bail if something else makes it in
-      $primary_transaction = $story->getPrimaryTransaction();
       $primary_transaction_class = get_class($primary_transaction);
       if($primary_transaction_class != 'DifferentialTransaction') {
         $this->mozlog(
           pht(
-            'Expected story type DifferentialTransaction, received %s',
-            $story->renderText(),
-            $story->getURI()
+            'Expected story type DifferentialTransaction, received %s.'.
+            'Taking no sync action.',
+            $story->renderText()
           )
         );
         return;
@@ -79,11 +85,11 @@
 
       // Bail if we don't care about this change
       if(!in_array($transaction_type, $handled_differential_transaction_types)) {
-        $this->mozlog(pht('Undesired transaction type: %s', $transaction_type));
+        $this->mozlog(
+          pht('Undesired transaction type: %s. Taking no sync action.', $transaction_type)
+        );
         return;
       }
-
-      $this->transaction_id = $primary_transaction->getID();
 
       // TODO:
       // To save a few requests: if it's REJECTED and its previous state wasn't ACCEPTED,
@@ -95,9 +101,9 @@
       $this->revision_id = $revision->getID();
 
       // Abandon all syncing if the changed revision has no bug number
-      $bug_id = $this->get_bugzilla_bug_id($revision);
+      $bug_id = $this->getBugzillaBugID($revision);
       if(!$bug_id) {
-        $this->mozlog(pht('Revision has no associated bug ID so abandoning sync process'));
+        $this->mozlog(pht('Revision has no associated bug ID. Taking no sync action.'));
         return;
       }
 
@@ -150,20 +156,19 @@
     }
 
     private function updateRevisionSecurity($revision) {
-      if (!$this->get_bugzilla_bug_id($revision)) {
-        $this->mozlog(
-          pht('updateRevisionSecurity aborted: No Bugzilla ID attached.'));
+      if (!$this->getBugzillaBugID($revision)) {
+        $this->mozlog(pht('updateRevisionSecurity aborted: No Bugzilla ID attached.'));
         return;
       }
 
       $future_uri = id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
         ->setPath('/rest/phabbugz/revision/' . $revision->getID());
 
-      $future = $this->get_http_future($future_uri)
+      $future = $this->getHTTPSFuture($future_uri)
         ->setMethod('POST');
 
       $this->mozlog(
-        pht('Making request to %s', (string) $future_uri)
+        pht('updateRevisionSecurity: Making request to %s', (string) $future_uri)
       );
 
       try {
@@ -186,9 +191,6 @@
     }
 
     private function updateReviewStatuses($revision) {
-      $accepted_bmo_ids = array();
-      $denied_bmo_ids = array();
-
       // Grab all reviewers with an "accepted" or "rejected" status
       $reviewers = $revision->getReviewers();
       $accepted_phids = array();
@@ -196,7 +198,7 @@
       foreach($reviewers as $reviewer) {
         // NOTE:  There's an "STATUS_ACCEPTED_OLDER"
         // This fires when a revision is R+d by the reviewer, then the
-        // revision author updates their patch
+        // revision author "plans changes" but hasn't yet updated the patch
         // https://github.com/phacility/phabricator/blob/48a74de0b64901538feb878e2f12e18e605ca76a/src/applications/differential/editor/DifferentialTransactionEditor.php#L215
         $reviewer_status = $reviewer->getReviewerStatus();
         if(
@@ -212,17 +214,13 @@
       }
 
       // Use the External User Query to get their BMO IDS
+      $accepted_bmo_ids = array();
+      $denied_bmo_ids = array();
       if(count($accepted_phids)) {
-        $bmo_users = $this->get_bmo_ids($accepted_phids);
-        foreach($bmo_users as $user) {
-          $accepted_bmo_ids[] = $user->getAccountID();
-        }
+        $accepted_bmo_ids = $this->getBMOIDsByPHID($accepted_phids);
       }
       if(count($denied_phids)) {
-        $bmo_users = $this->get_bmo_ids($denied_phids);
-        foreach($bmo_users as $user) {
-          $denied_bmo_ids[] = $user->getAccountID();
-        }
+        $denied_bmo_ids = $this->getBMOIDsByPHID($denied_phids);
       }
 
       $this->sendUpdateRequest($revision, $accepted_bmo_ids, $denied_bmo_ids);
@@ -230,13 +228,13 @@
 
 
     private function clearAllReviewStatuses($revision) {
-      $this->sendUpdateRequest($revision, array(), array());
+      $this->sendUpdateRequest($revision);
     }
 
     private function obsoleteAttachment($revision, $make_obsolete) {
       $request_data = array(
         'revision_id' => $revision->getID(),
-        'bug_id' => $this->get_bugzilla_bug_id($revision),
+        'bug_id' => $this->getBugzillaBugID($revision),
         'make_obsolete' => $make_obsolete,
         'transaction_id' => $this->transaction_id
       );
@@ -244,12 +242,12 @@
       $future_uri = id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
         ->setPath('/rest/phabbugz/obsolete');
 
-      $future = $this->get_http_future($future_uri)
+      $future = $this->getHTTPSFuture($future_uri)
         ->setData($request_data);
 
       $this->mozlog(
         pht(
-          'Making request to %s with data: %s',
+          'obsoleteAttachment: Making request to %s with data: %s',
           (string) $future_uri,
           json_encode($request_data)
         )
@@ -259,9 +257,11 @@
         list($status) = $future->resolve();
         $status_code = $status->getStatusCode();
         if($status_code != 200) {
-          $this->mozlog(
-            pht('obsoleteAttachment failure: BMO returned code: %s', $status_code)
-          );
+          $exception_message = pht('obsoleteAttachment failure: BMO returned code: %s', $status_code);
+          $this->mozlog($exception_message);
+
+          // Re-queue
+          throw new Exception($exception_message);
         }
       }
       catch(HTTPFutureResponseStatus $ex) {
@@ -274,19 +274,19 @@
       }
     }
 
-    private function sendUpdateRequest($revision, $accepted_bmo_ids, $denied_bmo_ids) {
+    private function sendUpdateRequest($revision, $accepted_bmo_ids = array(), $denied_bmo_ids = array()) {
       // Ship the array to BMO
       $request_data = array(
         'accepted_users' => implode(':', $accepted_bmo_ids),
         'denied_users' => implode(':', $denied_bmo_ids),
         'revision_id' => $revision->getID(),
-        'bug_id' => $this->get_bugzilla_bug_id($revision),
+        'bug_id' => $this->getBugzillaBugID($revision),
         'transaction_id' => $this->transaction_id
       );
       $future_uri = id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
         ->setPath('/rest/phabbugz/update_reviewer_statuses');
 
-      $future = $this->get_http_future($future_uri)
+      $future = $this->getHTTPSFuture($future_uri)
         ->setData($request_data);
 
       $this->mozlog(
@@ -301,9 +301,11 @@
         list($status) = $future->resolve();
         $status_code = $status->getStatusCode();
         if($status->getStatusCode() != 200) {
-          $this->mozlog(
-            pht('sendUpdateRequest failure: BMO returned code: %s', $status_code)
-          );
+          $exception_message = pht('sendUpdateRequest failure: BMO returned code: %s', $status_code);
+          $this->mozlog($exception_message);
+
+          // Re-queue
+          throw new Exception($exception_message);
         }
       }
       catch(HTTPFutureResponseStatus $ex) {
@@ -316,7 +318,7 @@
       }
     }
 
-    private function get_http_future($uri) {
+    private function getHTTPSFuture($uri) {
       return id(new HTTPSFuture((string) $uri))
         ->addHeader('X-Bugzilla-API-Key', PhabricatorEnv::getEnvConfig('bugzilla.automation_api_key'))
         ->setMethod('PUT')
@@ -325,7 +327,7 @@
         ->setTimeout(PhabricatorEnv::getEnvConfig('bugzilla.timeout'));
     }
 
-    private function get_bugzilla_bug_id($revision) {
+    private function getBugzillaBugID($revision) {
       $field = PhabricatorCustomField::getObjectField(
         $revision,
         PhabricatorCustomField::ROLE_DEFAULT,
@@ -341,12 +343,19 @@
       return $bug_id;
     }
 
-    private function get_bmo_ids($user_phids) {
-      return id(new PhabricatorExternalAccountQuery())
+    private function getBMOIDsByPHID($user_phids) {
+      $users = id(new PhabricatorExternalAccountQuery())
           ->setViewer(PhabricatorUser::getOmnipotentUser())
           ->withAccountTypes(array(PhabricatorBMOAuthProvider::ADAPTER_TYPE))
           ->withUserPHIDs($user_phids)
           ->execute();
+
+      $bmo_ids = array();
+      foreach($users as $user) {
+        $bmo_ids[] = $user->getAccountID();
+      }
+
+      return $bmo_ids;
     }
 
     private function mozlog($message) {
@@ -355,7 +364,8 @@
         self::LOGGING_TYPE,
         array('Fields' => array(
           'story' => $this->story_phid,
-          'revision_id' => $this->revision_id
+          'revision_id' => $this->revision_id,
+          'author_phid' => $this->author_phid
         ))
       );
     }

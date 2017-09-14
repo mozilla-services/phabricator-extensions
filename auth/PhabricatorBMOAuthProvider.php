@@ -230,8 +230,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     // Throw exception if either key is not provided by Bugzilla
     if(!isset($post_info['client_api_key']) || !isset($post_info['client_api_login'])) {
       $this->throwException(
-        pht('Phabricator BMO Authentication failed due to '.
-            'incomplete JSON from Bugzilla.')
+        'Phabricator BMO Authentication failed due to incomplete JSON from Bugzilla.'
       );
       MozLogger::log('No client_api_key or client_api_login provided by Bugzilla', self::LOGGING_TYPE);
     }
@@ -241,10 +240,9 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     $trans_code = $this->generateAuthToken();
     $csrf = $request->getStr('secret');
     if(!strlen($csrf)) {
-      $this->throwException(
-        pht('No CSRF was provided by Bugzilla in the URL.')
-      );
-      MozLogger::log('Bugzilla did not provide a CSRF token in the URL', self::LOGGING_TYPE);
+      $exception_message = 'No CSRF was provided by Bugzilla in the URL.';
+      $this->throwException($exception_message);
+      MozLogger::log($exception_message, self::LOGGING_TYPE);
     }
 
     // Create a temporary auth token to save the user info JSON provided
@@ -294,8 +292,11 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
 
     // No token means we've received invalid information from Bugzilla
     if(!$token) {
-      $this->throwException(pht('No temporary token found for this transaction code (%s) or CSRF token (%s).', $provided_trans_code, $csrf));
-      MozLogger::log(pht('Temporary token not found during account setup (CSRF: )', $csrf), self::LOGGING_TYPE);
+      $this->throwException(pht('No temporary token found for this transaction code.', $provided_trans_code, $csrf));
+      MozLogger::log(
+        pht('Temporary token not found during account setup (CSRF: %s)', $csrf),
+        self::LOGGING_TYPE
+      );
     }
 
     // Compare result token and client_api_login to original response
@@ -326,8 +327,9 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     try {
       list($whoami_body) = $future->resolvex();
     } catch (HTTPFutureResponseStatus $ex) {
-      $this->throwException(pht('Bugzilla WhoAmI request failed to resolve.'));
-      MozLogger::log('Bugzilla WhoAmI request failed to resolve', self::LOGGING_TYPE);
+      $exception_message = 'Bugzilla WhoAmI request failed to resolve.';
+      $this->throwException($exception_message);
+      MozLogger::log($exception_message, self::LOGGING_TYPE);
     }
 
     $user_json = array();
@@ -335,16 +337,18 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
       $user_json = phutil_json_decode($whoami_body);
     }
     catch(Exception $e) {
-      $this->throwException(
-        pht('JSON from Bugzilla WhoAmI could not be parsed.')
+      $this->throwException('JSON from Bugzilla WhoAmI could not be parsed.');
+      MozLogger::log(
+        'JSON from Bugzilla WhoAmI could not be parsed: '.$whoami_body,
+        self::LOGGING_TYPE
       );
-      MozLogger::log('JSON from Bugzilla WhoAmI could not be parsed: '.$whoami_body, self::LOGGING_TYPE);
     }
 
     // If there's no "id" key in the JSON, we know something is wrong
     if(!isset($user_json['id'])) {
-      $this->throwException(pht('No user ID was provided by Bugzilla.'));
-      MozLogger::log('No user ID was provided by bugzilla', self::LOGGING_TYPE);
+      $user_id_exception = 'No user ID was provided by Bugzilla.';
+      $this->throwException($user_id_exception);
+      MozLogger::log($user_id_exception, self::LOGGING_TYPE);
     }
 
     // Clean up! Delete temporary token used for this login
@@ -356,7 +360,10 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     $this->setAccountDetails($user_json);
 
     // Create or load the user account and refresh the page
-    MozLogger::log(pht('Loading or creating account id: %s', $user_json['id']), self::LOGGING_TYPE);
+    MozLogger::log(
+      pht('Loading or creating account for BMO id: %s', $user_json['id']),
+      self::LOGGING_TYPE
+    );
     $account = $this->loadOrCreateAccount($user_json['id']);
 
     return array($account, $response);
