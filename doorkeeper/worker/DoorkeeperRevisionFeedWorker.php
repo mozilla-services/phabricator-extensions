@@ -100,25 +100,54 @@
       $revision = $this->getStoryObject();
       $this->revision_id = $revision->getID();
 
-      // Abandon all syncing if the changed revision has no bug number
+      // Abandon all syncing if the changed revision has no bug number and
+      // this story did not change the bug number
       $bug_id = $this->getBugzillaBugID($revision);
-      if(!$bug_id) {
+      if(
+        !$bug_id &&
+        !$this->isBugNumberChange($primary_transaction, $transaction_type) &&
+        $transaction_type !== self::REVISION_CREATED
+      ) {
         $this->mozlog(pht('Revision has no associated bug ID. Taking no sync action.'));
         return;
       }
+
+      // Keep track of values changed
+      $old_value = $primary_transaction->getOldValue();
+      $new_value = $primary_transaction->getNewValue();
 
       // What to do, what to do
       switch($transaction_type) {
         // User created a new revision
         case self::REVISION_CREATED:
-          $this->updateRevisionSecurity($revision);
+          if($bug_id) {
+            $this->updateRevisionSecurity($revision);
+          }
+          else {
+            $this->mozlog('Public revision created with no bug number; making revision public.');
+            $this->makeRevisionPublic($revision);
+          }
           break;
 
-        case self::CUSTOM_FIELD_CHANGED: // differential:bugzilla-bug-id
-          if ($primary_transaction->getMetadataValue('customfield:key') == 'differential:bugzilla-bug-id'
-              && trim($primary_transaction->getNewValue()) != false)
-          {
-	          $this->updateRevisionSecurity($revision);
+        case self::CUSTOM_FIELD_CHANGED:
+          if($this->isBugNumberChange($primary_transaction, $transaction_type)) {
+            // Bug number has been removed
+            if($old_value != null && $new_value == null) {
+              $this->mozlog(
+                pht(
+                  'Bug number changed from %s to %s.  '.
+                  'Making revision public and obsoleting BMO attachment.',
+                  $old_value,
+                  $new_value
+                )
+              );
+              $this->makeRevisionPublic($revision);
+              $this->obsoleteAttachment($revision, true, $old_value);
+            }
+            // A bug number has been added
+            else if($new_value) {
+              $this->updateRevisionSecurity($revision);
+            }
           }
 	        break;
 
@@ -231,10 +260,14 @@
       $this->sendUpdateRequest($revision);
     }
 
-    private function obsoleteAttachment($revision, $make_obsolete) {
+    private function obsoleteAttachment($revision, $make_obsolete, $bug_id=0) {
+      if(!$bug_id) {
+        $bug_id = $this->getBugzillaBugID($revision);
+      }
+
       $request_data = array(
         'revision_id' => $revision->getID(),
-        'bug_id' => $this->getBugzillaBugID($revision),
+        'bug_id' => $bug_id,
         'make_obsolete' => $make_obsolete,
         'transaction_id' => $this->transaction_id
       );
@@ -368,6 +401,28 @@
           'author_phid' => $this->author_phid
         ))
       );
+    }
+
+    // Sets a revision to public in Phabricator then
+    // obsoletes any existing attachment on BMO
+    private function makeRevisionPublic($revision) {
+      $changed = false;
+      if($revision->getViewPolicy() != 'public') {
+        $changed = true;
+        $revision->setViewPolicy('public');
+      }
+      if($revision->getEditPolicy() != 'public') {
+        $changed = true;
+        $revision->setEditPolicy('public');
+      }
+      if($changed) {
+        $revision->save();
+      }
+    }
+
+    private function isBugNumberChange($transaction, $type) {
+      return $type === self::CUSTOM_FIELD_CHANGED &&
+             $transaction->getMetadataValue('customfield:key') === 'differential:bugzilla-bug-id';
     }
 
     // Per PhabricatorWorker source: "Return `null` to retry indefinitely."
