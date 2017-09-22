@@ -17,11 +17,8 @@ class DifferentialBugzillaBugIDValidator extends Phobject {
     if(!strlen($bug_id)) {
       if(PhabricatorEnv::getEnvConfig('bugzilla.require_bugs') === true) {
         $errors[] = pht('Bugzilla Bug ID is required');
-        return $errors;
       }
-      else {
-        return $errors;
-      }
+      return $errors;
     }
 
     // Isn't a number we can work with
