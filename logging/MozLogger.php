@@ -22,11 +22,16 @@ class MozLogger extends Phobject {
   }
 
   public static function merge_arrays($detailArray, $messageArray) {
+    $host = str_replace(
+      array('http:', 'https:', '/'),
+      '',
+      PhabricatorEnv::getEnvConfig('phabricator.base-uri')
+    );
     $defaults = array(
       'Timestamp' => time(),
       'Type' => '',
       'Logger' => 'MozPhab',
-      'Hostname' => 'phabricator.services.mozilla.com',
+      'Hostname' => $host,
       'EnvVersion' => '1.0',
       'Severity' => '3',
       'Pid' => '0',
