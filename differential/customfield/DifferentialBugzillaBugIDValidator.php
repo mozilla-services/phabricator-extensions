@@ -22,8 +22,8 @@ class DifferentialBugzillaBugIDValidator extends Phobject {
     }
 
     // Isn't a number we can work with
-    if (!ctype_digit($bug_id)) {
-      $errors[] = pht('Bugzilla Bug ID must be a number');
+    if (!ctype_digit($bug_id) || $bug_id === "0") {
+      $errors[] = pht('Bugzilla Bug ID must be a valid bug number');
       return $errors;
     }
 
