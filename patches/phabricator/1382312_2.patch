@@ -4,10 +4,10 @@ index 8976fdd..4667e34 100644
 +++ b/src/applications/differential/storage/DifferentialDiff.php
 @@ -142,7 +142,7 @@ final class DifferentialDiff
        DifferentialDefaultViewCapability::CAPABILITY);
- 
+
      $diff = id(new DifferentialDiff())
 -      ->setViewPolicy($view_policy);
-+      ->setViewPolicy($actor->getPHID());
- 
++      ->setViewPolicy($actor->getPHID() ?: $view_policy);
+
      return $diff;
    }
