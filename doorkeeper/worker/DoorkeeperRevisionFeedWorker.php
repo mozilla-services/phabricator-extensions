@@ -201,10 +201,11 @@
       );
 
       try {
-        list($status) = $future->resolve();
+        list($status, $body) = $future->resolve();
         $status_code = $status->getStatusCode();
         if($status_code != 200) {
-          $exception_message = pht('updateRevisionSecurity failure: BMO returned code: %s', $status_code);
+          $exception_message = pht('updateRevisionSecurity failure: BMO returned code: %s | message: %s',
+                                   $status_code, $this->getBMOErrorMessage($body));
           $this->mozlog($exception_message);
           throw new Exception($exception_message);
         }
@@ -287,10 +288,11 @@
       );
 
       try {
-        list($status) = $future->resolve();
+        list($status, $body) = $future->resolve();
         $status_code = $status->getStatusCode();
         if($status_code != 200) {
-          $exception_message = pht('obsoleteAttachment failure: BMO returned code: %s', $status_code);
+          $exception_message = pht('obsoleteAttachment failure: BMO returned code: %s | message: %s',
+                                   $status_code, $this->getBMOErrorMessage($body));
           $this->mozlog($exception_message);
 
           // Re-queue
@@ -331,10 +333,11 @@
       );
 
       try {
-        list($status) = $future->resolve();
+        list($status, $body) = $future->resolve();
         $status_code = $status->getStatusCode();
         if($status->getStatusCode() != 200) {
-          $exception_message = pht('sendUpdateRequest failure: BMO returned code: %s', $status_code);
+          $exception_message = pht('sendUpdateRequest failure: BMO returned code: %s | message: %s',
+                                   $status_code, $this->getBMOErrorMessage($body));
           $this->mozlog($exception_message);
 
           // Re-queue
@@ -450,6 +453,16 @@
         );
       } catch (Exception $ex) {
         return phutil_tag('span', array(), 'Error calculating story information');
+      }
+    }
+
+    protected function getBMOErrorMessage($text = '{}') {
+      try {
+        $json = phutil_json_decode($text);
+        return ($json !== null && isset($json['message'])) ? $json['message'] : 'None';
+      }
+      catch(Exception $e) {
+        return pht('Caught exception: ' . $e->getMessage());
       }
     }
   }
