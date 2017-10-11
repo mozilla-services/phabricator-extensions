@@ -414,9 +414,9 @@
         $changed = true;
         $revision->setViewPolicy('public');
       }
-      if($revision->getEditPolicy() != 'public') {
+      if($revision->getEditPolicy() != 'users') {
         $changed = true;
-        $revision->setEditPolicy('public');
+        $revision->setEditPolicy('users');
       }
       if($changed) {
         $revision->save();
