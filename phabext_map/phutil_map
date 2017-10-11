@@ -4715,7 +4715,6 @@ phutil_register_library_map(array(
     'PhrictionTransactionEditor' => 'applications/phriction/editor/PhrictionTransactionEditor.php',
     'PhrictionTransactionQuery' => 'applications/phriction/query/PhrictionTransactionQuery.php',
     'PolicyLockOptionType' => 'applications/policy/config/PolicyLockOptionType.php',
-    'PolicyQueryConduitAPIMethod' => 'extensions/conduit/PolicyQueryConduitAPIMethod.php',
     'PonderAddAnswerView' => 'applications/ponder/view/PonderAddAnswerView.php',
     'PonderAnswer' => 'applications/ponder/storage/PonderAnswer.php',
     'PonderAnswerCommentController' => 'applications/ponder/controller/PonderAnswerCommentController.php',
@@ -10428,7 +10427,6 @@ phutil_register_library_map(array(
     'PhrictionTransactionEditor' => 'PhabricatorApplicationTransactionEditor',
     'PhrictionTransactionQuery' => 'PhabricatorApplicationTransactionQuery',
     'PolicyLockOptionType' => 'PhabricatorConfigJSONOptionType',
-    'PolicyQueryConduitAPIMethod' => 'ConduitAPIMethod',
     'PonderAddAnswerView' => 'AphrontView',
     'PonderAnswer' => array(
       'PonderDAO',
