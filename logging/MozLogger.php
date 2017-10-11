@@ -22,7 +22,7 @@ class MozLogger extends Phobject {
   }
 
   public static function merge_arrays($detailArray, $messageArray) {
-    $host = str_replace(
+    $server = str_replace(
       array('http:', 'https:', '/'),
       '',
       PhabricatorEnv::getEnvConfig('phabricator.base-uri')
@@ -31,7 +31,8 @@ class MozLogger extends Phobject {
       'Timestamp' => time(),
       'Type' => '',
       'Logger' => 'MozPhab',
-      'Hostname' => $host,
+      'Server' => $server,
+      'Hostname' => gethostname(),
       'EnvVersion' => '1.0',
       'Severity' => '3',
       'Pid' => '0',
