@@ -77,9 +77,10 @@ final class DifferentialBugzillaBugIDField
 
     $errors = parent::validateApplicationTransactions($editor, $type, $xactions);
 
-    foreach ($xactions as $xaction) {
+    foreach($xactions as $xaction) {
       // Get the transactor's ExternalAccount->accountID using the author's phid
       $xaction_author_phid = $xaction->getAuthorPHID();
+
       // Validate that the user may see the bug they've submitted a revision for
       $bug_id = DifferentialBugzillaBugIDValidator::formatBugID(
         $xaction->getNewValue()
@@ -109,7 +110,7 @@ final class DifferentialBugzillaBugIDField
   }
 
   public function renderPropertyViewValue(array $handles) {
-    $bug_id = $this->getValue();
+    $bug_id = (int) $this->getValue();
 
     if($bug_id) {
       return $this->renderFieldLink($bug_id);

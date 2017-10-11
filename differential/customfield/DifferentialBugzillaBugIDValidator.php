@@ -2,6 +2,9 @@
 
 class DifferentialBugzillaBugIDValidator extends Phobject {
 
+  // Logging error key type
+  const LOGGING_TYPE = 'mozphab.bugfield.validator';
+
   public static function formatBugID($id) {
     return trim(str_replace('#', '', $id));
   }
@@ -22,7 +25,7 @@ class DifferentialBugzillaBugIDValidator extends Phobject {
     }
 
     // Isn't a number we can work with
-    if (!ctype_digit($bug_id) || $bug_id === "0") {
+    if(!ctype_digit($bug_id) || $bug_id === '0') {
       $errors[] = pht('Bugzilla Bug ID must be a valid bug number');
       return $errors;
     }
@@ -31,6 +34,8 @@ class DifferentialBugzillaBugIDValidator extends Phobject {
 
     // Check to see if the user is an admin; if so, don't validate bug existence
     // because the admin account may not have a BMO account ID associated with it
+    // and we don't want to block admins from making revisions private
+    // if BMO is down
     $users = id(new PhabricatorPeopleQuery())
       ->setViewer(PhabricatorUser::getOmnipotentUser())
       ->withPHIDs(array($account_phid))
@@ -59,17 +64,10 @@ class DifferentialBugzillaBugIDValidator extends Phobject {
     $future_uri = id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
       ->setPath('/rest/phabbugz/check_bug/'.$bug_id.'/'.$user_bmo_id);
 
-    // http://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#get-bug
-    // 100 (Invalid Bug Alias) If you specified an alias and there is no bug with that alias.
-    // 101 (Invalid Bug ID) The bug_id you specified doesn't exist in the database.
-    // 102 (Access Denied) You do not have access to the bug_id you specified.
-    $accepted_status_codes = array(100, 101, 102, 200, 404, 500);
-
     $future = id(new HTTPSFuture((string) $future_uri))
       ->setMethod('GET')
       ->addHeader('X-Bugzilla-API-Key', PhabricatorEnv::getEnvConfig('bugzilla.automation_api_key'))
       ->addHeader('Accept', 'application/json')
-      ->setExpectStatus($accepted_status_codes)
       ->setTimeout(PhabricatorEnv::getEnvConfig('bugzilla.timeout'));
 
     // Resolve the async HTTPSFuture request and extract JSON body
@@ -77,33 +75,61 @@ class DifferentialBugzillaBugIDValidator extends Phobject {
       list($status, $body) = $future->resolve();
       $status_code = (int) $status->getStatusCode();
 
-      if(in_array($status_code, array(100, 101, 404))) {
-        $errors[] = pht('Bugzilla Bug ID: %s does not exist (BMO %s)', $bug_id, $status_code);
-      }
-      else if($status_code === 102) {
-        $errors[] = pht('Bugzilla Bug ID: You do not have permission for this bug.');
-      }
-      else if($status_code === 500) {
-        $errors[] = pht('Bugzilla Bug ID: Bugzilla responded with a 500 error.');
-      }
-      else if(!in_array($status_code, $accepted_status_codes)) {
-        $errors[] = pht('Bugzilla Bug ID:  Bugzilla did not provide an expected response (BMO %s).', $status_code);
-      }
-      else {
+      // (Successful Request)
+      if($status_code === 200) {
         $json = phutil_json_decode($body);
-
+        // A "result" of "1" means the bug exists and the user can see it
+        // Any other result is invalid and should raise an error
         if($json['result'] != '1') {
           $errors[] = pht('Bugzilla Bug ID:  You do not have permission to view this bug or the bug does not exist.');
         }
 
-        // At this point we should be good!  Valid response code and result: 1
+        // Everything is good!  Return empty error array
+        return $errors;
+      }
+      // 100 (Invalid Bug Alias) If you specified an alias and there is no bug with that alias.
+      // 101 (Invalid Bug ID) The bug_id you specified doesn't exist in the database.
+      // 404 (URL Not Found)
+      else if(in_array($status_code, array(100, 101, 404))) {
+        $errors[] = pht('Bugzilla Bug ID: %s does not exist (%s).', $bug_id, $status_code);
+      }
+      // (Access Denied) You do not have access to the bug_id you specified.
+      else if($status_code === 102) {
+        $errors[] = pht('Bugzilla Bug ID: You do not have permission to view this bug.');
+      }
+      // (BMO is down or API is having a problem)
+      else if($status_code === 500) {
+        $errors[] = pht('Bugzilla Bug ID: Bugzilla responded with a 500 error.');
+      }
+      // Anything other than standard response codes
+      else {
+        $unkown_bmo_status_error = pht('Bugzilla Bug ID: Bugzilla did not provide an expected response (%s).', $status_code);
+
+        $errors[] = $unkown_bmo_status_error;
+        MozLogger::log(
+          $unkown_bmo_status_error,
+          self::LOGGING_TYPE,
+          array('Fields' => array(
+            'status_code' => $status_code,
+            'bug_id' => $bug_id,
+            'account_phid' => $account_phid
+          ))
+        );
       }
     } catch (HTTPFutureResponseStatus $ex) {
-      $errors[] = pht(
-        'Bugzilla returned an unexpected status code or response body:'.
-        'Status code: %s / '.
-        'Body: %s',
-        $status_code, $body);
+      // This case could be interruption in connection to BMO
+      $future_error = pht('Bugzilla Bug ID: Bugzilla did not provide an expected response (%s).', $ex->getStatusCode());
+
+      $errors[] = $future_error;
+      MozLogger::log(
+        $future_error,
+        self::LOGGING_TYPE,
+        array('Fields' => array(
+          'status_code' => $ex->getStatusCode(),
+          'bug_id' => $bug_id,
+          'account_phid' => $account_phid
+        ))
+      );
     }
 
     return $errors;

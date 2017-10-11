@@ -47,7 +47,7 @@ final class DifferentialBugzillaBugIDCommitMessageField
 
   public function validateFieldValue($bug_id) {
 
-    // Get the transactor's ExternalAccount->accountID using the author's phid
+    // Get the transactor's phid
     $author_phid = $this->getViewer()->getPHID();
 
     $bug_id = DifferentialBugzillaBugIDValidator::formatBugID($bug_id);
