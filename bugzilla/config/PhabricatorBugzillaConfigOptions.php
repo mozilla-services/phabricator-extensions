@@ -24,7 +24,7 @@ final class PhabricatorBugzillaConfigOptions
       $this->newOption(
         'bugzilla.url',
         'string',
-        'https://bugzilla.mozilla.org')
+        'https://bugzilla.allizom.org')
         ->setDescription(pht('Full URL for the Bugzilla server.')),
       $this->newOption(
         'bugzilla.automation_user',
@@ -48,5 +48,4 @@ final class PhabricatorBugzillaConfigOptions
         ->setDescription(pht('Require existing Bugzilla bug numbers for revisions.')),
     );
   }
-
 }
