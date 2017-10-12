@@ -7,7 +7,6 @@ final class PhabricatorBMOAuthAdapter extends PhutilAuthAdapter {
   private $account_name;
   private $account_real_name;
   private $auth_uri;
-
   private $type;
   private $domain;
 
@@ -69,8 +68,9 @@ final class PhabricatorBMOAuthAdapter extends PhutilAuthAdapter {
 
   public function parseBugzillaNick($name) {
     // If possible, use the Bugzilla user name (ex: "First Last :firstlast")
-    // Same regex used by version-control-tools
-    preg_match('/:([a-zA-Z0-9\-\_]+)/', $name, $matches);
+    // Same regex used by BMO
+    // https://github.com/mozilla-bteam/bmo/blob/3465c3905f542d576a61f372a5cb2da3f823d508/extensions/BugModal/lib/MonkeyPatches.pm
+    preg_match('/:?:(\S+?)\b/', $name, $matches);
     return isset($matches[1]) ? $matches[1] : null;
   }
 
