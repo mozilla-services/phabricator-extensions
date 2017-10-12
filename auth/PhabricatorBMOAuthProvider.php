@@ -7,13 +7,14 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
   const TOKEN_TYPE = 'bmo:auth:request';
   const GENERIC_ERROR = 'Phabricator to Bugzilla login has encountered an error.';
 
-  // Keys for database -> provider config
-  const CONFIG_KEY_DEBUG_MODE = 'debug_mode';
-  const CONFIG_KEY_APP_NAME = 'app_name';
-  const CONFIG_KEY_TRANSACTION_CODE_LENGTH = 'transaction_code_length';
+  // This name is passed to BMO for the API key generation and confirmation page
+  const APP_NAME = 'MozPhabricator';
+
+  // Represents the length of the temporary auth tokens
+  const TRANSACTION_CODE_LENGTH = 32;
 
   // Logging error key type
-  const LOGGING_TYPE = 'BMOLoginEvent';
+  const LOGGING_TYPE = 'mozphab.auth.provider';
 
   // Need to add this to avoid error during auth addition activation
   protected $adapter;
@@ -43,103 +44,9 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     return pht(
       'This extension was written by the Mozilla Conduit team.  Please '.
       'contact someone in the #phabricator channel if you have '.
-      'config questions.'
+      'config questions or consult the Mana page:  '.
+      'https://mana.mozilla.org/wiki/display/SVCOPS/Configuring+the+BMO+Auth+extension+in+Phabricator'
     );
-  }
-
-  public function getDefaultProviderConfig() {
-    return parent::getDefaultProviderConfig()
-      ->setProperty(self::CONFIG_KEY_DEBUG_MODE, 0)
-      ->setProperty(self::CONFIG_KEY_APP_NAME, 'MozPhabricator')
-      ->setProperty(self::CONFIG_KEY_TRANSACTION_CODE_LENGTH, 32);
-  }
-
-  public function extendEditForm(
-    AphrontRequest $request,
-    AphrontFormView $form,
-    array $values,
-    array $issues) {
-      $form
-        ->appendChild(
-          id(new AphrontFormCheckboxControl())
-            ->addCheckbox(
-              self::CONFIG_KEY_DEBUG_MODE,
-              '1',
-              hsprintf(
-                '<strong>%s</strong> <strong style="color:#c0392b;">%s</strong>',
-                pht('Debug Mode'),
-                pht('ONLY USE DURING DEVELOPMENT')
-              ),
-              (isset($values[self::CONFIG_KEY_DEBUG_MODE]) && $values[self::CONFIG_KEY_DEBUG_MODE] === '1')
-            )
-        )
-        ->appendChild(
-          id(new AphrontFormTextControl())
-            ->setLabel(pht('App Name'))
-            ->setPlaceholder(pht('App name as shown in Bugzilla auth page'))
-            ->setName(self::CONFIG_KEY_APP_NAME)
-            ->setValue(self::getArrayValueOrDefault($values, self::CONFIG_KEY_APP_NAME))
-            ->setError(self::getArrayValueOrDefault($issues, self::CONFIG_KEY_APP_NAME))
-        )
-        ->appendChild(
-          id(new AphrontFormTextControl())
-            ->setLabel(pht('Transaction Code Length'))
-            ->setPlaceholder(pht('Example: 32, 64, ...'))
-            ->setName(self::CONFIG_KEY_TRANSACTION_CODE_LENGTH)
-            ->setValue(
-              self::getArrayValueOrDefault($values, self::CONFIG_KEY_TRANSACTION_CODE_LENGTH)
-            )
-            ->setError(
-              self::getArrayValueOrDefault($issues, self::CONFIG_KEY_TRANSACTION_CODE_LENGTH)
-            )
-        );
-  }
-
-  public function getArrayValueOrDefault($values, $key, $default = '') {
-    return trim(isset($values[$key]) ? $values[$key] : $default);
-  }
-
-  public function readFormValuesFromProvider() {
-    $config = $this->getConfig();
-
-    return array(
-      self::CONFIG_KEY_DEBUG_MODE => $config->getProperty(self::CONFIG_KEY_DEBUG_MODE),
-      self::CONFIG_KEY_APP_NAME => $config->getProperty(self::CONFIG_KEY_APP_NAME),
-      self::CONFIG_KEY_TRANSACTION_CODE_LENGTH => (int)$config->getProperty(self::CONFIG_KEY_TRANSACTION_CODE_LENGTH)
-    );
-  }
-
-  public function readFormValuesFromRequest(AphrontRequest $request) {
-    return array(
-      self::CONFIG_KEY_DEBUG_MODE => $request->getStr(self::CONFIG_KEY_DEBUG_MODE),
-      self::CONFIG_KEY_APP_NAME => $request->getStr(self::CONFIG_KEY_APP_NAME),
-      self::CONFIG_KEY_TRANSACTION_CODE_LENGTH => (int)$request->getStr(self::CONFIG_KEY_TRANSACTION_CODE_LENGTH)
-    );
-  }
-
-  public function processEditForm(AphrontRequest $request, array $values) {
-    $errors = array();
-    $issues = array();
-
-    if(!strlen(self::getArrayValueOrDefault($values, self::CONFIG_KEY_APP_NAME))) {
-      $errors[] = pht('Application Name is required.');
-      $issues[self::CONFIG_KEY_APP_NAME] = pht('Required');
-    }
-
-    $trans_code_length = (int) self::getArrayValueOrDefault(
-      $values, self::CONFIG_KEY_TRANSACTION_CODE_LENGTH
-    );
-    if($trans_code_length < 16 || $trans_code_length > 64) {
-      $errors[] = pht('Transaction Code Length must be between 16 and 64.');
-      $issues[self::CONFIG_KEY_TRANSACTION_CODE_LENGTH] = pht('Invalid');
-    }
-
-    if(!count($errors)) {
-      $config = $this->getProviderConfig();
-      $config->setProviderDomain($this->getProviderDomain());
-    }
-
-    return array($errors, $issues, $values);
   }
 
   public function getAdapter() {
@@ -165,9 +72,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     $adapter->setAuthenticateURI(
       id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
         ->setPath('/auth.cgi')
-        ->setQueryParam(
-          'description', $config->getProperty(self::CONFIG_KEY_APP_NAME)
-        )
+        ->setQueryParam('description', self::APP_NAME)
     );
   }
 
@@ -181,16 +86,19 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
 
     $adapter = $this->getAdapter();
 
+    // This CSRF token is passed to BMO and is then passed back during the
+    // back channel post and login redirect to tie the user to the
+    // original login button click
     $csrf = $this->getAuthCSRFCode($request);
-    $login_uri = $this->getLoginURI();
-    $uri = new PhutilURI($adapter->getAuthenticateURI());
 
-    $uri->setQueryParam('callback',
-      PhabricatorEnv::getURI($login_uri).'?secret='.$csrf);
+    // The CSRF here is alphanumeric
+    $callback_uri = PhabricatorEnv::getURI($this->getLoginURI()).'?secret='.$csrf;
+    $bmo_login_uri = id(new PhutilURI($adapter->getAuthenticateURI()))
+      ->setQueryParam('callback', $callback_uri);
 
     return $this->renderStandardLoginButton($request, $mode, array(
       'method' => 'GET',
-      'uri' => (string) $uri,
+      'uri' => (string) $bmo_login_uri,
       'sigil' => 'bmo-login'
     ));
   }
@@ -208,42 +116,41 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     return $this->processLoginRequestConfirmationGet($controller, $request);
   }
 
-  private function processLoginRequestBackChannelPost($controller) {
+  private function processLoginRequestBackChannelPost($controller, $request) {
     $config = $this->getConfig();
-    $request = $controller->getRequest();
     $account = null;
     $response = null;
 
     // Get the `client_api_key` and `client_api_login` from Bugzilla's POST data
+    $raw_input = PhabricatorStartup::getRawInput();
     $post_info = array();
     try {
-      $post_info = phutil_json_decode(PhabricatorStartup::getRawInput());
+      $post_info = phutil_json_decode($raw_input);
     }
     catch(Exception $ex) {
       $this->throwException(
-        pht('Phabricator BMO Authentication failed due to '.
-            'invalid JSON from Bugzilla.')
+        'Phabricator BMO Authentication failed due to invalid JSON from Bugzilla.',
+        array('raw_input' => $raw_input)
       );
-      MozLogger::log('Invalid JSON provided by Bugzilla', self::LOGGING_TYPE);
     }
 
     // Throw exception if either key is not provided by Bugzilla
     if(!isset($post_info['client_api_key']) || !isset($post_info['client_api_login'])) {
       $this->throwException(
-        'Phabricator BMO Authentication failed due to incomplete JSON from Bugzilla.'
+        'No client_api_key or client_api_login provided by Bugzilla.',
+        array('raw_input' => $raw_input)
       );
-      MozLogger::log('No client_api_key or client_api_login provided by Bugzilla', self::LOGGING_TYPE);
+    }
+
+    // Verify that we've received the a CSRF back from BMO
+    $csrf = $request->getStr('secret');
+    if(!strlen($csrf)) {
+      $this->throwException('No CSRF was provided by Bugzilla in the URL.');
     }
 
     // Generate a transaction code which we'll receive back from Bugzilla
     // To confirm the API and Client Login information which we saved
     $trans_code = $this->generateAuthToken();
-    $csrf = $request->getStr('secret');
-    if(!strlen($csrf)) {
-      $exception_message = 'No CSRF was provided by Bugzilla in the URL.';
-      $this->throwException($exception_message);
-      MozLogger::log($exception_message, self::LOGGING_TYPE);
-    }
 
     // Create a temporary auth token to save the user info JSON provided
     // by the POST from Bugzilla.  Implicitly validates CSRF.
@@ -252,7 +159,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
       ->setTokenResource($trans_code)
       ->setTokenCode($csrf)
       ->setTokenType(self::TOKEN_TYPE)
-      ->setTokenExpires(time() + phutil_units('1 hour in seconds'))
+      ->setTokenExpires(time() + phutil_units('10 minutes in seconds'))
       ->setTemporaryTokenProperty('api_key', $post_info['client_api_key'])
       ->setTemporaryTokenProperty('client_login', $post_info['client_api_login'])
       ->save();
@@ -292,10 +199,12 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
 
     // No token means we've received invalid information from Bugzilla
     if(!$token) {
-      $this->throwException(pht('No temporary token found for this transaction code.', $provided_trans_code, $csrf));
-      MozLogger::log(
-        pht('Temporary token not found during account setup (CSRF: %s)', $csrf),
-        self::LOGGING_TYPE
+      $this->throwException(
+        'No temporary token found for this transaction code.',
+        array(
+          'provided_transaction_code' => $provided_trans_code,
+          'csrf' => $csrf
+        )
       );
     }
 
@@ -303,9 +212,12 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     $token_props = $token->getProperties();
     if($token_props['client_login'] != $provided_api_login) {
       $this->throwException(
-        pht('Token\'s API Login does not match Bugzilla API Login.')
+        'Token\'s API Login does not match Bugzilla API Login.',
+        array(
+          'token_client_login' => $token_props['client_login'],
+          'provided_api_login' => $provided_api_login
+        )
       );
-      MozLogger::log('Token\'s API Login does not match Bugzilla API Login', self::LOGGING_TYPE);
     }
 
     // Call BMO Who Am I REST resource to validate API Key (X-Bugzilla-API-Key)
@@ -327,28 +239,30 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     try {
       list($whoami_body) = $future->resolvex();
     } catch (HTTPFutureResponseStatus $ex) {
-      $exception_message = 'Bugzilla WhoAmI request failed to resolve.';
-      $this->throwException($exception_message);
-      MozLogger::log($exception_message, self::LOGGING_TYPE);
+      $this->throwException(
+        'Bugzilla WhoAmI request failed to resolve.',
+        array('token_client_login' => $token_props['client_login'])
+      );
     }
 
+    // Parse the user information provided by BMO
     $user_json = array();
     try {
       $user_json = phutil_json_decode($whoami_body);
     }
     catch(Exception $e) {
-      $this->throwException('JSON from Bugzilla WhoAmI could not be parsed.');
-      MozLogger::log(
-        'JSON from Bugzilla WhoAmI could not be parsed: '.$whoami_body,
-        self::LOGGING_TYPE
+      $this->throwException(
+        'JSON from Bugzilla WhoAmI could not be parsed.',
+        array('body' => $whoami_body)
       );
     }
 
     // If there's no "id" key in the JSON, we know something is wrong
     if(!isset($user_json['id'])) {
-      $user_id_exception = 'No user ID was provided by Bugzilla.';
-      $this->throwException($user_id_exception);
-      MozLogger::log($user_id_exception, self::LOGGING_TYPE);
+      $this->throwException(
+        'No user ID was provided by Bugzilla.',
+        array('body' => $whoami_body)
+      );
     }
 
     // Clean up! Delete temporary token used for this login
@@ -364,6 +278,11 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
       pht('Loading or creating account for BMO id: %s', $user_json['id']),
       self::LOGGING_TYPE
     );
+
+    /*
+      NOTE:  This updates a user's email address in "user_externalaccount"
+      but does not update their email within phabricator's user profile page
+    */
     $account = $this->loadOrCreateAccount($user_json['id']);
 
     return array($account, $response);
@@ -387,18 +306,13 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     $adapter->setAccountEmail($user_json['name']);
   }
 
-  public function throwException($text) {
-    $config = $this->getConfig();
-    throw new Exception(pht(
-      $config->getProperty(self::CONFIG_KEY_DEBUG_MODE) ? $text : self::GENERIC_ERROR
-    ));
+  public function throwException($text, $fields = array()) {
+    MozLogger::log($text, self::LOGGING_TYPE, array('Fields' => $fields));
+    throw new Exception(self::GENERIC_ERROR);
   }
 
   public function generateAuthToken() {
-    $config = $this->getConfig();
-    return Filesystem::readRandomCharacters(
-      $config->getProperty(self::CONFIG_KEY_TRANSACTION_CODE_LENGTH)
-    );
+    return Filesystem::readRandomCharacters(self::TRANSACTION_CODE_LENGTH);
   }
 
   public function getProviderDomain() {
