@@ -1,5 +1,6 @@
 FROM mozilla/mozphab:latest
 ARG EXTENSIONS_PATH=/app/phabricator/src/extensions
+ENV SERVER_ENDPOINT=www.mozilla.com
 COPY differential ${EXTENSIONS_PATH}/differential
 COPY conduit ${EXTENSIONS_PATH}/conduit
 COPY auth ${EXTENSIONS_PATH}/auth
