@@ -2,7 +2,7 @@
 
 class MozLogger extends Phobject {
 
-  public static function log($message, $type='Unspecified', $detail=array()) {
+  public static function log($message, $type='mozphab.unspecified', $detail=array()) {
 
     // Create a master object based on detail and defaults
     $mozlog = self::merge_arrays(
