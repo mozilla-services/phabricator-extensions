@@ -9,6 +9,8 @@
 final class DifferentialBugzillaBugIDField
   extends DifferentialStoredCustomField {
 
+    private $proxy;
+
 /* -(  Core Properties and Field Identity  )--------------------------------- */
 
   public function getFieldKey() {
@@ -110,13 +112,22 @@ final class DifferentialBugzillaBugIDField
     $bug_id = $this->getValue();
 
     if($bug_id) {
-      $bug_uri = (string) id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
-        ->setPath($this->getValue());
-
-      return phutil_tag('a', array('href' => $bug_uri), $this->getValue());
+      return $this->renderFieldLink($bug_id);
     }
 
     return 'Not provided';
+  }
+
+  private function renderFieldLink($value) {
+    $bug_link = '';
+    if($value) {
+      $bug_uri = (string) id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
+        ->setPath($value);
+
+      $bug_link = phutil_tag('a', array('href' => $bug_uri), $value);
+    }
+
+    return $bug_link;
   }
 
 /* -(  List View  )---------------------------------------------------------- */
@@ -172,5 +183,46 @@ final class DifferentialBugzillaBugIDField
 
   public function shouldOverwriteWhenCommitMessageIsEdited() {
     return true;
+  }
+
+  public function getApplicationTransactionTitle(
+    PhabricatorApplicationTransaction $xaction) {
+
+    if($this->proxy) {
+      return $this->proxy->getApplicationTransactionTitle($xaction);
+    }
+
+    $author_phid = $xaction->getAuthorPHID();
+    $old_value = $xaction->getOldValue();
+    $new_value = $xaction->getNewValue();
+    $handle_link = $xaction->renderHandleLink($author_phid);
+
+    if($old_value && !$new_value) {
+      return pht(
+        '%s removed %s %s.',
+        $handle_link,
+        $this->getFieldName(),
+        $this->renderFieldLink($old_value)
+      );
+    }
+    else if(!$old_value && $new_value) {
+      return pht(
+        '%s added %s %s.',
+        $handle_link,
+        $this->getFieldName(),
+        $this->renderFieldLink($new_value)
+      );
+    }
+    else if($old_value && $new_value) {
+      return pht(
+        '%s changed the %s from %s to %s.',
+        $handle_link,
+        $this->getFieldName(),
+        $this->renderFieldLink($old_value),
+        $this->renderFieldLink($new_value)
+      );
+    }
+
+    return pht('%s updated the bug number.', $xaction->renderHandleLink($author_phid));
   }
 }
