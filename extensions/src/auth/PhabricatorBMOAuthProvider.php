@@ -8,6 +8,8 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
   const GENERIC_ERROR = 'Phabricator to Bugzilla login has encountered an error.';
 
   // This name is passed to BMO for the API key generation and confirmation page
+  // DO NOT CHANGE THIS VALUE.  Changing this value will require the user to authorize
+  // another API key generation on Bugzilla and may concern our users
   const APP_NAME = 'MozPhabricator';
 
   // Represents the length of the temporary auth tokens

@@ -68,6 +68,7 @@ class DifferentialBugzillaBugIDValidator extends Phobject {
       ->setMethod('GET')
       ->addHeader('X-Bugzilla-API-Key', PhabricatorEnv::getEnvConfig('bugzilla.automation_api_key'))
       ->addHeader('Accept', 'application/json')
+      ->addHeader('User-Agent', PhabricatorBMOAuthProvider::APP_NAME)
       ->setTimeout(PhabricatorEnv::getEnvConfig('bugzilla.timeout'));
 
     // Resolve the async HTTPSFuture request and extract JSON body
@@ -112,6 +113,7 @@ class DifferentialBugzillaBugIDValidator extends Phobject {
           array('Fields' => array(
             'status_code' => $status_code,
             'bug_id' => $bug_id,
+            'body' => $body,
             'account_phid' => $account_phid
           ))
         );
