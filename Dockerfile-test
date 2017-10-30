@@ -1,5 +1,16 @@
 FROM mozilla/phabext:latest
+
 USER root
-RUN apk --update --no-cache add bash g++ make git > /dev/null 2>&1
+
+RUN \
+    apk --update --no-cache add \
+        bash \
+        g++ \
+        git \
+        make > /dev/null 2>&1
+
+# Copy arcconfig with loaded extensions
+COPY test-arcconfig /app/.arcconfig
+
+# Copy entrypoint with arc-liberate and test
 COPY entrypoint.sh .
-COPY phabext_map/phutil_init /app/phabricator/src/__phutil_library_init__.php

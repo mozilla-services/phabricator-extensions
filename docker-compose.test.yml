@@ -17,7 +17,7 @@ services:
     depends_on:
       - phabdb
     volumes:
-      - ./phabext_map:/phabext_map
+      - ./extensions:/app/moz-extensions
 
   phabdb:
     image: mysql:5.5

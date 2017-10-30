@@ -12,8 +12,6 @@ set -ex
 
 cd phabricator
 
-ln -fs /phabext_map/phutil_map src/__phutil_library_map__.php
-
 test -n "${MYSQL_HOST}" \
   && /app/wait-for-mysql.php \
   && ./bin/config set mysql.host ${MYSQL_HOST}
@@ -28,15 +26,16 @@ set -x
 test -n "${1}" \
   && ARG=$(echo ${1:-start}  | tr [A-Z] [a-z])
 
+
 case "$ARG" in
   "arc-liberate")
-	  cd src
-	  /app/arcanist/bin/arc liberate
+	  cd /app/moz-extensions/
+	  /app/arcanist/bin/arc liberate src/
 	  ;;
   "test-ext")
 	  # Find all extension tests and call them
-	  cd src
-	  /app/arcanist/bin/arc unit extensions/*/__tests__/*php extensions/*/*/__tests__/*php
+	  cd /app
+	  /app/arcanist/bin/arc unit /app/moz-extensions/src/*/__tests__/*php /app/moz-extensions/src/*/*/__tests__/*php
 	  ;;
   *)
       exec "$ARG"
