@@ -29,7 +29,8 @@ final class BugzillaAccountSearchConduitAPIMethod
     }
 
     $query = id(new PhabricatorExternalAccountQuery())
-      ->setViewer($request->getUser());
+      ->setViewer($request->getUser())
+      ->withAccountTypes(array(PhabricatorBMOAuthProvider::ADAPTER_TYPE));
 
     if ($bugzilla_ids) {
       $query->withAccountIDs($bugzilla_ids);
