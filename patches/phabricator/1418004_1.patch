@@ -19,3 +19,15 @@ index bddc4f592..7ada44947 100644
      $results = array();
      $user = $request->getUser();
  
+diff --git a/src/applications/feed/query/PhabricatorFeedQuery.php b/src/applications/feed/query/PhabricatorFeedQuery.php
+index ae1da3aba..2e5efb93b 100644
+--- a/src/applications/feed/query/PhabricatorFeedQuery.php
++++ b/src/applications/feed/query/PhabricatorFeedQuery.php
+@@ -1,6 +1,6 @@
+ <?php
+ 
+-final class PhabricatorFeedQuery
++class PhabricatorFeedQuery
+   extends PhabricatorCursorPagedPolicyAwareQuery {
+ 
+   private $filterPHIDs;

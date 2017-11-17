@@ -1,7 +1,7 @@
 <?php
 
 class PhabricatorFeedIDQuery
-  extends PhabricatorCursorPagedPolicyAwareQuery {
+  extends PhabricatorFeedQuery {
 
   private $filterPHIDs;
 
