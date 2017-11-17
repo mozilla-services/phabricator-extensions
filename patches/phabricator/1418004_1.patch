@@ -1,0 +1,21 @@
+diff --git a/src/applications/feed/conduit/FeedQueryConduitAPIMethod.php b/src/applications/feed/conduit/FeedQueryConduitAPIMethod.php
+index bddc4f592..7ada44947 100644
+--- a/src/applications/feed/conduit/FeedQueryConduitAPIMethod.php
++++ b/src/applications/feed/conduit/FeedQueryConduitAPIMethod.php
+@@ -1,6 +1,6 @@
+ <?php
+ 
+-final class FeedQueryConduitAPIMethod extends FeedConduitAPIMethod {
++class FeedQueryConduitAPIMethod extends FeedConduitAPIMethod {
+ 
+   public function getAPIMethodName() {
+     return 'feed.query';
+@@ -54,7 +54,7 @@ final class FeedQueryConduitAPIMethod extends FeedConduitAPIMethod {
+     return 'nonempty dict';
+   }
+ 
+-  protected function execute(ConduitAPIRequest $request) {
++  public function execute(ConduitAPIRequest $request) {
+     $results = array();
+     $user = $request->getUser();
+ 

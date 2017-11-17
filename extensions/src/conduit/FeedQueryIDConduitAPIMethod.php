@@ -9,63 +9,17 @@
  * in the upstream feed.query API method.
  */
 
-final class FeedQueryEpochConduitAPIMethod extends FeedConduitAPIMethod {
+final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
 
   public function getAPIMethodName() {
-    return 'feed.query_epoch';
-  }
-
-  public function getMethodStatus() {
-    return self::METHOD_STATUS_UNSTABLE;
-  }
-
-  public function getMethodDescription() {
-    return pht('Query the feed for stories');
+    return 'feed.query_id';
   }
 
   private function getDefaultLimit() {
     return 100;
   }
 
-  protected function defineParamTypes() {
-    return array(
-      'filterPHIDs' => 'optional list <phid>',
-      'limit' => 'optional int (default '.$this->getDefaultLimit().')',
-      'after' => 'optional int',
-      'before' => 'optional int',
-      'view' => 'optional string (data, html, html-summary, text)',
-      'epochStart' => 'optional start epoch int',
-      'epochEnd' => 'optional end epoch int',
-    );
-  }
-
-  private function getSupportedViewTypes() {
-    return array(
-      'html' => pht('Full HTML presentation of story'),
-      'data' => pht('Dictionary with various data of the story'),
-      'html-summary' => pht('Story contains only the title of the story'),
-      'text' => pht('Simple one-line plain text representation of story'),
-    );
-  }
-
-  protected function defineErrorTypes() {
-
-    $view_types = array_keys($this->getSupportedViewTypes());
-    $view_types = implode(', ', $view_types);
-
-    return array(
-      'ERR-UNKNOWN-TYPE' =>
-        pht(
-          'Unsupported view type, possibles are: %s',
-          $view_types),
-    );
-  }
-
-  protected function defineReturnType() {
-    return 'nonempty dict';
-  }
-
-  protected function execute(ConduitAPIRequest $request) {
+  public function execute(ConduitAPIRequest $request) {
     $results = array();
     $user = $request->getUser();
 
