@@ -50,14 +50,6 @@ final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
       $query->setBeforeID($before);
     }
 
-    $epoch_start = $request->getValue('epochStart');
-    $epoch_end = $request->getValue('epochEnd');
-    if ($epoch_start || $epoch_end) {
-      $epoch_start = is_numeric($epoch_start) ? $epoch_start : null;
-      $epoch_end = is_numeric($epoch_end) ? $epoch_end : null;
-      $query->withEpochInRange($epoch_start, $epoch_end);
-    }
-
     $stories = $query->execute();
 
     if ($stories) {
