@@ -1,12 +1,9 @@
 <?php
 
 /*
- * This file is a modified copy of src/applications/feed/conduit/FeedQueryConduitAPIMethod.php
- * that was needed to give the ability to filter transactions based on epoch timestamp values.
- * This Conduit API method adds the epochStart and epochEnd parameters that can be used for
- * example, to return only transactions that occurred after a specific epoch instead of all
- * transactions. The desire is to push this minor change to upstream Phabricator to be included
- * in the upstream feed.query API method.
+ * This file is a sublass of
+ * src/applications/feed/conduit/FeedQueryConduitAPIMethod.php
+ * that was needed to give the ability to filter transactions based on story id values.
  */
 
 final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
@@ -33,7 +30,8 @@ final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
       $limit = $this->getDefaultLimit();
     }
 
-    $query = id(new PhabricatorFeedQuery())
+    $query = id(new PhabricatorFeedIDQuery())
+      ->setOrder('oldest')
       ->setLimit($limit)
       ->setViewer($user);
 
@@ -89,6 +87,7 @@ final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
           break;
           case 'data':
             $data = array(
+              'id' => $story_data->getID(),
               'class' => $story_data->getStoryType(),
               'epoch' => $story_data->getEpoch(),
               'authorPHID' => $story_data->getAuthorPHID(),
@@ -98,6 +97,7 @@ final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
           break;
           case 'text':
             $data = array(
+              'id' => $story_data->getID(),
               'class' => $story_data->getStoryType(),
               'epoch' => $story_data->getEpoch(),
               'authorPHID' => $story_data->getAuthorPHID(),
@@ -114,7 +114,11 @@ final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
       }
     }
 
-    return $results;
+    $result = array(
+      'data' => $results,
+    );
+
+    return $result;
   }
 
 }
