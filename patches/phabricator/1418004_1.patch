@@ -1,0 +1,42 @@
+diff --git a/src/applications/feed/conduit/FeedQueryConduitAPIMethod.php b/src/applications/feed/conduit/FeedQueryConduitAPIMethod.php
+index bddc4f592..7ada44947 100644
+--- a/src/applications/feed/conduit/FeedQueryConduitAPIMethod.php
++++ b/src/applications/feed/conduit/FeedQueryConduitAPIMethod.php
+@@ -1,6 +1,6 @@
+ <?php
+ 
+-final class FeedQueryConduitAPIMethod extends FeedConduitAPIMethod {
++class FeedQueryConduitAPIMethod extends FeedConduitAPIMethod {
+ 
+   public function getAPIMethodName() {
+     return 'feed.query';
+@@ -54,7 +54,7 @@ final class FeedQueryConduitAPIMethod extends FeedConduitAPIMethod {
+     return 'nonempty dict';
+   }
+ 
+-  protected function execute(ConduitAPIRequest $request) {
++  public function execute(ConduitAPIRequest $request) {
+     $results = array();
+     $user = $request->getUser();
+ 
+diff --git a/src/applications/feed/query/PhabricatorFeedQuery.php b/src/applications/feed/query/PhabricatorFeedQuery.php
+index ae1da3aba..45d614db5 100644
+--- a/src/applications/feed/query/PhabricatorFeedQuery.php
++++ b/src/applications/feed/query/PhabricatorFeedQuery.php
+@@ -1,6 +1,6 @@
+ <?php
+ 
+-final class PhabricatorFeedQuery
++class PhabricatorFeedQuery
+   extends PhabricatorCursorPagedPolicyAwareQuery {
+ 
+   private $filterPHIDs;
+@@ -147,7 +147,7 @@ final class PhabricatorFeedQuery
+     );
+   }
+ 
+-  protected function getResultCursor($item) {
++  public function getResultCursor($item) {
+     if ($item instanceof PhabricatorFeedStory) {
+       return $item->getChronologicalKey();
+     }
