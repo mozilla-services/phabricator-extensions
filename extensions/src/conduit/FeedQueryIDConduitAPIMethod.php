@@ -11,12 +11,26 @@ final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
     return 'feed.query_id';
   }
 
+  public function getMethodStatus() {
+    return self::METHOD_STATUS_UNSTABLE;
+  }
+
   private function getDefaultLimit() {
     return 100;
   }
 
+  protected function defineParamTypes() {
+    return array(
+      'limit' => 'optional int (default '.$this->getDefaultLimit().')',
+      'after' => 'optional int',
+      'before' => 'optional int',
+      'view' => 'optional string (data, html, html-summary, text)',
+    );
+  }
+
   public function execute(ConduitAPIRequest $request) {
     $results = array();
+    $pager = $this->newPager($request);
     $user = $request->getUser();
 
     $view_type = $request->getValue('view');
@@ -29,14 +43,9 @@ final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
       $limit = $this->getDefaultLimit();
     }
 
-    $query = id(new PhabricatorFeedQuery())
-      ->setLimit($limit)
+    $query = id(new PhabricatorFeedIDQuery())
+      ->setOrder('oldest')
       ->setViewer($user);
-
-    $filter_phids = $request->getValue('filterPHIDs');
-    if ($filter_phids) {
-      $query->withFilterPHIDs($filter_phids);
-    }
 
     $after = $request->getValue('after');
     if (strlen($after)) {
@@ -48,15 +57,7 @@ final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
       $query->setBeforeID($before);
     }
 
-    $epoch_start = $request->getValue('epochStart');
-    $epoch_end = $request->getValue('epochEnd');
-    if ($epoch_start || $epoch_end) {
-      $epoch_start = is_numeric($epoch_start) ? $epoch_start : null;
-      $epoch_end = is_numeric($epoch_end) ? $epoch_end : null;
-      $query->withEpochInRange($epoch_start, $epoch_end);
-    }
-
-    $stories = $query->execute();
+    $stories = $query->executeWithCursorPager($pager);
 
     if ($stories) {
       foreach ($stories as $story) {
@@ -85,6 +86,8 @@ final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
           break;
           case 'data':
             $data = array(
+              'id' => $story_data->getID(),
+              'phid' => $story_data->getPHID(),
               'class' => $story_data->getStoryType(),
               'epoch' => $story_data->getEpoch(),
               'authorPHID' => $story_data->getAuthorPHID(),
@@ -94,6 +97,8 @@ final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
           break;
           case 'text':
             $data = array(
+              'id' => $story_data->getID(),
+              'phid' => $story_data->getPHID(),
               'class' => $story_data->getStoryType(),
               'epoch' => $story_data->getEpoch(),
               'authorPHID' => $story_data->getAuthorPHID(),
@@ -106,11 +111,15 @@ final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
             throw new ConduitException('ERR-UNKNOWN-TYPE');
         }
 
-        $results[$story_data->getPHID()] = $data;
+        $results[] = $data;
       }
     }
 
-    return $results;
-  }
+    $result = array(
+      'data' => $results,
+    );
 
+    return $this->addPagerResults($result, $pager);
+  }
 }
+

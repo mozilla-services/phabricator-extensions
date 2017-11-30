@@ -17,4 +17,12 @@ class PhabricatorFeedIDQuery
       ),
     );
   }
+
+  public function getResultCursor($item) {
+    if ($item instanceof PhabricatorFeedStory) {
+      return $item->getStoryData()->getID();
+    }
+    return $item['id'];
+  }
 }
+
