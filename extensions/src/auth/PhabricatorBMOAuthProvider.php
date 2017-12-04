@@ -267,6 +267,25 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
       );
     }
 
+    // If mfa is disabled in Bugzilla, do not allow login
+    if (!isset($user_json['mfa_status']) || !$user_json['mfa_status']) {
+      MozLogger::log('bugzilla mfa disabled', self::LOGGING_TYPE, array('Fields' => array('body' => $whoami_body)));
+      $bugzilla_url = PhabricatorEnv::getEnvConfig('bugzilla.url') . '/userprefs.cgi?tab=mfa';
+      $error_content = phutil_tag(
+        'div',
+        array(),
+        phutil_safe_html(
+          'Login using Bugzilla requires multi-factor authentication ' .
+          'to be enabled in Bugzilla. Please enable mult-factor authentication ' .
+          'in your Bugzilla ' . phutil_tag('a', array('href' => $bugzilla_url), pht('preferences')) .
+          ' and try again.'));
+      $response = $controller->newDialog()
+        ->setTitle(pht('Bugzilla MFA Not Enabled'))
+        ->appendParagraph($error_content)
+        ->addCancelButton(PhabricatorEnv::getEnvConfig('phabricator.base-uri'), 'Try Again');
+      return array(null, $response);
+    }
+
     // Clean up! Delete temporary token used for this login
     $unguarded = AphrontWriteGuard::beginScopedUnguardedWrites();
     $token->delete();
