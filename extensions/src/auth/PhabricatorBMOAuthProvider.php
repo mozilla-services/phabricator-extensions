@@ -276,7 +276,7 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
         array(),
         phutil_safe_html(
           'Login using Bugzilla requires multi-factor authentication ' .
-          'to be enabled in Bugzilla. Please enable mult-factor authentication ' .
+          'to be enabled in Bugzilla. Please enable multi-factor authentication ' .
           'in your Bugzilla ' . phutil_tag('a', array('href' => $bugzilla_url), pht('preferences')) .
           ' and try again.'));
       $response = $controller->newDialog()
