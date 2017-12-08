@@ -46,6 +46,11 @@ final class PhabricatorBugzillaConfigOptions
         'bool',
         false)
         ->setDescription(pht('Require existing Bugzilla bug numbers for revisions.')),
+      $this->newOption(
+        'bugzilla.require_mfa',
+        'bool',
+        true)
+        ->setDescription(pht('Require Bugzilla members to have multi-factor authentication enabled on their Bugzilla account.')),
     );
   }
 }

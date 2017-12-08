@@ -268,7 +268,10 @@ final class PhabricatorBMOAuthProvider extends PhabricatorAuthProvider {
     }
 
     // If mfa is disabled in Bugzilla, do not allow login
-    if (!isset($user_json['mfa_status']) || !$user_json['mfa_status']) {
+    if (
+      PhabricatorEnv::getEnvConfig('bugzilla.require_mfa') &&
+      (!isset($user_json['mfa_status']) || !$user_json['mfa_status'])
+    ) {
       MozLogger::log('bugzilla mfa disabled', self::LOGGING_TYPE, array('Fields' => array('body' => $whoami_body)));
       $bugzilla_url = PhabricatorEnv::getEnvConfig('bugzilla.url') . '/userprefs.cgi?tab=mfa';
       $error_content = phutil_tag(
