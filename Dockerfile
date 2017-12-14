@@ -1,4 +1,4 @@
-FROM mozilla/mozphab:ckolos_20171213
+FROM mozilla/mozphab:ckolos_latest
 
 COPY extensions /app/moz-extensions
 
