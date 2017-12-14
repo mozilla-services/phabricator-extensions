@@ -1,4 +1,5 @@
 FROM mozilla/mozphab:ckolos_latest
+
 COPY extensions /app/moz-extensions
 
 # Move static resources to phabricator, add files to celerity map array
