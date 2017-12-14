@@ -46,6 +46,13 @@ deployment:
       - "docker tag $DOCKERHUB_REPO $DOCKERHUB_REPO:$CIRCLE_SHA1"
       - "docker push $DOCKERHUB_REPO:$CIRCLE_SHA1"
       - "docker push $DOCKERHUB_REPO:latest"
+  dockerhub_ckolos:
+    branch: /ckolos\/.*/
+    commands:
+      - "[ ! -z $DOCKERHUB_REPO ]"
+      - "docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS"
+      - "docker tag $DOCKERHUB_REPO $DOCKERHUB_REPO:ckolos_latest"
+      - "docker push $DOCKERHUB_REPO:ckolos_latest"
 
   dockerhub_tags:
     # push all tags
