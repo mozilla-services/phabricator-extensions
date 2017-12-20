@@ -123,7 +123,8 @@ final class DifferentialBugzillaBugIDField
     $bug_link = '';
     if($value) {
       $bug_uri = (string) id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
-        ->setPath($value);
+        ->setPath('/show_bug.cgi')
+        ->setQueryParam('id', (int) $value);
 
       $bug_link = phutil_tag('a', array('href' => $bug_uri), $value);
     }

@@ -33,7 +33,7 @@ final class DifferentialBugzillaBugIDCustomFieldTestCase
     $field->setValue('123');
     $this->assertEqual(
       $field->renderPropertyViewValue(array())->getHTMLContent(),
-      '<a href="'.PhabricatorEnv::getEnvConfig('bugzilla.url').'/123" rel="noreferrer">123</a>'
+      '<a href="'.PhabricatorEnv::getEnvConfig('bugzilla.url').'/show_bug.cgi?id=123" rel="noreferrer">123</a>'
     );
   }
 
