@@ -59,7 +59,9 @@ final class DifferentialBugzillaBugIDField
   }
 
   public function readValueFromRequest(AphrontRequest $request) {
-    $this->setValue($request->getStr($this->getFieldKey()));
+    $bug_id = $request->getStr($this->getFieldKey());
+    $bug_id = DifferentialBugzillaBugIDValidator::formatBugID($bug_id);
+    $this->setValue($bug_id);
   }
 
   public function renderEditControl(array $handles) {
@@ -82,11 +84,8 @@ final class DifferentialBugzillaBugIDField
       $xaction_author_phid = $xaction->getAuthorPHID();
 
       // Validate that the user may see the bug they've submitted a revision for
-      $bug_id = DifferentialBugzillaBugIDValidator::formatBugID(
-        $xaction->getNewValue()
-      );
       $validation_errors = DifferentialBugzillaBugIDValidator::validate(
-        $bug_id,
+        $xaction->getNewValue(),
         $xaction_author_phid
       );
       // Push errors into the revision save stack
