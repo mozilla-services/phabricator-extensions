@@ -8,6 +8,8 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile-test
+    entrypoint:
+      - /app/entrypoint.sh
     environment:
       - MYSQL_HOST=phabdb
       - MYSQL_PORT=3306
