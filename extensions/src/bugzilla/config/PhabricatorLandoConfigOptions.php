@@ -24,8 +24,9 @@ final class PhabricatorLandoConfigOptions
       $this->newOption(
         'lando-ui.url',
         'string',
-        'https://landoui.devsvcdev.mozaws.net')
-        ->setDescription(pht('Full URL for the Lando UI server.'))
+        '')
+        ->setDescription(pht('Full URL for the Lando UI server. '.
+                             'Set to an empty string to disable the link on the Revision page.'))
     );
   }
 }
