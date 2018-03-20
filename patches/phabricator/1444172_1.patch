@@ -1,0 +1,12 @@
+diff --git a/src/aphront/configuration/AphrontApplicationConfiguration.php b/src/aphront/configuration/AphrontApplicationConfiguration.php
+index 60b1255..d7c357a 100644
+--- a/src/aphront/configuration/AphrontApplicationConfiguration.php
++++ b/src/aphront/configuration/AphrontApplicationConfiguration.php
+@@ -133,6 +133,7 @@ abstract class AphrontApplicationConfiguration extends Phobject {
+     PhabricatorStartup::beginStartupPhase('startup.done');
+ 
+     DarkConsoleErrorLogPluginAPI::registerErrorHandler();
++    SentryLoggerPlugin::registerErrorHandler();
+ 
+     $response = PhabricatorSetupCheck::willProcessRequest();
+     if ($response) {

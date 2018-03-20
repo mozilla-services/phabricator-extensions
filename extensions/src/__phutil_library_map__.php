@@ -31,6 +31,8 @@ phutil_register_library_map(array(
     'PhabricatorFeedIDQuery' => 'feed/query/PhabricatorFeedIDQuery.php',
     'PhabricatorLandoConfigOptions' => 'bugzilla/config/PhabricatorLandoConfigOptions.php',
     'PolicyQueryConduitAPIMethod' => 'conduit/PolicyQueryConduitAPIMethod.php',
+    'SentryConfigOptions' => 'logging/SentryConfigOptions.php',
+    'SentryLoggerPlugin' => 'logging/SentryLoggerPlugin.php',
   ),
   'function' => array(),
   'xmap' => array(
@@ -56,5 +58,7 @@ phutil_register_library_map(array(
     'PhabricatorFeedIDQuery' => 'PhabricatorFeedQuery',
     'PhabricatorLandoConfigOptions' => 'PhabricatorApplicationConfigOptions',
     'PolicyQueryConduitAPIMethod' => 'ConduitAPIMethod',
+    'SentryConfigOptions' => 'PhabricatorApplicationConfigOptions',
+    'SentryLoggerPlugin' => 'Phobject',
   ),
 ));

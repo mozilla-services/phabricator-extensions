@@ -6,6 +6,15 @@ COPY extensions /app/moz-extensions
 COPY extensions/src/auth/PhabricatorBMOAuth.css /app/phabricator/webroot/rsrc/css/PhabricatorBMOAuth.css
 COPY extensions/src/auth/PhabricatorBMOAuth.js /app/phabricator/webroot/rsrc/js/PhabricatorBMOAuth.js
 
+USER root
+
+# Install dependencies
+ENV COMPOSER_ALLOW_SUPERUSER 1
+ENV COMPOSER_VENDOR_DIR /app/phabricator/externals/extensions
+RUN \
+    curl -sS https://getcomposer.org/installer | php && \
+    php composer.phar require --no-plugins --no-scripts "sentry/sentry"
+
 # Apply customization patches
 COPY patches /app/patches
 RUN \
@@ -23,7 +32,6 @@ COPY phabext.json /app
 COPY update_build_url.py /app
 RUN /app/update_build_url.py
 
-USER root
 RUN chown -R app:app /app
 USER app
 VOLUME ["/app"]
