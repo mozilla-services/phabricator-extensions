@@ -1,0 +1,23 @@
+diff --git a/src/applications/differential/controller/DifferentialRevisionViewController.php b/src/applications/differential/controller/DifferentialRevisionViewController.php
+index d7280cb0b..f6e388a5f 100644
+--- a/src/applications/differential/controller/DifferentialRevisionViewController.php
++++ b/src/applications/differential/controller/DifferentialRevisionViewController.php
+@@ -142,6 +142,10 @@ final class DifferentialRevisionViewController extends DifferentialController {
+ 
+     $limit = 100;
+     $large = $request->getStr('large');
++
++    $moz_warnings = new DifferentialRevisionWarning();
++    $moz_warnings = $moz_warnings->createWarnings($viewer, $revision);
++
+     if (count($changesets) > $limit && !$large) {
+       $count = count($changesets);
+       $warning = new PHUIInfoView();
+@@ -493,6 +497,7 @@ final class DifferentialRevisionViewController extends DifferentialController {
+       ->setMainColumn(
+         array(
+           $operations_box,
++          $moz_warnings,
+           $info_view,
+           $details,
+           $diff_detail_box,
