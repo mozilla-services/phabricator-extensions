@@ -63,7 +63,7 @@ final class PhabricatorDifferentialReviewersPolicyRule
       unset($objects[$key]);
       foreach ($this->sourcePHIDs[$viewer_phid] as $source_phid) {
         if (isset($cache[$source_phid])) {
-          $this->reviewers[$viewer_phid][$object->getPHID()] = true;
+          $this->reviewing[$viewer_phid][$object->getPHID()] = true;
           break;
         }
       }
