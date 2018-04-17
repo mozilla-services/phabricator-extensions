@@ -1,0 +1,22 @@
+diff --git a/src/view/page/PhabricatorStandardPageView.php b/src/view/page/PhabricatorStandardPageView.php
+index 99143add5..16c452b1c 100644
+--- a/src/view/page/PhabricatorStandardPageView.php
++++ b/src/view/page/PhabricatorStandardPageView.php
+@@ -451,6 +451,9 @@ final class PhabricatorStandardPageView extends PhabricatorBarePageView
+           'or the error log.'));
+     }
+ 
++    $motd = new MozillaMOTD();
++    $motd_chrome = $motd->render();
++
+     $main_page = phutil_tag(
+       'div',
+       array(
+@@ -460,6 +463,7 @@ final class PhabricatorStandardPageView extends PhabricatorBarePageView
+       array(
+         $developer_warning,
+         $header_chrome,
++        $motd_chrome,
+         phutil_tag(
+           'div',
+           array(
