@@ -1,6 +1,6 @@
 Mozilla Phabricator extensions
 
-[https://hub.docker.com/r/mozilla/phabext/](View on Docker Hub)
+[View on Docker Hub](https://hub.docker.com/r/mozilla/phabext/)
 
 
 # Development:
