@@ -1,0 +1,12 @@
+diff --git a/src/view/page/PhabricatorStandardPageView.php b/src/view/page/PhabricatorStandardPageView.php
+index 16c452b1c..10d36167d 100644
+--- a/src/view/page/PhabricatorStandardPageView.php
++++ b/src/view/page/PhabricatorStandardPageView.php
+@@ -228,6 +228,7 @@ final class PhabricatorStandardPageView extends PhabricatorBarePageView
+     require_celerity_resource('phabricator-standard-page-view');
+     require_celerity_resource('conpherence-durable-column-view');
+     require_celerity_resource('font-lato');
++    require_celerity_resource('mozilla-motd-css');
+ 
+     Javelin::initBehavior('workflow', array());
+ 

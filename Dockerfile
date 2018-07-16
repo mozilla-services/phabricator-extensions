@@ -3,6 +3,7 @@ FROM mozilla/mozphab:e501d3db4c095975c291ec4a6320dcdd7693562d
 COPY extensions /app/moz-extensions
 
 # Move static resources to phabricator, add files to celerity map array
+COPY extensions/src/motd/css/MozillaMOTD.css /app/phabricator/webroot/rsrc/css/MozillaMOTD.css
 COPY extensions/src/auth/PhabricatorBMOAuth.css /app/phabricator/webroot/rsrc/css/PhabricatorBMOAuth.css
 COPY extensions/src/auth/PhabricatorBMOAuth.js /app/phabricator/webroot/rsrc/js/PhabricatorBMOAuth.js
 
