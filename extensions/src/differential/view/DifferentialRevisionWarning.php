@@ -23,7 +23,8 @@ class DifferentialRevisionWarning extends Phobject {
     $warning->setTitle(pht('This is a secure revision.'));
     $warning->setSeverity(PHUIInfoView::SEVERITY_WARNING);
     $warning->appendChild(hsprintf(pht(
-      'Please use Bugzilla CC list to manage access to this revision.<br/>' .
+      'Please use the CC list of the associated bug in Bugzilla to manage access and ' .
+      'subscribership of this revision. Changes made here may be overwritten.<br/>' .
       'Please do not land this revision using `arc land` to prevent data leakage.')));
     return $warning->render();
   }
