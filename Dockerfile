@@ -34,5 +34,7 @@ COPY update_build_url.py /app
 RUN /app/update_build_url.py
 
 RUN chown -R app:app /app
+RUN chmod +x /app/moz-extensions/bin/*
+
 USER app
 VOLUME ["/app"]
