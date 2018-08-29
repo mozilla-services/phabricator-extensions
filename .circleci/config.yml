@@ -1,0 +1,118 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# These environment variables must be set in CircleCI UI
+#
+# DOCKERHUB_REPO - docker hub repo, format: <username>/<repo>
+# DOCKER_EMAIL   - login info for docker hub
+# DOCKER_USER
+# DOCKER_PASS
+
+version: 2
+jobs:
+  build:
+    docker:
+      - image: docker:17.06.1-ce
+    steps:
+      - setup_remote_docker
+      - checkout
+      - run:
+          name: Install pip
+          command: |
+            echo "http://dl-cdn.alpinelinux.org/alpine/v3.8/community" >> /etc/apk/repositories && \
+            echo "http://dl-cdn.alpinelinux.org/alpine/v3.8/main" >> /etc/apk/repositories && \
+            apk add --no-cache bash curl python3 sudo && \
+            python3 -m ensurepip && \
+            rm -r /usr/lib/python*/ensurepip && \
+            pip3 install --upgrade pip setuptools && \
+            if [ ! -e /usr/bin/pip  ]; then ln -s pip3 /usr/bin/pip ; fi && \
+            if [[ ! -e /usr/bin/python  ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
+            rm -r /root/.cache
+      - run:
+          name: Install Dependencies
+          command: pip install -r requirements.txt
+      - run:
+          name: Install Docker Compose
+          command: |
+            sudo curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+      - run:
+          name: create phabext.json
+          command: invoke version > phabext.json
+      - run: 'mkdir /artifacts && cp phabext.json /artifacts/phabext.json'
+      - run: invoke build
+      #- run: invoke build_test
+      #- run: invoke test
+      #- run: docker inspect $(invoke imageid)
+      - run: invoke imageid | tee /artifacts/docker-image-shasum256.txt
+      - deploy:
+          name: dockerhub latest
+          branch: master
+          command: |
+            if [[ !-z $DOCKERHUB_REPO ]]; then
+              docker login -e "$DOCKER_EMAIL" -u "$DOCKER_USER" -p "$DOCKER_PASS"
+              docker tag  "${DOCKERHUB_REPO}" "${DOCKERHUB_REPO}:${CIRCLE_SHA1}"
+              docker push "${DOCKERHUB_REPO}:${CIRCLE_SHA1}"
+              docker push "${DOCKERHUB_REPO}:latest"
+            fi
+      - deploy:
+          name: dockerhub tags
+          tags: /.*/
+          command: |
+            if [[ !-z $DOCKERHUB_REPO ]]; then
+              docker login -e "$DOCKER_EMAIL" -u "$DOCKER_USER" -p "$DOCKER_PASS"
+              docker tag  "${DOCKERHUB_REPO}" "${DOCKERHUB_REPO}:${CIRCLE_SHA1}"
+              docker push "${DOCKERHUB_REPO}:${CIRCLE_SHA1}"
+            fi
+      - store_artifacts:
+          path: /artifacts
+
+# machine:
+#   pre:
+#     - curl -sSL https://s3.amazonaws.com/circle-downloads/install-circleci-docker.sh | bash -s -- 1.10.0
+#     - curl -L https://github.com/docker/compose/releases/download/1.10.0/docker-compose-`uname -s`-`uname -m` > /home/ubuntu/bin/docker-compose
+#     - chmod +x /home/ubuntu/bin/docker-compose
+#     - docker-compose version
+#   services:
+#     - docker
+#   python:
+#     version: 3.5.2
+
+# dependencies:
+#   override:
+#     - pip install -r requirements.txt
+#     - docker info
+
+# compile:
+#   override:
+#     - invoke version >> phabext.json
+#     - cp phabext.json $CIRCLE_ARTIFACTS
+
+#     # build the image
+#     - invoke build
+#     - invoke build_test
+#     - invoke imageid | tee $CIRCLE_ARTIFACTS/docker-image-shasum256.txt
+
+# test:
+#   override:
+#     - invoke test
+#     - docker inspect $(invoke imageid)
+
+# deployment:
+#   dockerhub_latest:
+#     branch: "master"
+#     commands:
+#       - "[ ! -z $DOCKERHUB_REPO ]"
+#       - "docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS"
+#       - "docker tag $DOCKERHUB_REPO $DOCKERHUB_REPO:$CIRCLE_SHA1"
+#       - "docker push $DOCKERHUB_REPO:$CIRCLE_SHA1"
+#       - "docker push $DOCKERHUB_REPO:latest"
+
+#   dockerhub_tags:
+#     # push all tags
+#     tag: /.*/
+#     commands:
+#       - "[ ! -z $DOCKERHUB_REPO ]"
+#       - "docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS"
+#       - "docker tag $DOCKERHUB_REPO $DOCKERHUB_REPO:$CIRCLE_TAG"
+#       - "docker push $DOCKERHUB_REPO:$CIRCLE_TAG"
