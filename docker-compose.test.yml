@@ -18,8 +18,6 @@ services:
     restart: on-failure
     depends_on:
       - phabdb
-    volumes:
-      - ./extensions:/app/moz-extensions
 
   phabdb:
     image: mysql:5.5
