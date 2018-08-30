@@ -41,6 +41,7 @@ jobs:
       - run: docker inspect $(invoke imageid)
       - run: invoke imageid | tee /artifacts/docker-image-shasum256.txt
       - deploy:
+          name: Deploy to docker hub
           command: |
             [[ -n "$DOCKERHUB_REPO" && -n "$DOCKER_USER" && -n "$DOCKER_PASS" ]] || exit 0
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
