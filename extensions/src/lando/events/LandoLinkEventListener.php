@@ -36,29 +36,17 @@ final class LandoLinkEventListener extends PhabricatorEventListener {
       return;
     }
 
-    // View in Lando Action
-    $lando_revision_uri = (string) id(new PhutilURI($lando_uri))
-      ->setPath('/revisions/D' . $object->getID() . '/' . $active_diff->getID());
-
-    $action = id(new PhabricatorActionView())
-      ->setHref($lando_revision_uri)
-      ->setName(pht('View in Lando'))
-      ->setIcon('fa-link')
-      ->setDisabled(!$object->isAccepted());
-
-    $actions = $event->getValue('actions');
-    $actions[] = $action;
-
-    // View stack in Lando (beta) Action
+    // View stack in Lando Action
     $lando_stack_uri = (string) id(new PhutilURI($lando_uri))
       ->setPath('/D' . $object->getID() . '/');
 
     $action = id(new PhabricatorActionView())
       ->setHref($lando_stack_uri)
-      ->setName(pht('View stack in Lando (beta)'))
+      ->setName(pht('View stack in Lando'))
       ->setIcon('fa-link')
       ->setDisabled(!$object->isAccepted());
 
+    $actions = $event->getValue('actions');
     $actions[] = $action;
 
     $event->setValue('actions', $actions);
