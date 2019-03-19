@@ -77,3 +77,12 @@ class map:
 To test changes in code:
 
 `$ invoke test`
+
+## Useful debugging commands
+```
+docker-compose -f docker-compose.yml -f docker-compose.bmo.yml exec phabricator vi <filename>
+
+docker-compose -f docker-compose.yml -f docker-compose.bmo.yml exec phabricator /app/phabricator/bin/differential extract <commit-sha>
+
+docker-compose -f docker-compose.yml -f docker-compose.bmo.yml exec phabdb mysql --user=root --password=password
+```
