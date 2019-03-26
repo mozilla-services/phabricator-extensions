@@ -30,7 +30,8 @@ final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
 
   public function execute(ConduitAPIRequest $request) {
     $results = array();
-    $pager = $this->newPager($request);
+
+    $pager = id(new AphrontCursorPagerView());
     $user = $request->getUser();
 
     $view_type = $request->getValue('view');
@@ -49,12 +50,12 @@ final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
 
     $after = $request->getValue('after');
     if (strlen($after)) {
-      $query->setAfterID($after);
+      $pager->setAfterID($after);
     }
 
     $before = $request->getValue('before');
     if (strlen($before)) {
-      $query->setBeforeID($before);
+      $pager->setBeforeID($before);
     }
 
     $stories = $query->executeWithCursorPager($pager);

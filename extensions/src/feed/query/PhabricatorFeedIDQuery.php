@@ -5,7 +5,7 @@ class PhabricatorFeedIDQuery
 
   // Hardcode table value to 'story' because in feed.query_id we
   // are paging off of the ID value instead of chronologicalKey.
-  // The story data table has an ID column where the story 
+  // The story data table has an ID column where the story
   // references table does not.
   public function getOrderableColumns() {
     return array(
@@ -18,11 +18,18 @@ class PhabricatorFeedIDQuery
     );
   }
 
-  public function getResultCursor($item) {
-    if ($item instanceof PhabricatorFeedStory) {
-      return $item->getStoryData()->getID();
-    }
-    return $item['id'];
+  public function applyExternalCursorConstraintsToQuery(
+    PhabricatorCursorPagedPolicyAwareQuery $subquery,
+    $cursor) {
+    $subquery->withIDs(array($cursor));
+  }
+
+  public function newExternalCursorStringForResult($object) {
+    return $object->getStoryData()->getID();
+  }
+
+  public function newPagingMapFromPartialObject($object) {
+    return array('key' => $object['id'],);
   }
 }
 
