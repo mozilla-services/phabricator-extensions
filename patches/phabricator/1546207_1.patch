@@ -1,0 +1,24 @@
+diff --git a/src/applications/differential/xaction/DifferentialRevisionCloseTransaction.php b/src/applications/differential/xaction/DifferentialRevisionCloseTransaction.php
+index 857bcc870b..6832108dc3 100644
+--- a/src/applications/differential/xaction/DifferentialRevisionCloseTransaction.php
++++ b/src/applications/differential/xaction/DifferentialRevisionCloseTransaction.php
+@@ -100,8 +100,17 @@ final class DifferentialRevisionCloseTransaction
+         $this->renderAuthor());
+     }
+ 
+-    $author_phid = $commit->getAuthorDisplayPHID();
+-    $committer_phid = $commit->getCommitterDisplayPHID();
++    $author_phid = null;
++    if ($commit->hasAuthorIdentity()) {
++      $identity = $commit->getAuthorIdentity();
++      $author_phid = $identity->getIdentityDisplayPHID();
++    }
++
++    $committer_phid = null;
++    if ($commit->hasCommitterIdentity()) {
++      $identity = $commit->getCommitterIdentity();
++      $committer_phid = $identity->getIdentityDisplayPHID();
++    }
+ 
+     if (!$author_phid) {
+       return pht(
