@@ -1,0 +1,70 @@
+diff --git a/src/applications/differential/engine/DifferentialDiffExtractionEngine.php b/src/applications/differential/engine/DifferentialDiffExtractionEngine.php
+index 08e0a344e0..0cfd9599a9 100644
+--- a/src/applications/differential/engine/DifferentialDiffExtractionEngine.php
++++ b/src/applications/differential/engine/DifferentialDiffExtractionEngine.php
+@@ -113,7 +113,40 @@ final class DifferentialDiffExtractionEngine extends Phobject {
+ 
+     // TODO: Attach binary files.
+ 
+-    return $diff->save();
++    $diff->save();
++
++    $commit_data = $commit->getCommitData();
++    $message = $commit_data->getCommitMessage();
++
++    $properties = array(
++      'local:commits' => array(
++        $identifier => array(
++          'author' => $commit_data->getCommitDetail('authorName'),
++          'commit' => $identifier,
++          'rev' => $identifier,
++          'authorEmail' => $commit_data->getCommitDetail('authorEmail'),
++          'summary' => $commit_data->summarizeCommitMessage($message),
++          'message' => $message,
++        ),
++      ),
++    );
++
++    foreach ($properties as $name => $value) {
++      $property = id(new DifferentialDiffProperty())->loadOneWhere(
++        'diffID = %d AND name = %s',
++        $diff->getID(),
++        $name);
++      if (!$property) {
++        $property = id(new DifferentialDiffProperty())
++          ->setDiffID($diff->getID())
++          ->setName($name);
++      }
++      $property
++        ->setData($value)
++        ->save();
++    }
++
++    return $diff;
+   }
+ 
+   public function isDiffChangedBeforeCommit(
+diff --git a/src/applications/differential/management/PhabricatorDifferentialExtractWorkflow.php b/src/applications/differential/management/PhabricatorDifferentialExtractWorkflow.php
+index 3afe232c42..1b8ff48139 100644
+--- a/src/applications/differential/management/PhabricatorDifferentialExtractWorkflow.php
++++ b/src/applications/differential/management/PhabricatorDifferentialExtractWorkflow.php
+@@ -47,6 +47,7 @@ final class PhabricatorDifferentialExtractWorkflow
+           $extract));
+     }
+ 
++    $commit->attachCommitData($commit->loadCommitData());
+     $diff = id(new DifferentialDiffExtractionEngine())
+       ->setViewer($viewer)
+       ->newDiffFromCommit($commit);
+diff --git a/src/applications/repository/worker/commitmessageparser/PhabricatorRepositoryCommitMessageParserWorker.php b/src/applications/repository/worker/commitmessageparser/PhabricatorRepositoryCommitMessageParserWorker.php
+index e6c9f499b1..656e0461c5 100644
+--- a/src/applications/repository/worker/commitmessageparser/PhabricatorRepositoryCommitMessageParserWorker.php
++++ b/src/applications/repository/worker/commitmessageparser/PhabricatorRepositoryCommitMessageParserWorker.php
+@@ -265,6 +265,7 @@ abstract class PhabricatorRepositoryCommitMessageParserWorker
+ 
+           $content_source = $this->newContentSource();
+ 
++          $commit->attachCommitData($data);
+           $extraction_engine->updateRevisionWithCommit(
+             $revision,
+             $commit,
