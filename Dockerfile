@@ -1,4 +1,4 @@
-FROM mozilla/mozphab:e2bbac534d0e7faa56b26e4b3a316978a1873605
+FROM mozilla/mozphab:b5703f8484b078dde0e2b489ee779df941172e01
 
 COPY extensions /app/moz-extensions
 
@@ -14,6 +14,7 @@ ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV COMPOSER_VENDOR_DIR /app/phabricator/externals/extensions
 RUN \
     curl -sS https://getcomposer.org/installer | php && \
+    php composer.phar require --no-plugins --no-scripts "php-http/guzzle6-adapter" && \
     php composer.phar require --no-plugins --no-scripts "sentry/sentry"
 
 # Apply customization patches

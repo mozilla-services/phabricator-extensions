@@ -1,5 +1,5 @@
 diff --git a/src/applications/differential/engine/DifferentialDiffExtractionEngine.php b/src/applications/differential/engine/DifferentialDiffExtractionEngine.php
-index 08e0a344e0..0cfd9599a9 100644
+index 6ffe33333..03c9875b2 100644
 --- a/src/applications/differential/engine/DifferentialDiffExtractionEngine.php
 +++ b/src/applications/differential/engine/DifferentialDiffExtractionEngine.php
 @@ -113,7 +113,40 @@ final class DifferentialDiffExtractionEngine extends Phobject {
@@ -45,7 +45,7 @@ index 08e0a344e0..0cfd9599a9 100644
  
    public function isDiffChangedBeforeCommit(
 diff --git a/src/applications/differential/management/PhabricatorDifferentialExtractWorkflow.php b/src/applications/differential/management/PhabricatorDifferentialExtractWorkflow.php
-index 3afe232c42..1b8ff48139 100644
+index 3afe232c4..1b8ff4813 100644
 --- a/src/applications/differential/management/PhabricatorDifferentialExtractWorkflow.php
 +++ b/src/applications/differential/management/PhabricatorDifferentialExtractWorkflow.php
 @@ -47,6 +47,7 @@ final class PhabricatorDifferentialExtractWorkflow
@@ -56,15 +56,16 @@ index 3afe232c42..1b8ff48139 100644
      $diff = id(new DifferentialDiffExtractionEngine())
        ->setViewer($viewer)
        ->newDiffFromCommit($commit);
-diff --git a/src/applications/repository/worker/commitmessageparser/PhabricatorRepositoryCommitMessageParserWorker.php b/src/applications/repository/worker/commitmessageparser/PhabricatorRepositoryCommitMessageParserWorker.php
-index e6c9f499b1..656e0461c5 100644
---- a/src/applications/repository/worker/commitmessageparser/PhabricatorRepositoryCommitMessageParserWorker.php
-+++ b/src/applications/repository/worker/commitmessageparser/PhabricatorRepositoryCommitMessageParserWorker.php
-@@ -265,6 +265,7 @@ abstract class PhabricatorRepositoryCommitMessageParserWorker
+diff --git a/src/applications/diffusion/worker/DiffusionUpdateObjectAfterCommitWorker.php b/src/applications/diffusion/worker/DiffusionUpdateObjectAfterCommitWorker.php
+index a0a18c066..462e6ce3c 100644
+--- a/src/applications/diffusion/worker/DiffusionUpdateObjectAfterCommitWorker.php
++++ b/src/applications/diffusion/worker/DiffusionUpdateObjectAfterCommitWorker.php
+@@ -184,7 +184,7 @@ final class DiffusionUpdateObjectAfterCommitWorker
+       ->setAuthorPHID($acting_phid);
  
-           $content_source = $this->newContentSource();
- 
-+          $commit->attachCommitData($data);
-           $extraction_engine->updateRevisionWithCommit(
-             $revision,
-             $commit,
+     $content_source = $this->newContentSource();
+-
++    $commit->attachCommitData($data);
+     $extraction_engine->updateRevisionWithCommit(
+       $revision,
+       $commit,

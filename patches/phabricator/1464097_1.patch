@@ -1,8 +1,8 @@
 diff --git a/src/applications/differential/editor/DifferentialTransactionEditor.php b/src/applications/differential/editor/DifferentialTransactionEditor.php
-index 5bc33dabe..9d6a85164 100644
+index 015050072..05a9715cd 100644
 --- a/src/applications/differential/editor/DifferentialTransactionEditor.php
 +++ b/src/applications/differential/editor/DifferentialTransactionEditor.php
-@@ -501,11 +501,6 @@ final class DifferentialTransactionEditor
+@@ -472,11 +472,6 @@ final class DifferentialTransactionEditor
    protected function shouldPublishFeedStory(
      PhabricatorLiskDAO $object,
      array $xactions) {
@@ -14,7 +14,7 @@ index 5bc33dabe..9d6a85164 100644
      return true;
    }
  
-@@ -1599,113 +1594,6 @@ final class DifferentialTransactionEditor
+@@ -1562,121 +1557,6 @@ final class DifferentialTransactionEditor
  
  
    protected function didApplyTransactions($object, array $xactions) {
@@ -125,14 +125,22 @@ index 5bc33dabe..9d6a85164 100644
 -      }
 -    }
 -
-     // If the revision is new or was a draft, and is no longer a draft, we
-     // might be sending the first email about it.
+-    // If the revision is new or was a draft, and is no longer a draft, we
+-    // might be sending the first email about it.
+-
+-    // This might mean it was created directly into a non-draft state, or
+-    // it just automatically undrafted after builds finished, or a user
+-    // explicitly promoted it out of the draft state with an action like
+-    // "Request Review".
+-
+     // If we haven't sent any email about it yet, mark this email as the first
+     // email so the mail gets enriched with "SUMMARY" and "TEST PLAN".
  
 diff --git a/src/applications/differential/xaction/DifferentialRevisionRequestReviewTransaction.php b/src/applications/differential/xaction/DifferentialRevisionRequestReviewTransaction.php
-index a3d2699c7..098a64b22 100644
+index 169e41dec..402fe8041 100644
 --- a/src/applications/differential/xaction/DifferentialRevisionRequestReviewTransaction.php
 +++ b/src/applications/differential/xaction/DifferentialRevisionRequestReviewTransaction.php
-@@ -61,7 +61,12 @@ final class DifferentialRevisionRequestReviewTransaction
+@@ -74,7 +74,12 @@ final class DifferentialRevisionRequestReviewTransaction
  
      // When revisions automatically promote out of "Draft" after builds finish,
      // the viewer may be acting as the Harbormaster application.

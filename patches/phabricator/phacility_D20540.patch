@@ -1,0 +1,277 @@
+diff --git a/src/applications/audit/storage/PhabricatorAuditTransaction.php b/src/applications/audit/storage/PhabricatorAuditTransaction.php
+index da312e626..e6c106209 100644
+--- a/src/applications/audit/storage/PhabricatorAuditTransaction.php
++++ b/src/applications/audit/storage/PhabricatorAuditTransaction.php
+@@ -50,7 +50,7 @@ final class PhabricatorAuditTransaction
+ 
+     switch ($type) {
+       case self::TYPE_COMMIT:
+-        return 3.0;
++        return 300;
+     }
+ 
+     return parent::getActionStrength();
+diff --git a/src/applications/differential/storage/DifferentialTransaction.php b/src/applications/differential/storage/DifferentialTransaction.php
+index c49e40f98..c0b6a9291 100644
+--- a/src/applications/differential/storage/DifferentialTransaction.php
++++ b/src/applications/differential/storage/DifferentialTransaction.php
+@@ -130,7 +130,7 @@ final class DifferentialTransaction
+   public function getActionStrength() {
+     switch ($this->getTransactionType()) {
+       case self::TYPE_ACTION:
+-        return 3;
++        return 300;
+     }
+ 
+     return parent::getActionStrength();
+diff --git a/src/applications/differential/xaction/DifferentialRevisionActionTransaction.php b/src/applications/differential/xaction/DifferentialRevisionActionTransaction.php
+index 99dc8bebc..338fde99b 100644
+--- a/src/applications/differential/xaction/DifferentialRevisionActionTransaction.php
++++ b/src/applications/differential/xaction/DifferentialRevisionActionTransaction.php
+@@ -40,7 +40,7 @@ abstract class DifferentialRevisionActionTransaction
+   }
+ 
+   public function getActionStrength() {
+-    return 3;
++    return 300;
+   }
+ 
+   public function getRevisionActionOrderVector() {
+diff --git a/src/applications/differential/xaction/DifferentialRevisionUpdateTransaction.php b/src/applications/differential/xaction/DifferentialRevisionUpdateTransaction.php
+index ab544b1c6..38742357d 100644
+--- a/src/applications/differential/xaction/DifferentialRevisionUpdateTransaction.php
++++ b/src/applications/differential/xaction/DifferentialRevisionUpdateTransaction.php
+@@ -99,7 +99,7 @@ final class DifferentialRevisionUpdateTransaction
+   }
+ 
+   public function getActionStrength() {
+-    return 2;
++    return 200;
+   }
+ 
+   public function getTitle() {
+diff --git a/src/applications/differential/xaction/DifferentialRevisionWrongBuildsTransaction.php b/src/applications/differential/xaction/DifferentialRevisionWrongBuildsTransaction.php
+index 8d96b600e..d9ea50f60 100644
+--- a/src/applications/differential/xaction/DifferentialRevisionWrongBuildsTransaction.php
++++ b/src/applications/differential/xaction/DifferentialRevisionWrongBuildsTransaction.php
+@@ -26,7 +26,7 @@ final class DifferentialRevisionWrongBuildsTransaction
+   }
+ 
+   public function getActionStrength() {
+-    return 4;
++    return 400;
+   }
+ 
+   public function getTitle() {
+diff --git a/src/applications/differential/xaction/DifferentialRevisionWrongStateTransaction.php b/src/applications/differential/xaction/DifferentialRevisionWrongStateTransaction.php
+index 47678e886..c9948658e 100644
+--- a/src/applications/differential/xaction/DifferentialRevisionWrongStateTransaction.php
++++ b/src/applications/differential/xaction/DifferentialRevisionWrongStateTransaction.php
+@@ -22,7 +22,7 @@ final class DifferentialRevisionWrongStateTransaction
+   }
+ 
+   public function getActionStrength() {
+-    return 4;
++    return 400;
+   }
+ 
+   public function getTitle() {
+diff --git a/src/applications/maniphest/xaction/ManiphestTaskOwnerTransaction.php b/src/applications/maniphest/xaction/ManiphestTaskOwnerTransaction.php
+index caaf84f54..7f58c5dca 100644
+--- a/src/applications/maniphest/xaction/ManiphestTaskOwnerTransaction.php
++++ b/src/applications/maniphest/xaction/ManiphestTaskOwnerTransaction.php
+@@ -31,7 +31,7 @@ final class ManiphestTaskOwnerTransaction
+   }
+ 
+   public function getActionStrength() {
+-    return 1.2;
++    return 120;
+   }
+ 
+   public function getActionName() {
+diff --git a/src/applications/maniphest/xaction/ManiphestTaskPriorityTransaction.php b/src/applications/maniphest/xaction/ManiphestTaskPriorityTransaction.php
+index 398808e00..2a53bf7ef 100644
+--- a/src/applications/maniphest/xaction/ManiphestTaskPriorityTransaction.php
++++ b/src/applications/maniphest/xaction/ManiphestTaskPriorityTransaction.php
+@@ -27,7 +27,7 @@ final class ManiphestTaskPriorityTransaction
+   }
+ 
+   public function getActionStrength() {
+-    return 1.1;
++    return 110;
+   }
+ 
+   public function getActionName() {
+diff --git a/src/applications/maniphest/xaction/ManiphestTaskStatusTransaction.php b/src/applications/maniphest/xaction/ManiphestTaskStatusTransaction.php
+index 6f4b558e0..f16315013 100644
+--- a/src/applications/maniphest/xaction/ManiphestTaskStatusTransaction.php
++++ b/src/applications/maniphest/xaction/ManiphestTaskStatusTransaction.php
+@@ -22,7 +22,7 @@ final class ManiphestTaskStatusTransaction
+   }
+ 
+   public function getActionStrength() {
+-    return 1.3;
++    return 130;
+   }
+ 
+   public function getActionName() {
+diff --git a/src/applications/maniphest/xaction/ManiphestTaskTitleTransaction.php b/src/applications/maniphest/xaction/ManiphestTaskTitleTransaction.php
+index 7dd921776..c01c263ba 100644
+--- a/src/applications/maniphest/xaction/ManiphestTaskTitleTransaction.php
++++ b/src/applications/maniphest/xaction/ManiphestTaskTitleTransaction.php
+@@ -14,7 +14,7 @@ final class ManiphestTaskTitleTransaction
+   }
+ 
+   public function getActionStrength() {
+-    return 1.4;
++    return 140;
+   }
+ 
+   public function getActionName() {
+diff --git a/src/applications/pholio/xaction/PholioMockNameTransaction.php b/src/applications/pholio/xaction/PholioMockNameTransaction.php
+index 82fb92fe4..aae0523f3 100644
+--- a/src/applications/pholio/xaction/PholioMockNameTransaction.php
++++ b/src/applications/pholio/xaction/PholioMockNameTransaction.php
+@@ -10,7 +10,7 @@ final class PholioMockNameTransaction
+   }
+ 
+   public function getActionStrength() {
+-    return 1.4;
++    return 140;
+   }
+ 
+   public function applyInternalEffects($object, $value) {
+diff --git a/src/applications/phriction/xaction/PhrictionDocumentDeleteTransaction.php b/src/applications/phriction/xaction/PhrictionDocumentDeleteTransaction.php
+index b1d894b96..66df07580 100644
+--- a/src/applications/phriction/xaction/PhrictionDocumentDeleteTransaction.php
++++ b/src/applications/phriction/xaction/PhrictionDocumentDeleteTransaction.php
+@@ -19,7 +19,7 @@ final class PhrictionDocumentDeleteTransaction
+   }
+ 
+   public function getActionStrength() {
+-    return 1.5;
++    return 150;
+   }
+ 
+   public function getActionName() {
+diff --git a/src/applications/phriction/xaction/PhrictionDocumentEditTransaction.php b/src/applications/phriction/xaction/PhrictionDocumentEditTransaction.php
+index 313065831..d99846fa9 100644
+--- a/src/applications/phriction/xaction/PhrictionDocumentEditTransaction.php
++++ b/src/applications/phriction/xaction/PhrictionDocumentEditTransaction.php
+@@ -32,7 +32,7 @@ abstract class PhrictionDocumentEditTransaction
+   }
+ 
+   public function getActionStrength() {
+-    return 1.3;
++    return 130;
+   }
+ 
+   public function getActionName() {
+diff --git a/src/applications/phriction/xaction/PhrictionDocumentMoveToTransaction.php b/src/applications/phriction/xaction/PhrictionDocumentMoveToTransaction.php
+index 180c26394..d18c436cd 100644
+--- a/src/applications/phriction/xaction/PhrictionDocumentMoveToTransaction.php
++++ b/src/applications/phriction/xaction/PhrictionDocumentMoveToTransaction.php
+@@ -37,7 +37,7 @@ final class PhrictionDocumentMoveToTransaction
+   }
+ 
+   public function getActionStrength() {
+-    return 1.0;
++    return 100;
+   }
+ 
+   public function getActionName() {
+diff --git a/src/applications/phriction/xaction/PhrictionDocumentTitleTransaction.php b/src/applications/phriction/xaction/PhrictionDocumentTitleTransaction.php
+index 25a77efff..134a4540e 100644
+--- a/src/applications/phriction/xaction/PhrictionDocumentTitleTransaction.php
++++ b/src/applications/phriction/xaction/PhrictionDocumentTitleTransaction.php
+@@ -21,7 +21,7 @@ final class PhrictionDocumentTitleTransaction
+   }
+ 
+   public function getActionStrength() {
+-    return 1.4;
++    return 140;
+   }
+ 
+   public function getActionName() {
+diff --git a/src/applications/transactions/editor/PhabricatorApplicationTransactionEditor.php b/src/applications/transactions/editor/PhabricatorApplicationTransactionEditor.php
+index b383d0605..7079bcf1c 100644
+--- a/src/applications/transactions/editor/PhabricatorApplicationTransactionEditor.php
++++ b/src/applications/transactions/editor/PhabricatorApplicationTransactionEditor.php
+@@ -3228,7 +3228,7 @@ abstract class PhabricatorApplicationTransactionEditor
+   protected function getStrongestAction(
+     PhabricatorLiskDAO $object,
+     array $xactions) {
+-    return last(msort($xactions, 'getActionStrength'));
++    return head(msort($xactions, 'newActionStrengthSortVector'));
+   }
+ 
+ 
+@@ -3697,8 +3697,7 @@ abstract class PhabricatorApplicationTransactionEditor
+     PhabricatorLiskDAO $object,
+     array $xactions) {
+ 
+-    $xactions = msort($xactions, 'getActionStrength');
+-    $xactions = array_reverse($xactions);
++    $xactions = msortv($xactions, 'newActionStrengthSortVector');
+ 
+     return array(
+       'objectPHID'        => $object->getPHID(),
+diff --git a/src/applications/transactions/storage/PhabricatorApplicationTransaction.php b/src/applications/transactions/storage/PhabricatorApplicationTransaction.php
+index a55d5ce73..2311a8212 100644
+--- a/src/applications/transactions/storage/PhabricatorApplicationTransaction.php
++++ b/src/applications/transactions/storage/PhabricatorApplicationTransaction.php
+@@ -1355,35 +1355,35 @@ abstract class PhabricatorApplicationTransaction
+ 
+   public function getActionStrength() {
+     if ($this->isInlineCommentTransaction()) {
+-      return 0.25;
++      return 250;
+     }
+ 
+     switch ($this->getTransactionType()) {
+       case PhabricatorTransactions::TYPE_COMMENT:
+-        return 0.5;
++        return 500;
+       case PhabricatorTransactions::TYPE_SUBSCRIBERS:
+         if ($this->isSelfSubscription()) {
+           // Make this weaker than TYPE_COMMENT.
+-          return 0.25;
++          return 250;
+         }
+ 
+         if ($this->isApplicationAuthor()) {
+           // When applications (most often: Herald) change subscriptions it
+           // is very uninteresting.
+-          return 0.000000001;
++          return 1;
+         }
+ 
+         // In other cases, subscriptions are more interesting than comments
+         // (which are shown anyway) but less interesting than any other type of
+         // transaction.
+-        return 0.75;
++        return 750;
+       case PhabricatorTransactions::TYPE_MFA:
+         // We want MFA signatures to render at the top of transaction groups,
+         // on top of the things they signed.
+-        return 10;
++        return 10000;
+     }
+ 
+-    return 1.0;
++    return 1000;
+   }
+ 
+   public function isCommentTransaction() {
+@@ -1703,6 +1703,11 @@ abstract class PhabricatorApplicationTransaction
+     return array($done, $undone);
+   }
+ 
++  public function newActionStrengthSortVector() {
++    return id(new PhutilSortVector())
++      ->addInt(-$this->getActionStrength());
++  }
++
+ 
+ /* -(  PhabricatorPolicyInterface Implementation  )-------------------------- */
+ 
