@@ -59,43 +59,50 @@ class SentryLoggerPlugin extends Phobject {
       return;
     }
 
-    // Configure the client
     $root = phutil_get_library_root('phabricator');
     $root = dirname($root);
     require_once $root . '/externals/extensions/autoload.php';
-    $client = new Raven_Client($sentry_dsn, array(
-      'processors' => array(
-        'Raven_Processor_SanitizeHttpHeadersProcessor', // Sanitize the HTTP headers
-      ),
-      'processorOptions' => array(
-        'Raven_Processor_SanitizeHttpHeadersProcessor' => array(
-          'sanitize_http_headers' => array('Cookie', 'X-Phabricator-Csfr')
-        )
-      ),
-      'send_callback' => function(&$data) {
-        // Sanitize HTTP POST data
-        $fields_re = '/^(__csrf__|token)$/i';
-        $sanitize = function(&$item, $key, $fields_re) {
-          if (empty($key)) {
-            return;
-          }
-          if (preg_match($fields_re, $key)) {
-            $item = '********';
-          }
-        };
-        array_walk_recursive($data['request']['data'], $sanitize, $fields_re);
 
-        // Sanitize query string
-        $query_data = self::parse_query_str($data['request']['query_string']);
-        array_walk_recursive($query_data, $sanitize, $fields_re);
-        $data['request']['query_string'] = self::generate_query_str($query_data);
+    $before_send = function(Sentry\Event $event) {
+      $integration = new Sentry\Integration\RequestIntegration(new Sentry\Options());
+      Sentry\Integration\RequestIntegration::applyToEvent($integration, $event);
+      $request = $event->getRequest();
 
-        // Sanitize cookie data
-        if (isset($data['request']['cookies'])) {
-          $data['request']['cookies']['phsid'] = '********';
+      // Sanitize HTTP POST data
+      $fields_re = '/^(__csrf__|token)$/i';
+      $sanitize = function(&$item, $key, $fields_re) {
+        if (empty($key)) {
+          return;
         }
+        if (preg_match($fields_re, $key)) {
+          $item = '********';
+        }
+      };
+      array_walk_recursive($request['data'], $sanitize, $fields_re);
+
+      // Sanitize query string
+      $query_data = self::parse_query_str($request['query_string']);
+      array_walk_recursive($query_data, $sanitize, $fields_re);
+      $request['query_string'] = self::generate_query_str($query_data);
+
+      // Sanitize cookie data
+      if (isset($request['cookies'])) {
+        $request['cookies']['phsid'] = '********';
       }
-    ));
+
+      // Sanitize header data
+      $headers_re = '/^(Cookie|X-Phabricator-Csfr)$/i';
+      array_walk_recursive($request['headers'], $sanitize, $headers_re);
+
+      $event->setRequest($request);
+      return $event;
+    };
+
+    // Configure the client
+    $clientBuilder = Sentry\ClientBuilder::create(['dsn' => $sentry_dsn]);
+    $client = $clientBuilder->getClient();
+    $options = $client->getOptions();
+    $options->setBeforeSendCallback($before_send);
 
     switch ($event) {
       case PhutilErrorHandler::EXCEPTION:
