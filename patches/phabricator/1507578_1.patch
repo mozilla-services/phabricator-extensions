@@ -1,8 +1,8 @@
 diff --git a/src/applications/audit/editor/PhabricatorAuditEditor.php b/src/applications/audit/editor/PhabricatorAuditEditor.php
-index d3bd7be7a..8fb1aad2b 100644
+index 7995e2a36..cf4608c65 100644
 --- a/src/applications/audit/editor/PhabricatorAuditEditor.php
 +++ b/src/applications/audit/editor/PhabricatorAuditEditor.php
-@@ -404,6 +404,8 @@ final class PhabricatorAuditEditor
+@@ -402,6 +402,8 @@ final class PhabricatorAuditEditor
          ->setMetadataValue('edge:type', $reverts_edge)
          ->setNewValue(array('+' => $reverted_phids));
  
@@ -11,7 +11,7 @@ index d3bd7be7a..8fb1aad2b 100644
        $phid_map[] = $reverted_phids;
      }
  
-@@ -840,4 +842,66 @@ final class PhabricatorAuditEditor
+@@ -838,4 +840,66 @@ final class PhabricatorAuditEditor
      $commit->attachAudits($with_auditors->getAudits());
    }
  
@@ -19,7 +19,7 @@ index d3bd7be7a..8fb1aad2b 100644
 +    $commits = array();
 +    $revisions = array();
 +    foreach ($reverted_objects as $object) {
-+      if ($object instanceof PhabricatorRepositoryCommit)) {
++      if ($object instanceof PhabricatorRepositoryCommit) {
 +        $commits[] = $object;
 +      }
 +      if ($object instanceof PhabricatorDifferentialRevision) {
