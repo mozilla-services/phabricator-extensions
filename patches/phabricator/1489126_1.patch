@@ -57,7 +57,7 @@ index 3afe232c4..1b8ff4813 100644
        ->setViewer($viewer)
        ->newDiffFromCommit($commit);
 diff --git a/src/applications/diffusion/worker/DiffusionUpdateObjectAfterCommitWorker.php b/src/applications/diffusion/worker/DiffusionUpdateObjectAfterCommitWorker.php
-index b652ae86d..8e6fb2abb 100644
+index b652ae86d..0c225880d 100644
 --- a/src/applications/diffusion/worker/DiffusionUpdateObjectAfterCommitWorker.php
 +++ b/src/applications/diffusion/worker/DiffusionUpdateObjectAfterCommitWorker.php
 @@ -181,7 +181,7 @@ final class DiffusionUpdateObjectAfterCommitWorker
@@ -65,7 +65,7 @@ index b652ae86d..8e6fb2abb 100644
  
      $content_source = $this->newContentSource();
 -
-+    $commit->attachCommitData($commit->loadCommitDatadata());
++    $commit->attachCommitData($commit->loadCommitData());
      $extraction_engine->updateRevisionWithCommit(
        $revision,
        $commit,
