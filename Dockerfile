@@ -1,4 +1,4 @@
-FROM mozilla/mozphab:1c502cd59e75563a9ffa0c6a623706002bb8c846
+FROM mozilla/mozphab:d58b3cf1d2311fb815d44a961f298bea6f78c0ee
 
 COPY extensions /app/moz-extensions
 
