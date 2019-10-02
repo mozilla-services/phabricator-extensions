@@ -17,10 +17,15 @@ RUN \
     php composer.phar require sentry/sentry php-http/curl-client guzzlehttp/psr7
 
 # Apply customization patches
+# Phabricator
 COPY patches /app/patches
 RUN \
     cd /app/phabricator && \
     for i in /app/patches/phabricator/*.patch; do patch -p1 < $i; done
+# Sentry
+RUN \
+    cd /app/phabricator/externals/extensions/sentry/sentry && \
+    for i in /app/patches/sentry/*.patch; do patch -p1 < $i; done
 
 # Configure Phabricator to use moz-extensions library
 RUN \
