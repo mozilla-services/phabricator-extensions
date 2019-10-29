@@ -1,4 +1,4 @@
-FROM mozilla/mozphab:1e9b6ae8573d0550ea1a91fb0a64fffbddc9e29c
+FROM mozilla/mozphab:2db2e3faf2d878db405529f0861c0e140ee44fdf
 
 COPY extensions /app/moz-extensions
 
@@ -22,10 +22,6 @@ COPY patches /app/patches
 RUN \
     cd /app/phabricator && \
     for i in /app/patches/phabricator/*.patch; do patch -p1 < $i; done
-# Sentry
-RUN \
-    cd /app/phabricator/externals/extensions/sentry/sentry && \
-    for i in /app/patches/sentry/*.patch; do patch -p1 < $i; done
 
 # Configure Phabricator to use moz-extensions library
 RUN \
