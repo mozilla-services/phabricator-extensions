@@ -183,7 +183,7 @@ This test depends on unfinished changes to BMO.
   ```
 - Follow the instructions at https://github.com/mozilla-conduit/bmo-extensions/blob/master/HACKING.md
   - **\*WHILE DOING SO KEEP IN MIND:\***
-  - Make sure to put an empty {} in the `phabext.json` when you make it.
+  - Make sure to put an empty {} in the `version.json` when you make it.
   - If there are any custom changes you want to test in the phabricator-extensions
     repo, create a new git branch and merge the changes.
   - If there are any custom changes you want to test in for the bmo extensions,

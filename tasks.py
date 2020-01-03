@@ -6,21 +6,21 @@ import os
 
 from invoke import task
 
-DOCKER_IMAGE_NAME = os.getenv('DOCKERHUB_REPO', 'mozilla/phabext')
+DOCKER_IMAGE_NAME = os.getenv('DOCKERHUB_REPO', 'mozilla/phabricator')
 
 
 @task
 def version(ctx):
     """Print version information in JSON format."""
     print(json.dumps({
-        'phabext_commit':
+        'moz_phabricator_commit':
         os.getenv('CIRCLE_SHA1', None),
-        'phabext_version':
+        'moz_phabricator_version':
         os.getenv('CIRCLE_SHA1', None),
-        'phabext_source':
+        'moz_phabricator_source':
         'https://github.com/%s/%s' % (
-            os.getenv('CIRCLE_PROJECT_USERNAME', 'mozilla-services'),
-            os.getenv('CIRCLE_PROJECT_REPONAME', 'phabricator-extensions')
+            os.getenv('CIRCLE_PROJECT_USERNAME', 'mozilla-conduit'),
+            os.getenv('CIRCLE_PROJECT_REPONAME', 'phabricator')
         ),
         'build':
         os.getenv('CIRCLE_BUILD_URL', None),

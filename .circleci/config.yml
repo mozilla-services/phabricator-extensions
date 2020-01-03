@@ -30,11 +30,11 @@ jobs:
           name: Install Dependencies
           command: pip install -r requirements.txt && pip install docker-compose
       - run:
-          name: Create phabext.json
+          name: Create version.json
           command: |
-            invoke version > phabext.json && \
+            invoke version > version.json && \
             mkdir /artifacts && \
-            cp phabext.json /artifacts/phabext.json
+            cp version.json /artifacts/version.json
       - run: invoke build
       - run: invoke build_test
       - run: invoke test

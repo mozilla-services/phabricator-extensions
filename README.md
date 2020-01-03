@@ -12,8 +12,8 @@
  1. For Phabricator only, from within the `phabricator-extensions` directory run `docker-compose up --build`.
  1. If you want a Bugzilla instance to also start preconfigured to interact with Phabricator, then instead
  do `docker-compose -f docker-compose.yml -f docker-compose.bmo.yml up --build`.
- 1. Phabricator-extensions build process requires existence of the `phabext.json`
-file. Please add it with the command: `$ echo "{}" > phabricator-extensions/phabext.json`
+ 1. Phabricator-extensions build process requires existence of the `version.json`
+file. Please add it with the command: `$ echo "{}" > phabricator-extensions/version.json`
 
 ## Accessing the websites provided by the demo
 

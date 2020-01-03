@@ -1,4 +1,4 @@
-FROM mozilla/phabext:latest
+FROM mozilla/phabricator
 
 USER root
 
@@ -11,6 +11,3 @@ RUN \
 
 # Copy arcconfig with loaded extensions
 COPY test-arcconfig /app/.arcconfig
-
-# Copy entrypoint with arc-liberate and test
-COPY entrypoint.sh .
