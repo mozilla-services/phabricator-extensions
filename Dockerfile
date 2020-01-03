@@ -1,4 +1,4 @@
-FROM mozilla/mozphab:f35357494ec86bca30ab5d18b6dfff4e30063662
+FROM mozilla/mozphab:bb4e6d183893c8ec441a0193b06be24f6c06d22c as base
 
 COPY extensions /app/moz-extensions
 
@@ -37,5 +37,28 @@ RUN chmod +x /app/update_build_url.py && /app/update_build_url.py
 RUN chown -R app:app /app
 RUN chmod +x /app/moz-extensions/bin/*
 
+FROM base AS production
+RUN docker-php-ext-install -j "$(nproc)" opcache
+# Install opcache recommended settings from
+# https://secure.php.net/manual/en/opcache.installation.php
+RUN { \
+        echo 'opcache.memory_consumption=128'; \
+        echo 'opcache.interned_strings_buffer=8'; \
+        echo 'opcache.max_accelerated_files=4000'; \
+        echo 'opcache.fast_shutdown=1'; \
+        echo 'opcache.enable_cli=1'; \
+        echo 'opcache.validate_timestamps=0'; \
+    } | tee /usr/local/etc/php/conf.d/opcache.ini
+USER app
+VOLUME ["/app"]
+
+FROM base as development
+RUN apk add --no-cache $PHPIZE_DEPS \
+    && pecl install xdebug-2.9.0 \
+    && docker-php-ext-enable xdebug
+RUN { \
+        echo '[xdebug]'; \
+        echo 'xdebug.remote_enable=1'; \
+    } | tee /usr/local/etc/php/conf.d/xdebug.ini
 USER app
 VOLUME ["/app"]
