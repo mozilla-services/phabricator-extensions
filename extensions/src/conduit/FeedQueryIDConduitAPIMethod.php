@@ -39,12 +39,7 @@ final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
       $view_type = 'data';
     }
 
-    $limit = $request->getValue('limit');
-    if (!$limit) {
-      $limit = $this->getDefaultLimit();
-    }
-
-    $query = id(new PhabricatorFeedIDQuery())
+    $query = (new PhabricatorFeedIDQuery())
       ->setOrder('oldest')
       ->setViewer($user);
 
@@ -57,6 +52,12 @@ final class FeedQueryIDConduitAPIMethod extends FeedQueryConduitAPIMethod {
     if (strlen($before)) {
       $pager->setBeforeID($before);
     }
+
+    $limit = $request->getValue('limit');
+    if (!$limit) {
+      $limit = $this->getDefaultLimit();
+    }
+    $pager->setPageSize($limit);
 
     $stories = $query->executeWithCursorPager($pager);
 
