@@ -19,7 +19,7 @@ final class NewChangesLinkEventListener extends PhabricatorEventListener {
     }
   }
 
-  private function handleActionEvent(PhabricatorEvent $event) {
+  private function handleActionEvent($event) {
     $object = $event->getValue('object');
 
     if (!($object instanceof DifferentialRevision)) {
