@@ -26,6 +26,7 @@ phutil_register_library_map(array(
     'MozillaMOTD' => 'motd/view/MozillaMOTD.php',
     'MozillaMOTDConfigOptions' => 'motd/config/MozillaMOTDConfigOptions.php',
     'MozillaSearchEngineExtension' => 'differential/conduit/MozillaSearchEngineExtension.php',
+    'NewChangesLinkEventListener' => 'differential/events/NewChangesLinkEventListener.php',
     'PhabricatorBMOAuthAdapter' => 'auth/PhabricatorBMOAuthAdapter.php',
     'PhabricatorBMOAuthAdapterTestCase' => 'auth/__tests__/PhabricatorBMOAuthAdapterTestCase.php',
     'PhabricatorBMOAuthProvider' => 'auth/PhabricatorBMOAuthProvider.php',
@@ -38,7 +39,9 @@ phutil_register_library_map(array(
     'SentryConfigOptions' => 'logging/SentryConfigOptions.php',
     'SentryLoggerPlugin' => 'logging/SentryLoggerPlugin.php',
   ),
-  'function' => array(),
+  'function' => array(
+    'isRevisionPrivate' => 'differential/view/DifferentialRevisionWarning.php',
+  ),
   'xmap' => array(
     'BMOExternalAccountSearchConduitAPIMethod' => 'UserConduitAPIMethod',
     'BugzillaAccountSearchConduitAPIMethod' => 'UserConduitAPIMethod',
@@ -57,6 +60,7 @@ phutil_register_library_map(array(
     'MozillaMOTD' => 'Phobject',
     'MozillaMOTDConfigOptions' => 'PhabricatorApplicationConfigOptions',
     'MozillaSearchEngineExtension' => 'PhabricatorSearchEngineExtension',
+    'NewChangesLinkEventListener' => 'PhabricatorEventListener',
     'PhabricatorBMOAuthAdapter' => 'PhutilAuthAdapter',
     'PhabricatorBMOAuthAdapterTestCase' => 'PhabricatorTestCase',
     'PhabricatorBMOAuthProvider' => 'PhabricatorAuthProvider',
