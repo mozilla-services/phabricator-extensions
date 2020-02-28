@@ -1,4 +1,5 @@
 version.json
+phabext.json
 .vscode
 .phutil_module_cache
 fxprofile

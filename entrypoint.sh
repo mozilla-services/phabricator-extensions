@@ -3,6 +3,19 @@
 
 set -ex
 
+# Our base Docker image (php:7.3.11-fpm-alpine) uses SIGQUIT as the stop signal, which sh will ignore (see 12.1.1.2 in
+# this article: https://linux.die.net/Bash-Beginners-Guide/sect_12_01.html).
+# > In the absence of any traps, an interactive Bash shell ignores SIGTERM and SIGQUIT.
+# This is handled in two ways:
+# 1. This trap will be executed when sh receives a SIGTERM and bash isn't waiting for a command to complete
+# 2. For the long-running process (php-fpm), "exec" it so that it receives the SIGTERM (rather than sh, which is
+#    waiting for php-fpm to complete)
+trap 'exit 0' 3
+
+if test -e /app/tmpfiles/local.json; then
+    cp /app/tmpfiles/local.json /app/phabricator/conf/local/local.json
+fi
+
 cd phabricator
 
 test -n "${MYSQL_HOST}" \
@@ -65,8 +78,16 @@ start() {
       "php-fpm")
         /usr/local/sbin/php-fpm -F
         ;;
+      "dev")
+        # the host is always octet 1 on the current virtual network
+        # E.g.: if this container is running on 172.27.0.16, the host is 172.27.0.1
+        host_address=$(hostname -i | awk '{split($1,a,".");print a[1] "." a[2] "." a[3] ".1"}')
+        export XDEBUG_CONFIG="remote_host=$host_address"
+        export PHP_IDE_CONFIG="serverName=phabricator.test"
+        ./bin/phd start && exec /usr/local/sbin/php-fpm -F
+        ;;
       *)
-        ./bin/phd start && /usr/local/sbin/php-fpm -F
+        ./bin/phd start && exec /usr/local/sbin/php-fpm -F
         ;;
     esac
 }
@@ -89,7 +110,7 @@ case "$ARG" in
       ./bin/config set bugzilla.require_mfa false
       ./bin/config set phabricator.show-prototypes true
       ./bin/config set storage.mysql-engine.max-size 8388608
-      start
+      start dev
       ;;
   "start")
       start

@@ -2,14 +2,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-version: '2'
+version: '3.4'
 services:
   phabricator:
     build:
       context: .
-      dockerfile: ./Dockerfile-test
-    entrypoint:
-      - /app/entrypoint.sh
+      dockerfile: ./Dockerfile
+      target: test
+    entrypoint: /app/entrypoint.sh
+    command: test-ext
     environment:
       - MYSQL_HOST=phabdb
       - MYSQL_PORT=3306
@@ -20,6 +21,8 @@ services:
       - phabdb
 
   phabdb:
-    image: mysql:5.5
+    image: mysql:5.7
+    volumes:
+      - ./docker/phabricator/mysql:/etc/mysql/conf.d:ro
     environment:
       - MYSQL_ROOT_PASSWORD=password

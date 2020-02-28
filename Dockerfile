@@ -1,7 +1,6 @@
-FROM php:7.3.11-fpm-alpine
-FROM mozilla/mozphab:bb4e6d183893c8ec441a0193b06be24f6c06d22c as base
+FROM php:7.3.11-fpm-alpine AS base
 
-LABEL maintainer "mars@mozilla.com"
+LABEL maintainer "dkl@mozilla.com"
 
 # These are unlikely to change from version to version of the container
 EXPOSE 9000
@@ -22,6 +21,8 @@ ENV LIBPHUTIL_GIT_SHA 1750586fdc50a6cd98adba4aa2f5a7649bd91dbe
 ENV REPOSITORY_LOCAL_PATH /repo
 # Explicitly set TMPDIR
 ENV TMPDIR /tmp
+
+USER root
 
 # Runtime dependencies
 RUN apk --no-cache --update add \
@@ -59,7 +60,6 @@ RUN apk --no-cache add --virtual build-dependencies \
         iconv \
         mbstring \
         mysqli \
-        opcache \
         pcntl \
     && pecl install apcu-5.1.17 \
     && docker-php-ext-enable apcu \
@@ -70,17 +70,6 @@ RUN apk --no-cache add --virtual build-dependencies \
     && apk del build-dependencies
 
 RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.1/dumb-init_1.2.1_amd64 && if test -f /usr/local/bin/dumb-init; then chmod 755 /usr/local/bin/dumb-init; fi
-
-# Install opcache recommended settings from
-# https://secure.php.net/manual/en/opcache.installation.php
-RUN { \
-        echo 'opcache.memory_consumption=128'; \
-        echo 'opcache.interned_strings_buffer=8'; \
-        echo 'opcache.max_accelerated_files=4000'; \
-        echo 'opcache.fast_shutdown=1'; \
-        echo 'opcache.enable_cli=1'; \
-        echo 'opcache.validate_timestamps=0'; \
-    } | tee /usr/local/etc/php/conf.d/opcache.ini
 
 # The container does not log errors by default, so turn them on
 RUN { \
@@ -101,7 +90,6 @@ RUN addgroup -g 10001 app && adduser -D -u 10001 -G app -h /app -s /bin/sh app
 COPY . /app
 WORKDIR /app
 
-# Install mercurial from source b/c it's wicked out of date on main
 RUN apk add python-dev py-pip && \
     pip install --require-hashes -r requirements.txt
 
@@ -149,7 +137,9 @@ RUN chmod +x /app/update_version_json.py /app/entrypoint.sh /app/wait-for-mysql.
     && chown -R app:app /app $REPOSITORY_LOCAL_PATH
 
 FROM base AS production
+
 RUN docker-php-ext-install -j "$(nproc)" opcache
+
 # Install opcache recommended settings from
 # https://secure.php.net/manual/en/opcache.installation.php
 RUN { \
@@ -160,16 +150,31 @@ RUN { \
         echo 'opcache.enable_cli=1'; \
         echo 'opcache.validate_timestamps=0'; \
     } | tee /usr/local/etc/php/conf.d/opcache.ini
+
 USER app
 VOLUME ["/app"]
 
 FROM base as development
+
 RUN apk add --no-cache $PHPIZE_DEPS \
     && pecl install xdebug-2.9.0 \
     && docker-php-ext-enable xdebug
+
 RUN { \
         echo '[xdebug]'; \
         echo 'xdebug.remote_enable=1'; \
     } | tee /usr/local/etc/php/conf.d/xdebug.ini
+
 USER app
 VOLUME ["/app"]
+
+FROM base AS test
+
+RUN apk --update --no-cache add \
+    bash \
+    g++ \
+    git \
+    make
+
+# Copy arcconfig with loaded extensions
+COPY test-arcconfig /app/.arcconfig

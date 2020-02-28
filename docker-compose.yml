@@ -38,7 +38,7 @@ services:
       - phabricator-app:/app
 
   phabdb:
-    image: mysql:5.5
+    image: mysql:5.7
     volumes:
       - phabricator-mysql-db:/var/lib/mysql
       - ./docker/phabricator/mysql:/etc/mysql/conf.d:ro
