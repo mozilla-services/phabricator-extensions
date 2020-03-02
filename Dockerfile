@@ -154,7 +154,7 @@ RUN { \
 USER app
 VOLUME ["/app"]
 
-FROM base as development
+FROM base AS development
 
 RUN apk add --no-cache $PHPIZE_DEPS \
     && pecl install xdebug-2.9.0 \
@@ -176,5 +176,4 @@ RUN apk --update --no-cache add \
     git \
     make
 
-# Copy arcconfig with loaded extensions
 COPY test-arcconfig /app/.arcconfig

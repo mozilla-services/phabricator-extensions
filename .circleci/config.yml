@@ -14,8 +14,7 @@ jobs:
     docker:
       - image: docker:18.06.0-ce-git
     steps:
-      - setup_remote_docker:
-          version: 18.06.0-ce-git
+      - setup_remote_docker
       - checkout
       - run:
           name: Install pip
