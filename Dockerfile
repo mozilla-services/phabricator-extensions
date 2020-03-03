@@ -156,8 +156,6 @@ VOLUME ["/app"]
 
 FROM base AS development
 
-USER root
-
 RUN apk add --no-cache $PHPIZE_DEPS \
     && pecl install xdebug-2.9.0 \
     && docker-php-ext-enable xdebug
@@ -171,8 +169,6 @@ USER app
 VOLUME ["/app"]
 
 FROM base AS test
-
-USER root
 
 RUN apk --update --no-cache add \
     bash \
