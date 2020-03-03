@@ -69,7 +69,8 @@ RUN apk --no-cache add --virtual build-dependencies \
     && docker-php-ext-enable zip \
     && apk del build-dependencies
 
-RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.1/dumb-init_1.2.1_amd64 && if test -f /usr/local/bin/dumb-init; then chmod 755 /usr/local/bin/dumb-init; fi
+RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.1/dumb-init_1.2.1_amd64 \
+    && chmod 755 /usr/local/bin/dumb-init
 
 # The container does not log errors by default, so turn them on
 RUN { \
