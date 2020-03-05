@@ -8,6 +8,6 @@ RUN apk --no-cache add tinyproxy
 
 COPY tinyproxy.conf /tinyproxy.conf
 
-EXPOSE 1080
+EXPOSE 1090
 ENTRYPOINT ["tinyproxy"]
 CMD ["-d", "-c", "/tinyproxy.conf"]

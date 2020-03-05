@@ -2,15 +2,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-version: '2'
+version: '3.4'
 services:
   # Phabricator Containers
   phabricator.test:
     image: nginx:alpine
     volumes:
       - ./docker/phabricator/site.conf:/etc/nginx/conf.d/default.conf:ro
-    volumes_from:
-      - phabricator
+      - phabricator-app:/app
     restart: on-failure
     depends_on:
       - phabricator
@@ -22,7 +21,7 @@ services:
       dockerfile: ./Dockerfile
     entrypoint: /app/entrypoint.sh
     command: dev_start
-    environment:
+    environment: &phab_env
       - MYSQL_HOST=phabdb
       - MYSQL_PORT=3306
       - MYSQL_USER=root
@@ -35,13 +34,26 @@ services:
     restart: on-failure
     depends_on:
       - phabdb
+    volumes:
+      - phabricator-app:/app
+
+  test_phab:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: test
+    entrypoint: /app/entrypoint.sh
+    command: test_phab
+    environment: *phab_env
+    restart: on-failure
+    depends_on:
+      - phabdb
 
   phabdb:
-    image: mysql:5.5
+    image: mysql:5.7
     volumes:
       - phabricator-mysql-db:/var/lib/mysql
       - ./docker/phabricator/mysql:/etc/mysql/conf.d:ro
-      - ./docker/phabricator/demo.sql.gz:/docker-entrypoint-initdb.d/demo.sql.gz
     environment:
       - MYSQL_ROOT_PASSWORD=password
     restart: on-failure
@@ -52,8 +64,9 @@ services:
       context: docker/tinyproxy
       dockerfile: ./Dockerfile
     ports:
-      - "1080:1080"
+      - "1090:1090"
 
 # Volume Containers
 volumes:
   phabricator-mysql-db:
+  phabricator-app:

@@ -6,21 +6,21 @@ import os
 
 from invoke import task
 
-DOCKER_IMAGE_NAME = os.getenv('DOCKERHUB_REPO', 'mozilla/phabext')
+DOCKER_IMAGE_NAME = os.getenv('DOCKERHUB_REPO', 'mozilla/phabricator')
 
 
 @task
 def version(ctx):
     """Print version information in JSON format."""
     print(json.dumps({
-        'phabext_commit':
+        'moz_phabricator_commit':
         os.getenv('CIRCLE_SHA1', None),
-        'phabext_version':
+        'moz_phabricator_version':
         os.getenv('CIRCLE_SHA1', None),
-        'phabext_source':
+        'moz_phabricator_source':
         'https://github.com/%s/%s' % (
-            os.getenv('CIRCLE_PROJECT_USERNAME', 'mozilla-services'),
-            os.getenv('CIRCLE_PROJECT_REPONAME', 'phabricator-extensions')
+            os.getenv('CIRCLE_PROJECT_USERNAME', 'mozilla-conduit'),
+            os.getenv('CIRCLE_PROJECT_REPONAME', 'phabricator')
         ),
         'build':
         os.getenv('CIRCLE_BUILD_URL', None),
@@ -47,18 +47,16 @@ def imageid(ctx):
 @task
 def build_test(ctx):
     """Test phabricator extensions."""
-    ctx.run("docker-compose -f docker-compose.test.yml build phabricator")
+    ctx.run("docker-compose build test_phab")
 
 
 @task
 def test(ctx):
     """Test phabricator extensions."""
-    ctx.run("docker-compose -f docker-compose.test.yml "
-            "run phabricator test-ext")
+    ctx.run("docker-compose run test_phab")
 
 
 @task
 def liberate(ctx):
     """Update phutil_map."""
-    ctx.run("docker-compose -f docker-compose.test.yml "
-            "run --rm phabricator arc-liberate")
+    ctx.run("docker-compose run --rm test_phab arc_liberate")
