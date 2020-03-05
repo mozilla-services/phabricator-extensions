@@ -117,7 +117,7 @@ ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV COMPOSER_VENDOR_DIR /app/phabricator/externals/extensions
 RUN \
     curl -sS https://getcomposer.org/installer | php && \
-    php composer.phar require sentry/sentry php-http/curl-client guzzlehttp/psr7
+    php composer.phar require sentry/sentry php-http/curl-client http-interop/http-factory-guzzle
 
 # Apply customization patches
 # Phabricator
