@@ -30,7 +30,7 @@ def version(ctx):
 @task
 def build(ctx):
     """Build the docker image."""
-    ctx.run('docker build --pull -t {image_name} .'.format(
+    ctx.run('docker build --pull -t {image_name} --target production .'.format(
         image_name=DOCKER_IMAGE_NAME
     ))
 
