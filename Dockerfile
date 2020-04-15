@@ -17,6 +17,8 @@ ENV ARCANIST_GIT_SHA 729100955129851a52588cdfd9b425197cf05815
 # From https://github.com/phacility/libphutil/tree/stable
 # Promote 2020 Week 5
 ENV LIBPHUTIL_GIT_SHA 034cf7cc39940b935e83923dbb1bacbcfe645a85
+# From https://github.com/marco-c/risk-analysis-addon/releases
+ENV RISK_ANALYSIS_VERSION v0.6.0
 # Should match the phabricator 'repository.default-local-path' setting.
 ENV REPOSITORY_LOCAL_PATH /repo
 # Explicitly set TMPDIR
@@ -106,6 +108,15 @@ RUN curl -fsSL https://github.com/phacility/phabricator/archive/${PHABRICATOR_GI
     && mv libphutil-${LIBPHUTIL_GIT_SHA} libphutil \
     && rm phabricator.tar.gz arcanist.tar.gz libphutil.tar.gz \
     && ./libphutil/scripts/build_xhpast.php
+
+RUN { \
+        echo '/**'; \
+        echo '* @provides moz-risk-analysis-js'; \
+        echo '* @do-not-minify'; \
+        echo '*/'; \
+    } | tee /app/phabricator/webroot/rsrc/js/MozillaRiskBananalysis.js
+RUN curl -fsSL https://raw.githubusercontent.com/marco-c/risk-analysis-addon/${RISK_ANALYSIS_VERSION}/risk_analysis.js \
+    >> /app/phabricator/webroot/rsrc/js/MozillaRiskBananalysis.js
 
 # Move static resources to phabricator, add files to celerity map array
 COPY moz-extensions/src/motd/css/MozillaMOTD.css /app/phabricator/webroot/rsrc/css/MozillaMOTD.css
