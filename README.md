@@ -89,7 +89,7 @@ free (which won't, since the daemon processes won't stop unless Phabricator is t
 TL;DR: increase your "Max. simultaneous connections" to at least 10 (4 for the daemons, plus 6 as a buffer for all the
 concurrent http requests).
 
-## Useful debugging commands
+### Useful debugging commands
 ```
 docker-compose -f docker-compose.yml -f docker-compose.bmo.yml exec phabricator vi <filename>
 
@@ -97,3 +97,7 @@ docker-compose -f docker-compose.yml -f docker-compose.bmo.yml exec phabricator 
 
 docker-compose -f docker-compose.yml -f docker-compose.bmo.yml exec phabdb mysql --user=root --password=password
 ```
+
+## Support
+
+To talk to the `phabricator-extensions` developers, you can join them on [Matrix](https://chat.mozilla.org/#/room/#conduit:mozilla.org).
