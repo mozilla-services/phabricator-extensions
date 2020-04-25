@@ -25,7 +25,7 @@ class ResolveUsers {
    * @return EmailRecipient
    * @throws Exception
    */
-  public function resolveAuthorAsRecipient(): EmailRecipient {
+  public function resolveAuthorAsRecipient(): ?EmailRecipient {
     $authorPHID = $this->rawRevision->getAuthorPHID();
     $rawAuthor = $this->userStore->find($authorPHID);
 
@@ -37,13 +37,19 @@ class ResolveUsers {
    * @throws Exception
    */
   public function resolveReviewersAsRecipients(): array {
-    $reviewers = [];
-    foreach ($this->rawRevision->getReviewerPHIDs() as $reviewerPHID) {
-      $rawReviewer = $this->userStore->find($reviewerPHID);
+    $recipients = [];
+    foreach ($this->rawRevision->getReviewers() as $reviewer) {
+      if ($reviewer->isResigned()) {
+        continue;
+      }
+
+      $rawReviewer = $this->userStore->find($reviewer->getReviewerPHID());
       $reviewer = EmailRecipient::from($rawReviewer, $this->actorEmail);
-      $reviewers[] = $reviewer;
+      if ($reviewer) {
+        $recipients[] = $reviewer;
+      }
     }
-    return $reviewers;
+    return $recipients;
   }
 
   /**
@@ -61,6 +67,11 @@ class ResolveUsers {
 
     $reviewers = [];
     foreach ($rawReviewers as $reviewerPHID => $rawReviewer) {
+      if ($rawReviewer->isResigned()) {
+        // In the future, we could show resigned reviewers in the email body
+        continue;
+      }
+
       $rawUser = $this->userStore->find($reviewerPHID);
       $recipient = EmailRecipient::from($rawUser, $this->actorEmail);
 

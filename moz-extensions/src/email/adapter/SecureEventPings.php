@@ -18,8 +18,13 @@ class SecureEventPings {
    * @return SecureEmailRevisionCommentPinged[]
    */
   public function intoBodies(string $actorEmail, string $transactionLink): array {
-    return array_map(function(PhabricatorUser $target) use ($actorEmail, $transactionLink) {
-      return new SecureEmailRevisionCommentPinged(EmailRecipient::from($target, $actorEmail),$transactionLink);
-    }, array_values($this->pingedUsers));
+    return array_filter(array_map(function(PhabricatorUser $target) use ($actorEmail, $transactionLink) {
+      $recipient = EmailRecipient::from($target, $actorEmail);
+      if (!$recipient) {
+        return null;
+      }
+
+      return new SecureEmailRevisionCommentPinged($recipient, $transactionLink);
+    }, array_values($this->pingedUsers)));
   }
 }

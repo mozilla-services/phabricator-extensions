@@ -10,7 +10,7 @@ class EmailMetadataEditedReviewer {
   public $status;
   /** @var string either 'added', 'removed' or 'no-change' */
   public $metadataChange;
-  /** @var EmailRecipient */
+  /** @var EmailRecipient (optional) */
   public $recipient;
 
   /**
@@ -18,9 +18,9 @@ class EmailMetadataEditedReviewer {
    * @param bool $isActionable
    * @param string $status
    * @param string $metadataChange
-   * @param EmailRecipient $recipient
+   * @param EmailRecipient $recipient (optional)
    */
-  public function __construct(string $name, bool $isActionable, string $status, string $metadataChange, EmailRecipient $recipient) {
+  public function __construct(string $name, bool $isActionable, string $status, string $metadataChange, ?EmailRecipient $recipient) {
     $this->name = $name;
     $this->isActionable = $isActionable;
     $this->status = $status;

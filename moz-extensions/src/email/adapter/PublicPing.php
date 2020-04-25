@@ -25,9 +25,14 @@ class PublicPing {
     $this->inlineComments[] = $inlineComment;
   }
 
-  public function intoPublicBody(string $actorEmail, string $transactionLink): EmailRevisionCommentPinged {
+  public function intoPublicBody(string $actorEmail, string $transactionLink): ?EmailRevisionCommentPinged {
+    $recipient = EmailRecipient::from($this->targetUser, $actorEmail);
+    if (!$recipient) {
+      return null;
+    }
+
     return new EmailRevisionCommentPinged(
-      EmailRecipient::from($this->targetUser, $actorEmail),
+      $recipient,
       $transactionLink,
       $this->mainComment,
       $this->inlineComments

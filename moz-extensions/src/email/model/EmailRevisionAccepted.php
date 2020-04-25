@@ -25,9 +25,9 @@ class EmailRevisionAccepted implements PublicEmailBody
    * @param string $landoLink
    * @param bool $isReadyToLand
    * @param EmailRecipient[] $reviewers
-   * @param EmailRecipient $author
+   * @param EmailRecipient $author (optional)
    */
-  public function __construct(?string $mainComment, array $inlineComments, string $transactionLink, string $landoLink, bool $isReadyToLand, array $reviewers, EmailRecipient $author) {
+  public function __construct(?string $mainComment, array $inlineComments, string $transactionLink, string $landoLink, bool $isReadyToLand, array $reviewers, ?EmailRecipient $author) {
     $this->mainComment = $mainComment;
     $this->inlineComments = $inlineComments;
     $this->transactionLink = $transactionLink;

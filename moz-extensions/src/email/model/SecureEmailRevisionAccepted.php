@@ -20,11 +20,11 @@ class SecureEmailRevisionAccepted implements SecureEmailBody
    * @param string $landoLink
    * @param bool $isReadyToLand
    * @param EmailRecipient[] $reviewers
-   * @param EmailRecipient $author
+   * @param EmailRecipient $author (optional)
    * @param int $commentCount
    * @param string $transactionLink
    */
-  public function __construct(string $landoLink, bool $isReadyToLand, array $reviewers, EmailRecipient $author, int $commentCount, string $transactionLink) {
+  public function __construct(string $landoLink, bool $isReadyToLand, array $reviewers, ?EmailRecipient $author, int $commentCount, string $transactionLink) {
     $this->landoLink = $landoLink;
     $this->isReadyToLand = $isReadyToLand;
     $this->reviewers = $reviewers;
