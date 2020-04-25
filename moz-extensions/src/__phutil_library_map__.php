@@ -18,6 +18,7 @@ phutil_register_library_map(array(
     'DifferentialBugzillaBugIDField' => 'differential/customfield/DifferentialBugzillaBugIDField.php',
     'DifferentialBugzillaBugIDValidator' => 'differential/customfield/DifferentialBugzillaBugIDValidator.php',
     'DifferentialRevisionWarning' => 'differential/view/DifferentialRevisionWarning.php',
+    'EmailAPIAuthorization' => 'email/EmailAPIAuthorization.php',
     'EmailAffectedFile' => 'email/model/EmailAffectedFile.php',
     'EmailBug' => 'email/model/EmailBug.php',
     'EmailCodeContext' => 'email/model/EmailCodeContext.php',

@@ -21,15 +21,8 @@ final class FeedForEmailStatusAPIMethod extends ConduitAPIMethod {
     return self::METHOD_STATUS_UNSTABLE;
   }
 
-  private function authorize(PhabricatorUser $user) {
-    return $user->getUserName() == 'email-bot' && $user->getIsSystemAgent() && $user->getIsApproved();
-  }
-
   protected function execute(ConduitAPIRequest $request) {
-    if (!$this->authorize($request->getUser())) {
-      throw (new ConduitException('ERR-INVALID-AUTH'))
-        ->setErrorDescription('Only the "email-bot" user can use this endpoint');
-    }
+    EmailAPIAuthorization::assert($request->getUser());
 
     $rawStory = (new PhabricatorFeedQuery())
       ->setOrder('newest')
