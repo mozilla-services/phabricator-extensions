@@ -266,9 +266,10 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
           }
         }
       }
-      catch (Exception $e) {
+      catch (Throwable $e) {
         // Report error to sentry, but attempt to recover and continue sending email events that don't cause exceptions
         SentryLoggerPlugin::handleError(PhutilErrorHandler::EXCEPTION, $e, []);
+        error_log($e);
         $storyErrors++;
       }
     }
