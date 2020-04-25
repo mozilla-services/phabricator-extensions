@@ -98,9 +98,7 @@ class ResolveComments {
           ->executeOne();
 
         $otherDateUtc = new DateTime('@' . $otherComment->getDateCreated(), new DateTimeZone('UTC'));
-
-        $rawOtherAuthor = $this->userStore->find($comment->getAuthorPHID());
-
+        $rawOtherAuthor = $this->userStore->find($otherComment->getAuthorPHID());
         $context = new EmailReplyContext($rawOtherAuthor->getUserName(), $otherDateUtc, $otherComment->getContent());
       } else {
         $contextKind = 'code';

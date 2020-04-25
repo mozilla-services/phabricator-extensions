@@ -10,33 +10,31 @@ class EmailMetadataEditedReviewer {
   public $status;
   /** @var string either 'added', 'removed' or 'no-change' */
   public $metadataChange;
-  /** @var EmailRecipient (optional) */
-  public $recipient;
+  /** @var EmailRecipient[] */
+  public $recipients;
 
   /**
    * @param string $name
    * @param bool $isActionable
    * @param string $status
    * @param string $metadataChange
-   * @param EmailRecipient $recipient (optional)
+   * @param EmailRecipient[] $recipients
    */
-  public function __construct(string $name, bool $isActionable, string $status, string $metadataChange, ?EmailRecipient $recipient) {
+  public function __construct(string $name, bool $isActionable, string $status, string $metadataChange, array $recipients) {
     $this->name = $name;
     $this->isActionable = $isActionable;
     $this->status = $status;
     $this->metadataChange = $metadataChange;
-    $this->recipient = $recipient;
+    $this->recipients = $recipients;
   }
 
-  public static function from(string $PHID, DifferentialRevision $rawRevision, ReviewersTransaction $reviewersTx, PhabricatorUserStore $userStore, string $actorEmail) {
-    $rawUser = $userStore->find($PHID);
-    $recipient = EmailRecipient::from($rawUser, $actorEmail);
-    $status = $reviewersTx->getReviewerStatus($PHID);
-    $metadataChange = $reviewersTx->getReviewerChange($PHID);
+  public static function from(string $reviewerPHID, DifferentialRevision $rawRevision, ReviewersTransaction $reviewersTx, PhabricatorReviewerStore $reviewerStore, string $actorEmail) {
+    $status = $reviewersTx->getReviewerStatus($reviewerPHID);
+    $metadataChange = $reviewersTx->getReviewerChange($reviewerPHID);
 
     $rawReviewers = $rawRevision->getReviewers();
-    $rawReviewer = current(array_filter($rawReviewers, function($rawReviewer) use ($PHID) {
-      return $rawReviewer->getReviewerPHID() == $PHID;
+    $rawReviewer = current(array_filter($rawReviewers, function($rawReviewer) use ($reviewerPHID) {
+      return $rawReviewer->getReviewerPHID() == $reviewerPHID;
     }));
 
     if (!$rawReviewer) {
@@ -55,6 +53,7 @@ class EmailMetadataEditedReviewer {
         $reviewersTx->isOnlyNonblockingUnreviewed();
     }
 
-    return new EmailMetadataEditedReviewer($rawUser->getUserName(), $isActionable, $status, $metadataChange, $recipient);
+    $reviewer = $reviewerStore->findReviewer($reviewerPHID);
+    return new EmailMetadataEditedReviewer($reviewer->name(), $isActionable, $status, $metadataChange, $reviewer->toRecipients($actorEmail));
   }
 }

@@ -29,7 +29,7 @@ class SecureEmailRevisionMetadataEdited implements SecureEmailBody, PublicEmailB
   }
 
 
-  public static function from(ResolveUsers $resolveRecipients, ResolveLandStatus $resolveLandStatus, TransactionList $transactions, DifferentialRevision $rawRevision, PhabricatorUserStore $userStore, string $actorEmail) {
+  public static function from(ResolveUsers $resolveRecipients, ResolveLandStatus $resolveLandStatus, TransactionList $transactions, DifferentialRevision $rawRevision, PhabricatorReviewerStore $reviewerStore, string $actorEmail) {
     $isTitleChanged = $transactions->containsType('differential.revision.title');
     $customFieldTx = $transactions->getTransactionWithType('core:customfield');
     if ($customFieldTx) {
@@ -43,17 +43,17 @@ class SecureEmailRevisionMetadataEdited implements SecureEmailBody, PublicEmailB
     if ($rawReviewersTx) {
       $reviewersTx = new ReviewersTransaction($rawReviewersTx);
       foreach ($reviewersTx->getAllUsers() as $reviewerPHID) {
-        $reviewers[] = EmailMetadataEditedReviewer::from($reviewerPHID, $rawRevision, $reviewersTx, $userStore, $actorEmail);
+        $reviewers[] = EmailMetadataEditedReviewer::from($reviewerPHID, $rawRevision, $reviewersTx, $reviewerStore, $actorEmail);
       }
     } else {
-      foreach ($resolveRecipients->resolveReviewersAsRecipients() as $reviewer) {
+      foreach ($resolveRecipients->resolveReviewers() as $reviewer) {
         /** @var $reviewer EmailReviewer */
         $reviewers[] = new EmailMetadataEditedReviewer(
           $reviewer->name,
           $reviewer->isActionable,
           $reviewer->status,
           'no-change',
-          $reviewer->recipient
+          $reviewer->recipients
         );
       }
     }

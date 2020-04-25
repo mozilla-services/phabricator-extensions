@@ -36,6 +36,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
     $bugStore = new BugStore();
     $diffStore = new PhabricatorDiffStore();
     $userStore = new PhabricatorUserStore();
+    $reviewerStore = new PhabricatorReviewerStore($userStore);
 
     $result = PhabricatorStory::queryStories($userStore, $limit, $after);
     $emailEvents = [];
@@ -60,7 +61,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
         }
 
         $actorEmail = $story->actor->loadPrimaryEmailAddress();
-        $resolveRecipients = new ResolveUsers($rawRevision, $actorEmail, $userStore);
+        $resolveRecipients = new ResolveUsers($rawRevision, $actorEmail, $userStore, $reviewerStore);
         $resolveComments = new ResolveComments($story->transactions, $rawRevision, $userStore);
         $resolveCodeChange = new ResolveCodeChange($story->transactions, $rawRevision, $diffStore);
         $resolveLandStatus = new ResolveLandStatus($rawRevision);
@@ -240,7 +241,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
             $resolveLandStatus,
             $story->transactions,
             $rawRevision,
-            $userStore,
+            $reviewerStore,
             $actorEmail
           );
         } else {

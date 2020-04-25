@@ -8,16 +8,20 @@ class ResolveUsers {
   public $actorEmail;
   /** @var PhabricatorUserStore */
   public $userStore;
+  /** @var PhabricatorReviewerStore */
+  public $reviewerStore;
 
   /**
    * @param DifferentialRevision $rawRevision
    * @param string $actorEmail
    * @param PhabricatorUserStore $userStore
+   * @param PhabricatorReviewerStore $reviewerStore
    */
-  public function __construct(DifferentialRevision $rawRevision, string $actorEmail, PhabricatorUserStore $userStore) {
+  public function __construct(DifferentialRevision $rawRevision, string $actorEmail, PhabricatorUserStore $userStore, PhabricatorReviewerStore $reviewerStore) {
     $this->rawRevision = $rawRevision;
     $this->actorEmail = $actorEmail;
     $this->userStore = $userStore;
+    $this->reviewerStore = $reviewerStore;
   }
 
 
@@ -43,10 +47,9 @@ class ResolveUsers {
         continue;
       }
 
-      $rawReviewer = $this->userStore->find($reviewer->getReviewerPHID());
-      $reviewer = EmailRecipient::from($rawReviewer, $this->actorEmail);
-      if ($reviewer) {
-        $recipients[] = $reviewer;
+      $reviewer = $this->reviewerStore->findReviewer($reviewer->getReviewerPHID());
+      foreach ($reviewer->toRecipients($this->actorEmail) as $recipient) {
+        $recipients[] = $recipient;
       }
     }
     return $recipients;
@@ -72,9 +75,6 @@ class ResolveUsers {
         continue;
       }
 
-      $rawUser = $this->userStore->find($reviewerPHID);
-      $recipient = EmailRecipient::from($rawUser, $this->actorEmail);
-
       $rawStatus = $rawReviewer->getReviewerStatus();
       if ($rawStatus == 'accepted') {
         $status = 'accepted';
@@ -90,7 +90,8 @@ class ResolveUsers {
         ($status == 'accepted' && $rawReviewer->getVoidedPHID()) ||
         $isOnlyNonblockingUnreviewed;
 
-      $reviewers[] = new EmailReviewer($rawUser->getUserName(), $isActionable, $status, $recipient);
+      $reviewer = $this->reviewerStore->findReviewer($reviewerPHID);
+      $reviewers[] = new EmailReviewer($reviewer->name(), $isActionable, $status, $reviewer->toRecipients($this->actorEmail));
     }
     return $reviewers;
 

@@ -26,8 +26,9 @@ class PublicEventPings {
    * @return EmailRevisionCommentPinged[]
    */
   public function intoBodies(string $actorEmail, string $transactionLink): array {
-    return array_filter(array_map(function(PublicPing $ping) use ($actorEmail, $transactionLink) {
+    $associative = array_filter(array_map(function(PublicPing $ping) use ($actorEmail, $transactionLink) {
       return $ping->intoPublicBody($actorEmail, $transactionLink);
-    }, array_values($this->pingedUsers)));
+    }, $this->pingedUsers));
+    return array_values($associative);
   }
 }

@@ -2,7 +2,6 @@
 
 
 class ReviewersTransaction {
-  /** @var DifferentialTransaction */
   private $oldValue;
   private $newValue;
 
