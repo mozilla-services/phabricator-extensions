@@ -255,10 +255,10 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
         }
 
         $createSecureEmail = function($kind, $body) use ($story, $rawRevision, $bugStore) {
-          return new SecureEmailEvent($kind, $story->actor->getUserName(), $rawRevision, $body, $bugStore, $story->key);
+          return new SecureEmailEvent($kind, $story->actor->getUserName(), $rawRevision, $body, $bugStore, $story->key, $story->timestamp);
         };
         $createPublicEmail = function($kind, $body) use ($story, $rawRevision, $bugStore) {
-          return new EmailEvent($kind, $story->actor->getUserName(), EmailRevision::from($rawRevision, $bugStore), $body, $story->key);
+          return new EmailEvent($kind, $story->actor->getUserName(), EmailRevision::from($rawRevision, $bugStore), $body, $story->key, $story->timestamp);
         };
 
         if ($isSecure) {

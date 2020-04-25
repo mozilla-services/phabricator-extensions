@@ -14,6 +14,8 @@ class EmailEvent {
   public $body;
   /** @var string */
   public $key;
+  /** @var int time of event in seconds since epoch */
+  public $timestamp;
 
   /**
    * @param string $eventKind
@@ -21,14 +23,16 @@ class EmailEvent {
    * @param EmailRevision $revision
    * @param PublicEmailBody $body
    * @param string $key
+   * @param int $timestamp
    */
-  public function __construct(string $eventKind, string $actorName, EmailRevision $revision, PublicEmailBody $body, string $key) {
+  public function __construct(string $eventKind, string $actorName, EmailRevision $revision, PublicEmailBody $body, string $key, int $timestamp) {
     $this->eventKind = $eventKind;
     $this->isSecure = false;
     $this->actorName = $actorName;
     $this->revision = $revision;
     $this->body = $body;
     $this->key = $key;
+    $this->timestamp = $timestamp;
   }
 
 

@@ -12,6 +12,8 @@ class PhabricatorStory {
   public $actor;
   /** @var string */
   public $key;
+  /** @var int */
+  public $timestamp;
 
   /**
    * @param EventKind $eventKind
@@ -19,13 +21,15 @@ class PhabricatorStory {
    * @param DifferentialRevision $revision
    * @param PhabricatorUser $actor
    * @param string $key
+   * @param int $timestamp
    */
-  public function __construct(EventKind $eventKind, TransactionList $transactions, DifferentialRevision $revision, PhabricatorUser $actor, string $key) {
+  public function __construct(EventKind $eventKind, TransactionList $transactions, DifferentialRevision $revision, PhabricatorUser $actor, string $key, int $timestamp) {
     $this->eventKind = $eventKind;
     $this->transactions = $transactions;
     $this->revision = $revision;
     $this->actor = $actor;
     $this->key = $key;
+    $this->timestamp = $timestamp;
   }
 
   public function getTransactionLink(): string {
@@ -58,13 +62,14 @@ class PhabricatorStory {
     $builders = [];
     $revisionPHIDs = [];
     foreach ($rawStories as $rawStory) {
-      $storyData = $rawStory->getStoryData()->getStoryData();
-      if (strpos($storyData['objectPHID'], 'PHID-DREV') !== 0) {
+      $storyData = $rawStory->getStoryData();
+      $internalData = $storyData->getStoryData();
+      if (strpos($internalData['objectPHID'], 'PHID-DREV') !== 0) {
         continue; // We only email about events about revisions
       }
 
       $transactions = [];
-      foreach ($storyData['transactionPHIDs'] as $phid) {
+      foreach ($internalData['transactionPHIDs'] as $phid) {
         $transactions[] = $rawStory->getObject($phid);
       }
 
@@ -74,7 +79,7 @@ class PhabricatorStory {
         continue;
       }
 
-      $builder = new PhabricatorStoryBuilder($eventKind, $transactions, $rawStory->getStoryData()->getChronologicalKey());
+      $builder = new PhabricatorStoryBuilder($eventKind, $transactions, $storyData->getChronologicalKey(), $storyData->getDateCreated());
       $revisionPHIDs[] = $builder->revisionPHID;
       $builders[] = $builder;
     }
