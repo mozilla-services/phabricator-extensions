@@ -1,6 +1,6 @@
-FROM php:7.3.15-fpm-alpine AS base
+FROM php:7.3.16-fpm-alpine AS base
 
-LABEL maintainer "dkl@mozilla.com"
+LABEL maintainer="dkl@mozilla.com"
 
 # These are unlikely to change from version to version of the container
 EXPOSE 9000
@@ -26,6 +26,7 @@ USER root
 
 # Runtime dependencies
 RUN apk --no-cache --update add \
+    composer \
     curl \
     freetype \
     g++ \
@@ -38,7 +39,9 @@ RUN apk --no-cache --update add \
     ncurses \
     procps \
     py-pygments \
-    libzip
+    libzip \
+    python-dev \
+    py-pip
 
 # Build PHP extensions
 RUN apk --no-cache add --virtual build-dependencies \
@@ -88,11 +91,11 @@ RUN { \
 # add a non-privileged user for installing and running the application
 RUN addgroup -g 10001 app && adduser -D -u 10001 -G app -h /app -s /bin/sh app
 
-COPY . /app
-WORKDIR /app
+RUN mkdir $REPOSITORY_LOCAL_PATH
+RUN chown app:app $REPOSITORY_LOCAL_PATH
 
-RUN apk add python-dev py-pip && \
-    pip install --require-hashes -r requirements.txt
+WORKDIR /app
+USER app
 
 # Install Phabricator code
 RUN curl -fsSL https://github.com/phacility/phabricator/archive/${PHABRICATOR_GIT_SHA}.tar.gz -o phabricator.tar.gz \
@@ -107,18 +110,20 @@ RUN curl -fsSL https://github.com/phacility/phabricator/archive/${PHABRICATOR_GI
     && rm phabricator.tar.gz arcanist.tar.gz libphutil.tar.gz \
     && ./libphutil/scripts/build_xhpast.php
 
+ENV COMPOSER_VENDOR_DIR /app/phabricator/externals/extensions
+RUN composer global require hirak/prestissimo
+
+COPY --chown=app:app . /app
+
+RUN pip install --user --require-hashes -r requirements.txt
+
 # Move static resources to phabricator, add files to celerity map array
 COPY moz-extensions/src/motd/css/MozillaMOTD.css /app/phabricator/webroot/rsrc/css/MozillaMOTD.css
 COPY moz-extensions/src/auth/PhabricatorBMOAuth.css /app/phabricator/webroot/rsrc/css/PhabricatorBMOAuth.css
 COPY moz-extensions/src/auth/PhabricatorBMOAuth.js /app/phabricator/webroot/rsrc/js/PhabricatorBMOAuth.js
 
 # Install dependencies
-ENV COMPOSER_ALLOW_SUPERUSER 1
-ENV COMPOSER_VENDOR_DIR /app/phabricator/externals/extensions
-RUN \
-    curl -sS https://getcomposer.org/installer | php && \
-    php composer.phar global require hirak/prestissimo && \
-    php composer.phar require sentry/sentry php-http/curl-client http-interop/http-factory-guzzle
+RUN composer install --no-dev
 
 # Apply customization patches
 # Phabricator
@@ -134,12 +139,11 @@ COPY moz-extensions.conf.php /app/phabricator/conf/custom/
 
 # Update version.json
 RUN chmod +x /app/update_version_json.py /app/entrypoint.sh /app/wait-for-mysql.php /app/moz-extensions/bin/* \
-    && /app/update_version_json.py \
-    && mkdir $REPOSITORY_LOCAL_PATH \
-    && chown -R app:app /app $REPOSITORY_LOCAL_PATH
+    && /app/update_version_json.py
 
 FROM base AS production
 
+USER root
 RUN docker-php-ext-install -j "$(nproc)" opcache
 
 # Install opcache recommended settings from
@@ -156,8 +160,9 @@ RUN { \
 USER app
 VOLUME ["/app"]
 
-FROM base AS development
+FROM base as development
 
+USER root
 RUN apk add --no-cache $PHPIZE_DEPS \
     && pecl install xdebug-2.9.0 \
     && docker-php-ext-enable xdebug
@@ -172,6 +177,7 @@ VOLUME ["/app"]
 
 FROM base AS test
 
+USER root
 RUN apk --update --no-cache add \
     bash \
     g++ \
