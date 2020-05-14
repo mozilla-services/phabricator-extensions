@@ -1,4 +1,4 @@
-FROM php:7.3.16-fpm-alpine AS base
+FROM php:7.3.17-fpm-alpine AS base
 
 LABEL maintainer="dkl@mozilla.com"
 
@@ -9,14 +9,11 @@ CMD ["/app/entrypoint.sh", "start"]
 
 # Git commit SHAs for the build artifacts we want to grab.
 # From https://github.com/phacility/phabricator/tree/stable
-# Promote 2020 Week 6
-ENV PHABRICATOR_GIT_SHA ff6f24db2bc016533bca9040954a218c54ca324e
+# Promote 2020 Week 18 plus one extra commit
+ENV PHABRICATOR_GIT_SHA ebf254dac351402024019cabc24004c2fa4c55cf
 # From https://github.com/phacility/arcanist/tree/stable
-# Promote 2020 Week 5
-ENV ARCANIST_GIT_SHA 729100955129851a52588cdfd9b425197cf05815
-# From https://github.com/phacility/libphutil/tree/stable
-# Promote 2020 Week 5
-ENV LIBPHUTIL_GIT_SHA 034cf7cc39940b935e83923dbb1bacbcfe645a85
+# Promote 2020 Week 18
+ENV ARCANIST_GIT_SHA 22363974e2e0fc40b365519e98929226401a3151
 # Should match the phabricator 'repository.default-local-path' setting.
 ENV REPOSITORY_LOCAL_PATH /repo
 # Explicitly set TMPDIR
@@ -100,15 +97,12 @@ USER app
 # Install Phabricator code
 RUN curl -fsSL https://github.com/phacility/phabricator/archive/${PHABRICATOR_GIT_SHA}.tar.gz -o phabricator.tar.gz \
     && curl -fsSL https://github.com/phacility/arcanist/archive/${ARCANIST_GIT_SHA}.tar.gz -o arcanist.tar.gz \
-    && curl -fsSL https://github.com/phacility/libphutil/archive/${LIBPHUTIL_GIT_SHA}.tar.gz -o libphutil.tar.gz \
     && tar xzf phabricator.tar.gz \
     && tar xzf arcanist.tar.gz \
-    && tar xzf libphutil.tar.gz \
     && mv phabricator-${PHABRICATOR_GIT_SHA} phabricator \
     && mv arcanist-${ARCANIST_GIT_SHA} arcanist \
-    && mv libphutil-${LIBPHUTIL_GIT_SHA} libphutil \
-    && rm phabricator.tar.gz arcanist.tar.gz libphutil.tar.gz \
-    && ./libphutil/scripts/build_xhpast.php
+    && rm phabricator.tar.gz arcanist.tar.gz \
+    && ./arcanist/support/xhpast/build-xhpast.php
 
 ENV COMPOSER_VENDOR_DIR /app/phabricator/externals/extensions
 RUN composer global require hirak/prestissimo
