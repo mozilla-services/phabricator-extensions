@@ -28,24 +28,32 @@ final class BugzillaAccountSearchConduitAPIMethod
       return array();
     }
 
+    $config = id(new PhabricatorAuthProviderConfigQuery())
+      ->setViewer(PhabricatorUser::getOmnipotentUser())
+      ->withProviderClasses(array('PhabricatorBMOAuthProvider'))
+      ->executeOne();
+
     $query = id(new PhabricatorExternalAccountQuery())
-      ->setViewer($request->getUser())
-      ->withAccountTypes(array(PhabricatorBMOAuthProvider::ADAPTER_TYPE));
+    ->setViewer($request->getUser())
+    ->withProviderConfigPHIDs(array($config->getPHID()))
+    ->needAccountIdentifiers(true);
 
     if ($bugzilla_ids) {
-      $query->withAccountIDs($bugzilla_ids);
+      $query->withRawAccountIdentifiers($bugzilla_ids);
     }
     elseif ($phab_phids) {
       $query->withUserPHIDs($phab_phids);
     }
 
-    $handles = $query->execute();
+    $accounts = $query->execute();
 
     $results = array();
-    foreach ($handles as $user => $handle) {
+    foreach ($accounts as $account) {
+      $identifiers = $account->getAccountIdentifiers();
+      $bmo_id = head($identifiers)->getIdentifierRaw();
       $results[] = array(
-        'id'   => $handle->getAccountID(), // The Bugzilla ID
-        'phid' => $handle->getUserPHID()   // The Phabricator User PHID
+        'id'   => $bmo_id,                  // The Bugzilla ID
+        'phid' => $account->getUserPHID()   // The Phabricator User PHID
       );
     }
 

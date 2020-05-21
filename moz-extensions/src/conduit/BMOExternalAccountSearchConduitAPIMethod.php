@@ -22,16 +22,25 @@ final class BMOExternalAccountSearchConduitAPIMethod
   protected function execute(ConduitAPIRequest $request) {
     $account_ids = $request->getValue('accountids');
 
-    $handles = id(new PhabricatorExternalAccountQuery())
+    $config = id(new PhabricatorAuthProviderConfigQuery())
+      ->setViewer(PhabricatorUser::getOmnipotentUser())
+      ->withProviderClasses(array('PhabricatorBMOAuthProvider'))
+      ->executeOne();
+
+    $accounts = id(new PhabricatorExternalAccountQuery())
       ->setViewer($request->getUser())
-      ->withAccountIDs($account_ids)
+      ->withProviderConfigPHIDs(array($config->getPHID()))
+      ->withRawAccountIdentifiers($account_ids)
+      ->needAccountIdentifiers(true)
       ->execute();
 
     $result = array();
-    foreach ($handles as $user => $handle) {
+    foreach ($accounts as $account) {
+      $identifiers = $account->getAccountIdentifiers();
+      $bmo_id = head($identifiers)->getIdentifierRaw();
       $result[] = array(
-        'id' => $handle->getAccountID(),  // The BMO ID
-        'phid' => $handle->getUserPHID()  // The Phabricator User PHID
+        'id'   => $bmo_id,                 // The BMO ID
+        'phid' => $account->getUserPHID()  // The Phabricator User PHID
       );
     }
 

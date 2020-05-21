@@ -16,17 +16,27 @@ final class ExternalAccountsSearchEngineAttachment
   }
 
   public function getAttachmentForObject($object, $data, $spec) {
-    $handles = id(new PhabricatorExternalAccountQuery())
+    $accounts = id(new PhabricatorExternalAccountQuery())
       ->setViewer($this->getViewer())
       ->withUserPHIDs(array($object->getPHID()))
       ->requireCapabilities(array(PhabricatorPolicyCapability::CAN_VIEW))
+      ->needAccountIdentifiers(true)
       ->execute();
 
     $results = array();
-    foreach ($handles as $user => $handle) {
+    foreach ($accounts as $account) {
+      $account_id = 0;
+      $identifiers = $account->getAccountIdentifiers();
+      if ($identifiers) {
+        $account_id = head($identifiers)->getIdentifierRaw();
+      }
+
+      $config = $account->getProviderConfig();
+      $provider = $config->getProvider();
+
       $results[] = array(
-        'id'   => $handle->getAccountID(),
-        'type' => $handle->getAccountType()
+        'id'   => $account_id,
+        'type' => strtolower($provider->getProviderName())
       );
     }
 

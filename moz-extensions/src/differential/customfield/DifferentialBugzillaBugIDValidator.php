@@ -45,11 +45,17 @@ class DifferentialBugzillaBugIDValidator extends Phobject {
       return $errors;
     }
 
-    // Get the transactor's ExternalAccount->accountID using the author's phid
+    // Get the transactor's ExternalAccount ID using the author's phid
+    $config = id(new PhabricatorAuthProviderConfigQuery())
+      ->setViewer(PhabricatorUser::getOmnipotentUser())
+      ->withProviderClasses(array('PhabricatorBMOAuthProvider'))
+      ->executeOne();
+
     $users = id(new PhabricatorExternalAccountQuery())
       ->setViewer(PhabricatorUser::getOmnipotentUser())
-      ->withAccountTypes(array(PhabricatorBMOAuthProvider::ADAPTER_TYPE))
+      ->withProviderConfigPHIDs(array($config->getPHID()))
       ->withUserPHIDs(array($account_phid))
+      ->needAccountIdentifiers(true)
       ->execute();
 
     // The only way this should happen is if the user creating/editing the
@@ -59,7 +65,8 @@ class DifferentialBugzillaBugIDValidator extends Phobject {
       return $errors;
     }
     $user_detail = reset($users);
-    $user_bmo_id = $user_detail->getAccountID();
+    $identifiers = $user_detail->getAccountIdentifiers();
+    $user_bmo_id = head($identifiers)->getIdentifierRaw();
 
     $future_uri = id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
       ->setPath('/rest/phabbugz/check_bug/'.$bug_id.'/'.$user_bmo_id);
@@ -68,7 +75,7 @@ class DifferentialBugzillaBugIDValidator extends Phobject {
       ->setMethod('GET')
       ->addHeader('X-Bugzilla-API-Key', PhabricatorEnv::getEnvConfig('bugzilla.automation_api_key'))
       ->addHeader('Accept', 'application/json')
-      ->addHeader('User-Agent', PhabricatorBMOAuthProvider::APP_NAME)
+      ->addHeader('User-Agent', 'Phabricator')
       ->setTimeout(PhabricatorEnv::getEnvConfig('bugzilla.timeout'));
 
     // Resolve the async HTTPSFuture request and extract JSON body
