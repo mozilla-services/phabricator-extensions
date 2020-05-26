@@ -151,7 +151,7 @@ case "$ARG" in
   "test_phab")
 	    # Find all extension tests and call them
 	    cd /app
-	    /app/arcanist/bin/arc unit /app/moz-extensions/src/*/__tests__/*php /app/moz-extensions/src/*/*/__tests__/*php
+	    /app/arcanist/bin/arc unit /app/moz-extensions/src/*/*/__tests__/*php
 	    ;;
   *)
       exec $ARG
