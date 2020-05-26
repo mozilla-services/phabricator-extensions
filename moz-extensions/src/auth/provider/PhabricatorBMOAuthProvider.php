@@ -14,7 +14,7 @@ final class PhabricatorBMOAuthProvider
     return pht(
       "To configure BMO OAuth, create a new BMO OAuth Application here:".
       "\n\n".
-      "https://bugzilla.mozilla.org/admin/oauth/create".
+      PhabricatorEnv::getEnvConfig('bugzilla.url') . "/admin/oauth/create".
       "\n\n".
       "You should use these settings in your application:".
       "\n\n".

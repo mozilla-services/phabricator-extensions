@@ -68,6 +68,11 @@ class DifferentialBugzillaBugIDValidator extends Phobject {
     $identifiers = $user_detail->getAccountIdentifiers();
     $user_bmo_id = head($identifiers)->getIdentifierRaw();
 
+    if (!$user_bmo_id) {
+      $errors[] = pht('No Bugzilla account identifier found for current Phabricator user.');
+      return $errors;
+    }
+
     $future_uri = id(new PhutilURI(PhabricatorEnv::getEnvConfig('bugzilla.url')))
       ->setPath('/rest/phabbugz/check_bug/'.$bug_id.'/'.$user_bmo_id);
 

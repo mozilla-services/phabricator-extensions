@@ -38,6 +38,9 @@ final class BMOExternalAccountSearchConduitAPIMethod
     foreach ($accounts as $account) {
       $identifiers = $account->getAccountIdentifiers();
       $bmo_id = head($identifiers)->getIdentifierRaw();
+      if (!$bmo_id) {
+        continue;
+      }
       $result[] = array(
         'id'   => $bmo_id,                 // The BMO ID
         'phid' => $account->getUserPHID()  // The Phabricator User PHID

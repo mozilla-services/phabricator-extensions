@@ -51,6 +51,9 @@ final class BugzillaAccountSearchConduitAPIMethod
     foreach ($accounts as $account) {
       $identifiers = $account->getAccountIdentifiers();
       $bmo_id = head($identifiers)->getIdentifierRaw();
+      if (!$bmo_id) {
+        continue;
+      }
       $results[] = array(
         'id'   => $bmo_id,                  // The Bugzilla ID
         'phid' => $account->getUserPHID()   // The Phabricator User PHID

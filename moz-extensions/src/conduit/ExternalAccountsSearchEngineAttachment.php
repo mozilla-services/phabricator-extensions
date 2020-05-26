@@ -25,10 +25,10 @@ final class ExternalAccountsSearchEngineAttachment
 
     $results = array();
     foreach ($accounts as $account) {
-      $account_id = 0;
       $identifiers = $account->getAccountIdentifiers();
-      if ($identifiers) {
-        $account_id = head($identifiers)->getIdentifierRaw();
+      $account_id = head($identifiers)->getIdentifierRaw();
+      if (!$account_id) {
+        continue;
       }
 
       $config = $account->getProviderConfig();
