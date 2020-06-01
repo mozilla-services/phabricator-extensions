@@ -71,12 +71,28 @@ final class PhutilBMOAuthAdapter extends PhutilOAuthAuthAdapter {
     list($body) = $future->resolvex();
 
     try {
-      return phutil_json_decode($body);
+      $result = phutil_json_decode($body);
     } catch (PhutilJSONParserException $ex) {
       throw new PhutilProxyException(
         pht('Expected valid JSON response from BMO account data request.'),
         $ex);
     }
+
+    // If mfa is disabled in Bugzilla, do not allow login
+    if (
+      PhabricatorEnv::getEnvConfig('bugzilla.require_mfa')
+      && (!isset($result['mfa']) || !$result['mfa'])
+    ) {
+      throw new Exception(
+        pht(
+          'Login using Bugzilla requires multi-factor authentication ' .
+          'to be enabled in Bugzilla. Please enable multi-factor authentication ' .
+          'in your Bugzilla Preferences and try again.'
+        )
+      );
+    }
+
+    return $result;
   }
 
 }
