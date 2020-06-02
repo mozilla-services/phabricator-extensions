@@ -26,6 +26,9 @@ final class ExternalAccountsSearchEngineAttachment
     $results = array();
     foreach ($accounts as $account) {
       $identifiers = $account->getAccountIdentifiers();
+      if (!$identifiers) {
+        continue;
+      }
       $account_id = head($identifiers)->getIdentifierRaw();
       if (!$account_id) {
         continue;
