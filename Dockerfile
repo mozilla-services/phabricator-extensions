@@ -109,7 +109,9 @@ RUN composer global require hirak/prestissimo
 
 COPY --chown=app:app . /app
 
-RUN pip install --user --require-hashes -r requirements.txt
+USER root
+RUN pip install --require-hashes -r requirements.txt
+USER app
 
 # Move static resources to phabricator, add files to celerity map array
 COPY moz-extensions/src/motd/css/MozillaMOTD.css /app/phabricator/webroot/rsrc/css/MozillaMOTD.css
