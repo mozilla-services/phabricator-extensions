@@ -9,11 +9,11 @@ CMD ["/app/entrypoint.sh", "start"]
 
 # Git commit SHAs for the build artifacts we want to grab.
 # From https://github.com/phacility/phabricator/tree/stable
-# Promote 2020 Week 20 plus three extra commits
-ENV PHABRICATOR_GIT_SHA 621f9de4bb9cf5fbf498d1e7b4b45969ffb7c1dc
+# Promote 2020 Week 21
+ENV PHABRICATOR_GIT_SHA b9d52f38ddadafc5b5d768f3cc1003bba80efd05
 # From https://github.com/phacility/arcanist/tree/stable
-# Promote 2020 Week 20
-ENV ARCANIST_GIT_SHA a5bfb968cd90bb0a14c7067e7a2153d5d6ed48d7
+# Promote 2020 Week 21 plus one extra commit
+ENV ARCANIST_GIT_SHA b689a8c78b6c8a2715871b802a89f7d44eca4f38
 # Should match the phabricator 'repository.default-local-path' setting.
 ENV REPOSITORY_LOCAL_PATH /repo
 # Explicitly set TMPDIR
