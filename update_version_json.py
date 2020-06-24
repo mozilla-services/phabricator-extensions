@@ -14,8 +14,6 @@ app_data = dict()
 app_data = {
     'upstream_arcanist_source': 'https://github.com/phacility/arcanist',
     'upstream_arcanist_version': os.getenv('ARCANIST_GIT_SHA', None),
-    'upstream_libphutil_source': 'https://github.com/phacility/libphutil',
-    'upstream_libphutil_version': os.getenv('LIBPHUTIL_GIT_SHA', None),
     'upstream_phabricator_source': 'https://github.com/phacility/phabricator',
     'upstream_phabricator_version': os.getenv('PHABRICATOR_GIT_SHA', None),
 }
