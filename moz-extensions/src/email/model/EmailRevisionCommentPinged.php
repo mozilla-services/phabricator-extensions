@@ -14,10 +14,10 @@ class EmailRevisionCommentPinged implements PublicEmailBody {
   /**
    * @param EmailRecipient $recipient
    * @param string $transactionLink
-   * @param string $pingedMainComment
+   * @param string|null $pingedMainComment
    * @param EmailInlineComment[] $pingedInlineComments
    */
-  public function __construct(EmailRecipient $recipient, string $transactionLink, string $pingedMainComment, array $pingedInlineComments) {
+  public function __construct(EmailRecipient $recipient, string $transactionLink, ?string $pingedMainComment, array $pingedInlineComments) {
     $this->recipient = $recipient;
     $this->transactionLink = $transactionLink;
     $this->pingedMainComment = $pingedMainComment;
