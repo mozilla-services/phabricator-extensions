@@ -106,7 +106,7 @@ class EventKind {
       } else if (in_array($type, ['core:comment', 'differential:inline'])) {
         $includesComment = true;
         continue;
-      } else if (in_array($type, ['core:customField', 'differential.revision.title', 'differential.revision.reviewers'])) {
+      } else if (in_array($type, ['core:customfield', 'differential.revision.title', 'differential.revision.reviewers'])) {
         return new EventKind(self::$METADATA_EDIT, null);
       }
     }
