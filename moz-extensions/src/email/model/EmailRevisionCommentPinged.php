@@ -6,7 +6,7 @@ class EmailRevisionCommentPinged implements PublicEmailBody {
   public $recipient;
   /** @var string */
   public $transactionLink;
-  /** @var string */
+  /** @var string|null */
   public $pingedMainComment;
   /** @var EmailInlineComment[] */
   public $pingedInlineComments;

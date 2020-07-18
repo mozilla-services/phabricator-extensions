@@ -3,7 +3,7 @@
 
 class EmailRevisionRequestedReview implements PublicEmailBody
 {
-  /** @var string (optional) */
+  /** @var string|null */
   public $mainComment;
   /** @var EmailInlineComment[] */
   public $inlineComments;
@@ -13,7 +13,7 @@ class EmailRevisionRequestedReview implements PublicEmailBody
   public $reviewers;
 
   /**
-   * @param string $mainComment (optional)
+   * @param string|null $mainComment
    * @param EmailInlineComment[] $inlineComments
    * @param string $transactionLink
    * @param EmailReviewer[] $reviewers
