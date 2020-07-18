@@ -4,7 +4,7 @@
 class PublicPing {
   /** @var PhabricatorUser */
   public $targetUser;
-  /** @var string (optional) */
+  /** @var string|null */
   public $mainComment;
   /** @var EmailInlineComment[] */
   public $inlineComments;

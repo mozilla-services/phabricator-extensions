@@ -8,7 +8,7 @@ class EmailReviewer {
   public $isActionable;
   /** @var string either 'accepted', 'requested-changes' 'unreviewed' or 'blocking' */
   public $status;
-  /** @var EmailRecipient[] (optional) */
+  /** @var EmailRecipient[] */
   public $recipients;
 
   /**

@@ -8,7 +8,7 @@ class SecureEmailRevisionMetadataEdited implements SecureEmailBody, PublicEmailB
   public $isTitleChanged;
   /** @var bool */
   public $isBugChanged;
-  /** @var EmailRecipient (optional) */
+  /** @var EmailRecipient|null */
   public $author;
   /** @var EmailMetadataEditedReviewer[] */
   public $reviewers;
@@ -17,7 +17,7 @@ class SecureEmailRevisionMetadataEdited implements SecureEmailBody, PublicEmailB
    * @param bool $isReadyToLand
    * @param bool $isTitleChanged
    * @param bool $isBugChanged
-   * @param EmailRecipient $author (optional)
+   * @param EmailRecipient|null $author
    * @param EmailMetadataEditedReviewer[] $reviewers
    */
   public function __construct(bool $isReadyToLand, bool $isTitleChanged, bool $isBugChanged, ?EmailRecipient $author, array $reviewers) {

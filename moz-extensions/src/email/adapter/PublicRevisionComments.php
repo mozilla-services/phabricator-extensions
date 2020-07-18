@@ -2,7 +2,7 @@
 
 
 class PublicRevisionComments {
-  /** @var string (optional) */
+  /** @var string|null */
   public $mainComment;
   /** @var EmailInlineComment[] */
   public $inlineComments;

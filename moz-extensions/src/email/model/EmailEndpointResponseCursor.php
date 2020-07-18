@@ -4,12 +4,12 @@
 class EmailEndpointResponseCursor {
   /** @var int */
   public $limit;
-  /** @var string (optional) */
+  /** @var string|null */
   public $after;
 
   /**
    * @param int $limit
-   * @param string $after (optional)
+   * @param string|null $after
    */
   public function __construct(int $limit, ?string $after) {
     $this->limit = $limit;

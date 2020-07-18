@@ -9,7 +9,7 @@ class SecureEmailRevisionAccepted implements SecureEmailBody
   public $isReadyToLand;
   /** @var EmailRecipient[] */
   public $reviewers;
-  /** @var EmailRecipient (optional) */
+  /** @var EmailRecipient|null */
   public $author;
   /** @var int */
   public $commentCount;
@@ -20,7 +20,7 @@ class SecureEmailRevisionAccepted implements SecureEmailBody
    * @param string $landoLink
    * @param bool $isReadyToLand
    * @param EmailRecipient[] $reviewers
-   * @param EmailRecipient $author (optional)
+   * @param EmailRecipient|null $author
    * @param int $commentCount
    * @param string $transactionLink
    */

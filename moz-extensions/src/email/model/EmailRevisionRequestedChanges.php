@@ -4,21 +4,21 @@
 class EmailRevisionRequestedChanges implements PublicEmailBody {
   /** @var string */
   public $transactionLink;
-  /** @var string (optional) */
+  /** @var string|null */
   public $mainComment;
   /** @var EmailInlineComment[] */
   public $inlineComments;
   /** @var EmailRecipient[] */
   public $reviewers;
-  /** @var EmailRecipient (optional) */
+  /** @var EmailRecipient|null */
   public $author;
 
   /**
    * @param string $transactionLink
-   * @param string $mainComment (optional)
+   * @param string|null $mainComment
    * @param EmailInlineComment[] $inlineComments
    * @param EmailRecipient[] $reviewers
-   * @param EmailRecipient $author (optional)
+   * @param EmailRecipient|null $author
    */
   public function __construct(string $transactionLink, ?string $mainComment, array $inlineComments, array $reviewers, ?EmailRecipient $author)
   {

@@ -8,14 +8,14 @@ class EmailRevision {
   public $name;
   /** @var string */
   public $link;
-  /** @var EmailBug (optional) */
+  /** @var EmailBug|null */
   public $bug;
 
   /**
    * @param int $revisionId
    * @param string $name
    * @param string $link
-   * @param EmailBug $bug (optional)
+   * @param EmailBug|null $bug
    */
   public function __construct(int $revisionId, string $name, string $link, ?EmailBug $bug) {
     $this->revisionId = $revisionId;
