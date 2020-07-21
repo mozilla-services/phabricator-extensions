@@ -5,17 +5,21 @@ class EmailRecipient {
   /** @var string */
   public $email;
   /** @var string */
+  public $username;
+  /** @var string */
   public $timezoneOffset;
   /** @var bool */
   public $isActor;
 
   /**
    * @param string $email
+   * @param string $username
    * @param DateTimeZone $timezone
    * @param bool $isActor
    */
-  public function __construct(string $email, DateTimeZone $timezone, bool $isActor) {
+  public function __construct(string $email, string $username, DateTimeZone $timezone, bool $isActor) {
     $this->email = $email;
+    $this->username = $username;
     $this->timezoneOffset = $timezone->getOffset(new DateTime(null, $timezone));
     $this->isActor = $isActor;
   }
@@ -50,7 +54,8 @@ class EmailRecipient {
       return null;
     }
 
+    $username = $user->getUserName();
     $email = $user->loadPrimaryEmailAddress();
-    return new EmailRecipient($email, $timezone, $email == $actorEmail);
+    return new EmailRecipient($email, $username, $timezone, $email == $actorEmail);
   }
 }
