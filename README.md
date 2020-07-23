@@ -101,3 +101,4 @@ docker-compose -f docker-compose.yml -f docker-compose.bmo.yml exec phabdb mysql
 ## Support
 
 To talk to the `phabricator-extensions` developers, you can join them on [Matrix](https://chat.mozilla.org/#/room/#conduit:mozilla.org).
+
