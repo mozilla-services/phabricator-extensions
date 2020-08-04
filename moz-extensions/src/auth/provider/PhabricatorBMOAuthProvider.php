@@ -38,4 +38,25 @@ final class PhabricatorBMOAuthProvider
     return parent::renderLoginForm($request, $mode);
   }
 
+  public function processLoginRequest(
+    PhabricatorAuthLoginController $controller) {
+    $adapter = $this->getAdapter();
+
+    list($account, $response) = parent::processLoginRequest($controller);
+
+    // If mfa is disabled in Bugzilla, do not allow login
+    if (!$adapter->getAccountMFA()) {
+      $bugzilla_url = PhabricatorEnv::getEnvConfig('bugzilla.url') . '/userprefs.cgi?tab=mfa';
+      $error_content = phutil_safe_html(
+          'Login using Bugzilla requires multi-factor authentication ' .
+          'to be enabled in Bugzilla. Please enable multi-factor authentication ' .
+          'in your Bugzilla ' . phutil_tag('a', array('href' => $bugzilla_url), pht('preferences')) .
+          ' and try again.');
+      $response = $controller->buildProviderErrorResponse($this, $error_content);
+      return array(null, $response);
+    }
+
+    return array($account, $response);
+  }
+
 }
