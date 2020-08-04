@@ -29,6 +29,10 @@ final class PhutilBMOAuthAdapter extends PhutilOAuthAuthAdapter {
     return $this->getOAuthAccountData('name');
   }
 
+  public function getAccountMFA() {
+    return $this->getOAuthAccountData('mfa');
+  }
+
   protected function getAuthenticateBaseURI() {
     $url = PhabricatorEnv::getEnvConfig('bugzilla.url');
     return $url . '/oauth/authorize';
@@ -78,19 +82,26 @@ final class PhutilBMOAuthAdapter extends PhutilOAuthAuthAdapter {
         $ex);
     }
 
-    // If mfa is disabled in Bugzilla, do not allow login
-    if (
-      PhabricatorEnv::getEnvConfig('bugzilla.require_mfa')
-      && (!isset($result['mfa']) || !$result['mfa'])
-    ) {
-      throw new Exception(
-        pht(
-          'Login using Bugzilla requires multi-factor authentication ' .
-          'to be enabled in Bugzilla. Please enable multi-factor authentication ' .
-          'in your Bugzilla Preferences and try again.'
-        )
-      );
-    }
+    // // If mfa is disabled in Bugzilla, do not allow login
+    // if (
+    //   PhabricatorEnv::getEnvConfig('bugzilla.require_mfa')
+    //   && (!isset($result['mfa']) || !$result['mfa'])
+    // ) {
+    //   $bugzilla_url = PhabricatorEnv::getEnvConfig('bugzilla.url') . '/userprefs.cgi?tab=mfa';
+    //   $error_content = phutil_tag(
+    //     'div',
+    //     array(),
+    //     phutil_safe_html(
+    //       'Login using Bugzilla requires multi-factor authentication ' .
+    //       'to be enabled in Bugzilla. Please enable multi-factor authentication ' .
+    //       'in your Bugzilla ' . phutil_tag('a', array('href' => $bugzilla_url), pht('preferences')) .
+    //       ' and try again.'));
+    //   $dialog = id(new AphrontDialogView())
+    //     ->setTitle(pht('Bugzilla MFA Required'))
+    //     ->appendChild($error_content)
+    //     ->addCancelButton('/', pht('Continue'));
+    //   return id(new AphrontDialogResponse())->setDialog($dialog);
+    // }
 
     return $result;
   }
