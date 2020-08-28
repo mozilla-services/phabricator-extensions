@@ -2,22 +2,22 @@
 
 
 class GroupPhabricatorReviewer implements PhabricatorReviewer {
-  /** @var PhabricatorProject */
-  private $rawProject;
+  /** @var string */
+  private $name;
   /** @var PhabricatorUser */
   private $rawUsers;
 
   /**
-   * @param PhabricatorProject $rawProject
+   * @param string $name
    * @param PhabricatorUser[] $rawUsers
    */
-  public function __construct(PhabricatorProject $rawProject, array $rawUsers) {
-    $this->rawProject = $rawProject;
+  public function __construct(string $name, array $rawUsers) {
+    $this->name = $name;
     $this->rawUsers = $rawUsers;
   }
 
   public function name(): string {
-    return $this->rawProject->getDisplayName();
+    return $this->name;
   }
 
   public function toRecipients(string $actorEmail): array {
