@@ -35,9 +35,10 @@ class BugStore {
       ->appendQueryParam('include_fields', 'summary')
       ->appendQueryParam('api_key', PhabricatorEnv::getEnvConfig('bugzilla.automation_api_key'));
 
-    $rawBugResponse = file_get_contents((string) $bugApiURI);
-    // If the request fails, we get "false" as a return value
-    if (!$rawBugResponse) {
+    try {
+      $rawBugResponse = file_get_contents((string)$bugApiURI);
+    } catch (RuntimeException $e) {
+      // If the request fails (or 404s), Phabricator catches the error and throws a RuntimeException
       return null;
     }
 
