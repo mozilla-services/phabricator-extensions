@@ -124,6 +124,8 @@ RUN composer install --no-dev
 # Apply customization patches
 # Phabricator
 RUN \
+    # Tell the shell to fail early if a command in the loop has a non-zero exit code.
+    set -e && \
     cd /app/phabricator && \
     for i in /app/patches/phabricator/*.patch; do patch -p1 < $i; done
 
