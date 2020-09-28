@@ -39,11 +39,20 @@ class SecureEmailRevisionMetadataEdited implements SecureEmailBody, PublicEmailB
     }
 
     $reviewers = [];
-    $rawReviewersTx = $transactions->getTransactionWithType('differential.revision.reviewers');
-    if ($rawReviewersTx) {
-      $reviewersTx = new ReviewersTransaction($rawReviewersTx);
-      foreach ($reviewersTx->getAllUsers() as $reviewerPHID) {
-        $reviewers[] = EmailMetadataEditedReviewer::from($reviewerPHID, $rawRevision, $reviewersTx, $reviewerStore, $actorEmail);
+    $rawReviewersTxs = $transactions->getAllTransactionsWithType('differential.revision.reviewers');
+    if (!empty($rawReviewersTxs)) {
+      $processedReviewerPHIDs = [];
+      foreach ($rawReviewersTxs as $rawReviewersTx) {
+        $reviewersTx = new ReviewersTransaction($rawReviewersTx);
+        foreach ($reviewersTx->getAllUsers() as $reviewerPHID) {
+          // When a user adds a reviewer, and an associated herald rule also adds a different reviewer, the first
+          // reviewer will show up in both transactions.
+          if (in_array($reviewerPHID, $processedReviewerPHIDs)) {
+            continue;
+          }
+          $processedReviewerPHIDs[] = $reviewerPHID;
+          $reviewers[] = EmailMetadataEditedReviewer::from($reviewerPHID, $rawRevision, $reviewersTx, $reviewerStore, $actorEmail);
+        }
       }
     } else {
       foreach ($resolveRecipients->resolveReviewers() as $reviewer) {
