@@ -6,6 +6,7 @@ class PhabricatorStoryBuilder {
   public $eventKind;
   public $revisionPHID;
   public $actorPHID;
+  public $isBroadcastable;
   private $revision;
   private $actor;
   private $key;
@@ -23,6 +24,7 @@ class PhabricatorStoryBuilder {
     $this->revisionPHID = $eventKind->findMainTransaction($this->transactions)->getObjectPHID();
     $this->key = $key;
     $this->timestamp = $timestamp;
+    $this->isBroadcastable = true;
   }
 
   public function associateRevision(DifferentialRevision $revision, string $actorPHID) {

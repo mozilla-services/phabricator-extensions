@@ -100,12 +100,25 @@ class PhabricatorStory {
     foreach ($builders as $builder) {
       foreach ($rawRevisions as $rawRevision) {
         if ($builder->revisionPHID == $rawRevision->getPHID()) {
-          $actorPHID = $builder->eventKind->findActor($builder->transactions, $rawRevision);
-          $builder->associateRevision($rawRevision, $actorPHID);
-          $actorPHIDs[] = $actorPHID;
+          if ($rawRevision->getShouldBroadcast()) {
+            $actorPHID = $builder->eventKind->findActor($builder->transactions, $rawRevision);
+            $builder->associateRevision($rawRevision, $actorPHID);
+            $actorPHIDs[] = $actorPHID;
+          } else {
+            // Don't publish emails for "draft" revisions
+            $builder->isBroadcastable = false;
+          }
           break;
         }
       }
+    }
+
+    $builders = array_filter($builders, function(PhabricatorStoryBuilder $builder) {
+      return $builder->isBroadcastable;
+    });
+    if (empty($builders)) {
+      // All new stories were for "draft" revisions
+      return new StoryQueryResult($lastKey, []);
     }
 
     $rawUsers = $userStore->queryAll($actorPHIDs);

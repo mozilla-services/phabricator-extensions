@@ -6,15 +6,15 @@ class SecureEmailRevision {
   public $revisionId;
   /** @var string */
   public $link;
-  /** @var SecureEmailBug|null */
+  /** @var SecureEmailBug */
   public $bug;
 
   /**
    * @param string $revisionId
    * @param string $link
-   * @param SecureEmailBug|null $bug
+   * @param SecureEmailBug $bug
    */
-  public function __construct(string $revisionId, string $link, ?SecureEmailBug $bug) {
+  public function __construct(string $revisionId, string $link, SecureEmailBug $bug) {
     $this->revisionId = $revisionId;
     $this->link = $link;
     $this->bug = $bug;
