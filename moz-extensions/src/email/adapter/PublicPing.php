@@ -4,8 +4,8 @@
 class PublicPing {
   /** @var PhabricatorUser */
   public $targetUser;
-  /** @var string|null */
-  public $mainComment;
+  /** @var EmailCommentMessage|null */
+  public $mainCommentMessage;
   /** @var EmailInlineComment[] */
   public $inlineComments;
 
@@ -17,8 +17,8 @@ class PublicPing {
     $this->inlineComments = [];
   }
 
-  public function setMainComment(string $comment) {
-    $this->mainComment = $comment;
+  public function setMainComment(EmailCommentMessage $message) {
+    $this->mainCommentMessage = $message;
   }
 
   public function appendInlineComment(EmailInlineComment $inlineComment) {
@@ -34,7 +34,7 @@ class PublicPing {
     return new EmailRevisionCommentPinged(
       $recipient,
       $transactionLink,
-      $this->mainComment,
+      $this->mainCommentMessage,
       $this->inlineComments
     );
   }

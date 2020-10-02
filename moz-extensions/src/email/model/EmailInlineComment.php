@@ -6,8 +6,10 @@ class EmailInlineComment {
   public $fileContext;
   /** @var string */
   public $link;
-  /** @var string */
+  /** @var string @deprecated */
   public $text;
+  /** @var EmailCommentMessage */
+  public $message;
   /** @var string "reply" if context is EmailReplyContext, otherwise "code" */
   public $contextKind;
   /** @var EmailReplyContext|EmailCodeContext */
@@ -16,14 +18,15 @@ class EmailInlineComment {
   /**
    * @param string $fileContext
    * @param string $link
-   * @param string $text
+   * @param EmailCommentMessage $message
    * @param string $contextKind
    * @param EmailCodeContext|EmailReplyContext $context
    */
-  public function __construct(string $fileContext, string $link, string $text, string $contextKind, $context) {
+  public function __construct(string $fileContext, string $link, EmailCommentMessage $message, string $contextKind, $context) {
     $this->fileContext = $fileContext;
     $this->link = $link;
-    $this->text = $text;
+    $this->text = $message->asText;
+    $this->message = $message;
     $this->contextKind = $contextKind;
     $this->context = $context;
   }

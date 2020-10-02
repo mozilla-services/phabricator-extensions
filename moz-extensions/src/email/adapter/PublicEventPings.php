@@ -8,9 +8,9 @@ class PublicEventPings {
     $this->pingedUsers = [];
   }
 
-  public function fromMainComment(PhabricatorUser $target, string $comment) {
+  public function fromMainComment(PhabricatorUser $target, EmailCommentMessage $message) {
     $ping = $this->pingedUsers[$target->getPHID()] ?? new PublicPing($target);
-    $ping->setMainComment($comment);
+    $ping->setMainComment($message);
     $this->pingedUsers[$target->getPHID()] = $ping;
   }
 

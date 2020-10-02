@@ -3,8 +3,10 @@
 
 class EmailRevisionAccepted implements PublicEmailBody
 {
-  /** @var string|null */
+  /** @var string|null @deprecated */
   public $mainComment;
+  /** @var EmailCommentMessage|null */
+  public $mainCommentMessage;
   /** @var EmailInlineComment[] */
   public $inlineComments;
   /** @var string */
@@ -19,7 +21,7 @@ class EmailRevisionAccepted implements PublicEmailBody
   public $author;
 
   /**
-   * @param string|null $mainComment
+   * @param EmailCommentMessage|null $mainCommentMessage
    * @param EmailInlineComment[] $inlineComments
    * @param string $transactionLink
    * @param string $landoLink
@@ -27,8 +29,9 @@ class EmailRevisionAccepted implements PublicEmailBody
    * @param EmailRecipient[] $reviewers
    * @param EmailRecipient|null $author
    */
-  public function __construct(?string $mainComment, array $inlineComments, string $transactionLink, string $landoLink, bool $isReadyToLand, array $reviewers, ?EmailRecipient $author) {
-    $this->mainComment = $mainComment;
+  public function __construct(?EmailCommentMessage $mainCommentMessage, array $inlineComments, string $transactionLink, string $landoLink, bool $isReadyToLand, array $reviewers, ?EmailRecipient $author) {
+    $this->mainComment = $mainCommentMessage ? $mainCommentMessage->asText : null;
+    $this->mainCommentMessage = $mainCommentMessage;
     $this->inlineComments = $inlineComments;
     $this->transactionLink = $transactionLink;
     $this->landoLink = $landoLink;

@@ -91,7 +91,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
           } else {
             $comments = $resolveComments->resolvePublicComments($publicPings);
             $body = new EmailRevisionAbandoned(
-              $comments->mainComment,
+              $comments->mainCommentMessage,
               $comments->inlineComments,
               $story->getTransactionLink(),
               $resolveRecipients->resolveReviewersAsRecipients()
@@ -108,7 +108,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
           } else {
             $comments = $resolveComments->resolvePublicComments($publicPings);
             $body = new EmailRevisionReclaimed(
-              $comments->mainComment,
+              $comments->mainCommentMessage,
               $comments->inlineComments,
               $story->getTransactionLink(),
               $resolveRecipients->resolveReviewersAsRecipients()
@@ -126,7 +126,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
             $comments = $resolveComments->resolvePublicComments($publicPings);
             $body = new EmailRevisionCommented(
               $story->getTransactionLink(),
-              $comments->mainComment,
+              $comments->mainCommentMessage,
               $comments->inlineComments,
               $resolveRecipients->resolveReviewersAsRecipients(),
               $resolveRecipients->resolveAuthorAsRecipient()
@@ -144,7 +144,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
           } else {
             $comments = $resolveComments->resolvePublicComments($publicPings);
             $body = new EmailRevisionLanded(
-              $comments->mainComment,
+              $comments->mainCommentMessage,
               $comments->inlineComments,
               $story->getTransactionLink(),
               $resolveRecipients->resolveReviewersAsRecipients(),
@@ -164,7 +164,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
             $comments = $resolveComments->resolvePublicComments($publicPings);
             $body = new EmailRevisionRequestedChanges(
               $story->getTransactionLink(),
-              $comments->mainComment,
+              $comments->mainCommentMessage,
               $comments->inlineComments,
               $resolveRecipients->resolveReviewersAsRecipients(),
               $resolveRecipients->resolveAuthorAsRecipient()
@@ -181,7 +181,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
           } else {
             $comments = $resolveComments->resolvePublicComments($publicPings);
             $body = new EmailRevisionRequestedReview(
-              $comments->mainComment,
+              $comments->mainCommentMessage,
               $comments->inlineComments,
               $story->getTransactionLink(),
               $resolveRecipients->resolveReviewers()
@@ -207,7 +207,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
           } else {
             $comments = $resolveComments->resolvePublicComments($publicPings);
             $body = new EmailRevisionAccepted(
-              $comments->mainComment,
+              $comments->mainCommentMessage,
               $comments->inlineComments,
               $story->getTransactionLink(),
               $resolveLandStatus->resolveLandoLink(),

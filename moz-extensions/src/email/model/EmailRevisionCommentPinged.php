@@ -6,21 +6,24 @@ class EmailRevisionCommentPinged implements PublicEmailBody {
   public $recipient;
   /** @var string */
   public $transactionLink;
-  /** @var string|null */
+  /** @var string|null @deprecated */
   public $pingedMainComment;
+  /** @var EmailCommentMessage|null */
+  public $pingedMainCommentMessage;
   /** @var EmailInlineComment[] */
   public $pingedInlineComments;
 
   /**
    * @param EmailRecipient $recipient
    * @param string $transactionLink
-   * @param string|null $pingedMainComment
+   * @param EmailCommentMessage|null $pingedMainCommentMessage
    * @param EmailInlineComment[] $pingedInlineComments
    */
-  public function __construct(EmailRecipient $recipient, string $transactionLink, ?string $pingedMainComment, array $pingedInlineComments) {
+  public function __construct(EmailRecipient $recipient, string $transactionLink, ?EmailCommentMessage $pingedMainCommentMessage, array $pingedInlineComments) {
     $this->recipient = $recipient;
     $this->transactionLink = $transactionLink;
-    $this->pingedMainComment = $pingedMainComment;
+    $this->pingedMainComment = $pingedMainCommentMessage ? $pingedMainCommentMessage->asText : null;
+    $this->pingedMainCommentMessage = $pingedMainCommentMessage;
     $this->pingedInlineComments = $pingedInlineComments;
   }
 

@@ -21,9 +21,9 @@ class ResolveComments {
   }
 
   public function resolvePublicComments(PublicEventPings $pings): PublicRevisionComments {
-    $mainComment = $this->resolveMainComment($pings);
+    $mainCommentMessage = $this->resolveMainComment($pings);
     $inlineComments = $this->resolveInlineComments($pings);
-    return new PublicRevisionComments($mainComment, $inlineComments, $pings);
+    return new PublicRevisionComments($mainCommentMessage, $inlineComments, $pings);
   }
 
   public function resolveSecureComments(SecureEventPings $pings): SecureRevisionComments {
@@ -51,18 +51,19 @@ class ResolveComments {
 
   /**
    * @param PublicEventPings $pings
-   * @return string|null
+   * @return EmailCommentMessage|null
    */
-  private function resolveMainComment(PublicEventPings $pings): ?string {
+  private function resolveMainComment(PublicEventPings $pings): ?EmailCommentMessage {
     $commentTransaction = $this->transactions->getTransactionWithType('core:comment');
     if (!$commentTransaction) {
       return null;
     } else {
-      $comment = $commentTransaction->getComment()->getContent();
-      foreach (self::findPingedUsers($comment) as $user) {
-        $pings->fromMainComment($user, $comment);
+      $rawMessage = $commentTransaction->getComment()->getContent();
+      $message = self::renderCommentMarkup($rawMessage);
+      foreach (self::findPingedUsers($rawMessage) as $user) {
+        $pings->fromMainComment($user, $message);
       }
-      return $comment;
+      return $message;
     }
   }
 
@@ -99,7 +100,8 @@ class ResolveComments {
 
         $otherDateUtc = new DateTime('@' . $otherComment->getDateCreated(), new DateTimeZone('UTC'));
         $rawOtherAuthor = $this->userStore->find($otherComment->getAuthorPHID());
-        $context = new EmailReplyContext($rawOtherAuthor->getUserName(), $otherDateUtc, $otherComment->getContent());
+        $otherMessage = self::renderCommentMarkup($otherComment->getContent());
+        $context = new EmailReplyContext($rawOtherAuthor->getUserName(), $otherDateUtc, $otherMessage);
       } else {
         $contextKind = 'code';
 
@@ -151,8 +153,10 @@ class ResolveComments {
       }
 
       $commentLineNumber = $comment->getLineNumber();
-      $inlineComment = new EmailInlineComment("$filename:$commentLineNumber", $link, $rawTransaction->getComment()->getContent(), $contextKind, $context);
-      foreach (self::findPingedUsers($rawTransaction->getComment()->getContent()) as $user) {
+      $rawMessage = $rawTransaction->getComment()->getContent();
+      $message = self::renderCommentMarkup($rawMessage);
+      $inlineComment = new EmailInlineComment("$filename:$commentLineNumber", $link, $message, $contextKind, $context);
+      foreach (self::findPingedUsers($rawMessage) as $user) {
         $pings->fromInlineComment($user, $inlineComment);
       }
       $inlineComments[] = $inlineComment;
@@ -173,6 +177,18 @@ class ResolveComments {
     } else {
       return [];
     }
+  }
 
+  private static function renderCommentMarkup($markup) {
+    $asText = self::createMarkupEngine(PhutilRemarkupEngine::MODE_TEXT)->markupText($markup);
+    $asHtml = self::createMarkupEngine(PhutilRemarkupEngine::MODE_DEFAULT)->markupText($markup);
+    return new EmailCommentMessage($asText, $asHtml);
+  }
+
+  private static function createMarkupEngine($mode) {
+    return PhabricatorMarkupEngine::newMarkupEngine(array())
+      ->setConfig('viewer', PhabricatorUser::getOmnipotentUser())
+      ->setConfig('uri.base', PhabricatorEnv::getProductionURI('/'))
+      ->setMode($mode);
   }
 }
