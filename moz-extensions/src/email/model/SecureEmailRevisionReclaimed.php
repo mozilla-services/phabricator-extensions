@@ -3,7 +3,7 @@
 
 class SecureEmailRevisionReclaimed implements SecureEmailBody
 {
-  /** @var EmailRecipient[] */
+  /** @var EmailReviewer[] */
   public $reviewers;
   /** @var int */
   public $commentCount;
@@ -11,7 +11,7 @@ class SecureEmailRevisionReclaimed implements SecureEmailBody
   public $transactionLink;
 
   /**
-   * @param EmailRecipient[] $reviewers
+   * @param EmailReviewer[] $reviewers
    * @param int $commentCount
    * @param string $transactionLink
    */

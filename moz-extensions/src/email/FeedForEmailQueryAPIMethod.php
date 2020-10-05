@@ -98,10 +98,11 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
             );
           }
         } else if ($eventKind->publicKind == EventKind::$RECLAIM) {
+          $reviewers = $reviewers = $resolveRecipients->resolveReviewers(true);
           if ($isSecure) {
             $comments = $resolveComments->resolveSecureComments($securePings);
             $body = new SecureEmailRevisionReclaimed(
-              $resolveRecipients->resolveReviewersAsRecipients(),
+              $reviewers,
               $comments->count,
               $story->getTransactionLink()
             );
@@ -111,7 +112,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
               $comments->mainCommentMessage,
               $comments->inlineComments,
               $story->getTransactionLink(),
-              $resolveRecipients->resolveReviewersAsRecipients()
+              $reviewers
             );
           }
         } else if ($eventKind->publicKind == EventKind::$COMMENT) {

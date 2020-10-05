@@ -11,14 +11,14 @@ class EmailRevisionReclaimed implements PublicEmailBody
   public $inlineComments;
   /** @var string */
   public $transactionLink;
-  /** @var EmailRecipient[] */
+  /** @var EmailReviewer[] */
   public $reviewers;
 
   /**
    * @param EmailCommentMessage|null $mainCommentMessage
    * @param EmailInlineComment[] $inlineComments
    * @param string $transactionLink
-   * @param EmailRecipient[] $reviewers
+   * @param EmailReviewer[] $reviewers
    */
   public function __construct(?EmailCommentMessage $mainCommentMessage, array $inlineComments, string $transactionLink, array $reviewers)
   {
