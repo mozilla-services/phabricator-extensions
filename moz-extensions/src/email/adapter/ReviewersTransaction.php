@@ -24,17 +24,11 @@ class ReviewersTransaction {
       return null;
     }
 
-    if ($rawStatus == 'accepted') {
-      $status = 'accepted';
-    } else if ($rawStatus == 'rejected') {
-      $status = 'requested-changes';
-    } else if ($rawStatus == 'blocking') {
-      $status = 'blocking';
-    } else {
-      $status = 'unreviewed';
-    }
+    return EmailReviewer::translateStatus($rawStatus);
+  }
 
-    return $status;
+  public function getAllReviewerStatuses(): array {
+    return array_values($this->newValue);
   }
 
   public function getReviewerChange(string $userPHID) {
@@ -50,11 +44,5 @@ class ReviewersTransaction {
     }
 
     return $change;
-  }
-
-  public function isOnlyNonblockingUnreviewed() {
-    return count(array_filter(array_values($this->newValue), function($status) {
-      return $status != 'added';
-    })) == 0;
   }
 }

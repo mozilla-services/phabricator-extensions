@@ -64,7 +64,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
         $resolveRecipients = new ResolveUsers($rawRevision, $actorEmail, $userStore, $reviewerStore);
         $resolveComments = new ResolveComments($story->transactions, $rawRevision, $userStore);
         $resolveCodeChange = new ResolveCodeChange($story->transactions, $rawRevision, $diffStore);
-        $resolveLandStatus = new ResolveLandStatus($rawRevision);
+        $resolveRevisionStatus = new ResolveRevisionStatus($rawRevision);
 
         // I don't really like this stateful-ness (using $securePings in the "if ($isSecure)" blocks, using
         // $publicPings in the "else {}" down below). However, I don't want to duplicate the big
@@ -171,10 +171,11 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
             );
           }
         } else if ($eventKind->publicKind == EventKind::$REQUEST_REVIEW) {
+          $reviewers = $resolveRecipients->resolveReviewers(true);
           if ($isSecure) {
             $comments = $resolveComments->resolveSecureComments($securePings);
             $body = new SecureEmailRevisionRequestedReview(
-              $resolveRecipients->resolveReviewers(),
+              $reviewers,
               $comments->count,
               $story->getTransactionLink()
             );
@@ -184,21 +185,22 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
               $comments->mainCommentMessage,
               $comments->inlineComments,
               $story->getTransactionLink(),
-              $resolveRecipients->resolveReviewers()
+              $reviewers
             );
           }
         } else if ($eventKind->publicKind == EventKind::$CREATE) {
+          $reviewers = $resolveRecipients->resolveReviewers(true);
           if ($isSecure) {
-            $body = new SecureEmailRevisionCreated($resolveRecipients->resolveReviewers());
+            $body = new SecureEmailRevisionCreated($reviewers);
           } else {
-            $body = new EmailRevisionCreated($resolveCodeChange->resolveAffectedFiles(), $resolveRecipients->resolveReviewers());
+            $body = new EmailRevisionCreated($resolveCodeChange->resolveAffectedFiles(), $reviewers);
           }
         } else if ($eventKind->publicKind == EventKind::$ACCEPT) {
           if ($isSecure) {
             $comments = $resolveComments->resolveSecureComments($securePings);
             $body = new SecureEmailRevisionAccepted(
-              $resolveLandStatus->resolveLandoLink(),
-              $resolveLandStatus->resolveIsReadyToLand(),
+              $resolveRevisionStatus->resolveLandoLink(),
+              $resolveRevisionStatus->resolveIsReadyToLand(),
               $resolveRecipients->resolveReviewersAsRecipients(),
               $resolveRecipients->resolveAuthorAsRecipient(),
               $comments->count,
@@ -210,27 +212,28 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
               $comments->mainCommentMessage,
               $comments->inlineComments,
               $story->getTransactionLink(),
-              $resolveLandStatus->resolveLandoLink(),
-              $resolveLandStatus->resolveIsReadyToLand(),
+              $resolveRevisionStatus->resolveLandoLink(),
+              $resolveRevisionStatus->resolveIsReadyToLand(),
               $resolveRecipients->resolveReviewersAsRecipients(),
               $resolveRecipients->resolveAuthorAsRecipient()
             );
           }
         } else if ($eventKind->publicKind == EventKind::$UPDATE) {
+          $reviewers = $resolveRecipients->resolveReviewers($resolveRevisionStatus->resolveIsNeedingReview());
           if ($isSecure) {
             $body = new SecureEmailRevisionUpdated(
-              $resolveLandStatus->resolveLandoLink(),
+              $resolveRevisionStatus->resolveLandoLink(),
               $resolveCodeChange->resolveNewChangesLink(),
-              $resolveLandStatus->resolveIsReadyToLand(),
-              $resolveRecipients->resolveReviewers()
+              $resolveRevisionStatus->resolveIsReadyToLand(),
+              $reviewers
             );
           } else {
             $body = new EmailRevisionUpdated(
               $resolveCodeChange->resolveAffectedFiles(),
-              $resolveLandStatus->resolveLandoLink(),
+              $resolveRevisionStatus->resolveLandoLink(),
               $resolveCodeChange->resolveNewChangesLink(),
-              $resolveLandStatus->resolveIsReadyToLand(),
-              $resolveRecipients->resolveReviewers()
+              $resolveRevisionStatus->resolveIsReadyToLand(),
+              $reviewers
             );
           }
         } else if ($eventKind->publicKind == EventKind::$METADATA_EDIT) {
@@ -238,7 +241,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
           // between "secure" and "insecure" variants
           $body = SecureEmailRevisionMetadataEdited::from(
             $resolveRecipients,
-            $resolveLandStatus,
+            $resolveRevisionStatus,
             $story->transactions,
             $rawRevision,
             $reviewerStore,

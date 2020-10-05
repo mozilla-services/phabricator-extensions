@@ -29,13 +29,22 @@ class SecureEmailRevisionMetadataEdited implements SecureEmailBody, PublicEmailB
   }
 
 
-  public static function from(ResolveUsers $resolveRecipients, ResolveLandStatus $resolveLandStatus, TransactionList $transactions, DifferentialRevision $rawRevision, PhabricatorReviewerStore $reviewerStore, string $actorEmail) {
+  public static function from(ResolveUsers $resolveRecipients, ResolveRevisionStatus $resolveRevisionStatus, TransactionList $transactions, DifferentialRevision $rawRevision, PhabricatorReviewerStore $reviewerStore, string $actorEmail) {
     $isTitleChanged = $transactions->containsType('differential.revision.title');
     $customFieldTx = $transactions->getTransactionWithType('core:customfield');
     if ($customFieldTx) {
       $isBugChanged = $customFieldTx->getMetadataValue('customfield:key') == 'differential:bugzilla-bug-id';
     } else {
       $isBugChanged = false;
+    }
+
+    $rawRevisionStatusTx = $transactions->getTransactionWithType('differential.revision.status');
+    if ($rawRevisionStatusTx) {
+      $oldRevisionStatus = $rawRevisionStatusTx->getOldValue();
+      $newRevisionStatus = $rawRevisionStatusTx->getNewValue();
+      $revisionChangedToNeedReview = $newRevisionStatus == 'needs-review' && $newRevisionStatus != $oldRevisionStatus;
+    } else {
+      $revisionChangedToNeedReview = false;
     }
 
     $reviewers = [];
@@ -51,11 +60,11 @@ class SecureEmailRevisionMetadataEdited implements SecureEmailBody, PublicEmailB
             continue;
           }
           $processedReviewerPHIDs[] = $reviewerPHID;
-          $reviewers[] = EmailMetadataEditedReviewer::from($reviewerPHID, $rawRevision, $reviewersTx, $reviewerStore, $actorEmail);
+          $reviewers[] = EmailMetadataEditedReviewer::from($reviewerPHID, $rawRevision, $reviewersTx, $reviewerStore, $revisionChangedToNeedReview, $actorEmail);
         }
       }
     } else {
-      foreach ($resolveRecipients->resolveReviewers() as $reviewer) {
+      foreach ($resolveRecipients->resolveReviewers($revisionChangedToNeedReview) as $reviewer) {
         /** @var $reviewer EmailReviewer */
         $reviewers[] = new EmailMetadataEditedReviewer(
           $reviewer->name,
@@ -67,6 +76,6 @@ class SecureEmailRevisionMetadataEdited implements SecureEmailBody, PublicEmailB
       }
     }
 
-    return new SecureEmailRevisionMetadataEdited($resolveLandStatus->resolveIsReadyToLand(), $isTitleChanged, $isBugChanged, $resolveRecipients->resolveAuthorAsRecipient(), $reviewers);
+    return new SecureEmailRevisionMetadataEdited($resolveRevisionStatus->resolveIsReadyToLand(), $isTitleChanged, $isBugChanged, $resolveRecipients->resolveAuthorAsRecipient(), $reviewers);
   }
 }

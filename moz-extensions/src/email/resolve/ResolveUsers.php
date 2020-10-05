@@ -56,18 +56,11 @@ class ResolveUsers {
   }
 
   /**
+   * @param bool $revisionChangedToNeedReview
    * @return EmailReviewer[]
-   * @throws Exception
    */
-  public function resolveReviewers(): array {
+  public function resolveReviewers(bool $revisionChangedToNeedReview): array {
     $rawReviewers = $this->rawRevision->getReviewers();
-    $statuses = array_map(function($reviewer) {
-      return $reviewer->getReviewerStatus();
-    }, $rawReviewers);
-    $isOnlyNonblockingUnreviewed = count(array_filter($statuses, function($status) {
-        return $status != 'added';
-      })) == 0;
-
     $reviewers = [];
     foreach ($rawReviewers as $reviewerPHID => $rawReviewer) {
       if ($rawReviewer->isResigned()) {
@@ -75,20 +68,11 @@ class ResolveUsers {
         continue;
       }
 
-      $rawStatus = $rawReviewer->getReviewerStatus();
-      if ($rawStatus == 'accepted') {
-        $status = 'accepted';
-      } else if ($rawStatus == 'rejected') {
-        $status = 'requested-changes';
-      } else if ($rawStatus == 'blocking') {
-        $status = 'blocking';
-      } else {
-        $status = 'unreviewed';
-      }
-
-      $isActionable = $status == 'blocking' || $status == 'requested-changes' ||
-        ($status == 'accepted' && $rawReviewer->getVoidedPHID()) ||
-        $isOnlyNonblockingUnreviewed;
+      $allReviewerStatuses = array_map(function($reviewer) {
+        return $reviewer->getReviewerStatus();
+      }, $rawReviewers);
+      $isActionable = EmailReviewer::isActionable($allReviewerStatuses, $rawReviewer) && $revisionChangedToNeedReview;
+      $status = EmailReviewer::translateStatus($rawReviewer->getReviewerStatus());
 
       $reviewer = $this->reviewerStore->findReviewer($reviewerPHID);
       $reviewers[] = new EmailReviewer($reviewer->name(), $isActionable, $status, $reviewer->toRecipients($this->actorEmail));

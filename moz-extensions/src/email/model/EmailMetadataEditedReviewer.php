@@ -28,7 +28,7 @@ class EmailMetadataEditedReviewer {
     $this->recipients = $recipients;
   }
 
-  public static function from(string $reviewerPHID, DifferentialRevision $rawRevision, ReviewersTransaction $reviewersTx, PhabricatorReviewerStore $reviewerStore, string $actorEmail) {
+  public static function from(string $reviewerPHID, DifferentialRevision $rawRevision, ReviewersTransaction $reviewersTx, PhabricatorReviewerStore $reviewerStore, bool $revisionChangedToNeedReview, string $actorEmail) {
     $status = $reviewersTx->getReviewerStatus($reviewerPHID);
     $metadataChange = $reviewersTx->getReviewerChange($reviewerPHID);
 
@@ -37,20 +37,17 @@ class EmailMetadataEditedReviewer {
       return $rawReviewer->getReviewerPHID() == $reviewerPHID;
     }));
 
-    if (!$rawReviewer) {
-      // The reviewer was removed from the revision _after_ the metadata edit, but _before_ the call to the
-      // Phabricator email API endpoint. So, from our metadata edit transaction, we're looking for a reviewer
-      // that no longer exists. In this situation where we don't know the old reviewer's information, we
-      // default to assuming that their status was _not_ voided since that is less noisy (less "actionable" emails)
-      $isVoided = false;
+    if ($metadataChange == 'added') {
+      // Reviewer was added to this revision, properly inform them if they are actionable
+      $isActionable = EmailReviewer::isActionable($reviewersTx->getAllReviewerStatuses(), $rawReviewer);
+    } else if ($metadataChange == 'no-change') {
+      // Reviewer was already part of this revision. Only notify them as actionable if the revision freshly
+      // needs a review
+      $isActionable = EmailReviewer::isActionable($reviewersTx->getAllReviewerStatuses(), $rawReviewer)
+        && $revisionChangedToNeedReview;
     } else {
-      $isVoided = !is_null($rawReviewer->getVoidedPHID());
-    }
-    $isActionable = false;
-    if ($metadataChange != 'removed') {
-      $isActionable = $status == 'blocking' || $status == 'requested-changes' ||
-        ($status == 'accepted' && $isVoided) ||
-        $reviewersTx->isOnlyNonblockingUnreviewed();
+      // Reviewer was removed, they are not actionable
+      $isActionable = false;
     }
 
     $reviewer = $reviewerStore->findReviewer($reviewerPHID);

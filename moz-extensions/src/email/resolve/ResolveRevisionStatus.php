@@ -1,7 +1,7 @@
 <?php
 
 
-class ResolveLandStatus {
+class ResolveRevisionStatus {
   /** @var DifferentialRevision */
   public $rawRevision;
 
@@ -14,6 +14,10 @@ class ResolveLandStatus {
 
   public function resolveIsReadyToLand(): bool {
     return $this->rawRevision->getStatus() == DifferentialRevisionStatus::ACCEPTED;
+  }
+
+  public function resolveIsNeedingReview(): bool {
+    return $this->rawRevision->getStatus() == DifferentialRevisionStatus::NEEDS_REVIEW;
   }
 
   public function resolveLandoLink(): string {
