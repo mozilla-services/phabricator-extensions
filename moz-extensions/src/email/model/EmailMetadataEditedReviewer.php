@@ -28,7 +28,7 @@ class EmailMetadataEditedReviewer {
     $this->recipients = $recipients;
   }
 
-  public static function from(string $reviewerPHID, DifferentialRevision $rawRevision, ReviewersTransaction $reviewersTx, PhabricatorReviewerStore $reviewerStore, bool $revisionChangedToNeedReview, string $actorEmail) {
+  public static function from(string $reviewerPHID, DifferentialRevision $rawRevision, ReviewersTransaction $reviewersTx, PhabricatorUserStore $userStore, bool $revisionChangedToNeedReview, string $actorEmail) {
     $status = $reviewersTx->getReviewerStatus($reviewerPHID);
     $metadataChange = $reviewersTx->getReviewerChange($reviewerPHID);
 
@@ -50,7 +50,7 @@ class EmailMetadataEditedReviewer {
       $isActionable = false;
     }
 
-    $reviewer = $reviewerStore->findReviewer($reviewerPHID);
+    $reviewer = $userStore->findReviewerByPHID($reviewerPHID);
     return new EmailMetadataEditedReviewer($reviewer->name(), $isActionable, $status, $metadataChange, $reviewer->toRecipients($actorEmail));
   }
 }

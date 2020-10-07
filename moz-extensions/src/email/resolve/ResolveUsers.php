@@ -8,20 +8,16 @@ class ResolveUsers {
   public $actorEmail;
   /** @var PhabricatorUserStore */
   public $userStore;
-  /** @var PhabricatorReviewerStore */
-  public $reviewerStore;
 
   /**
    * @param DifferentialRevision $rawRevision
    * @param string $actorEmail
    * @param PhabricatorUserStore $userStore
-   * @param PhabricatorReviewerStore $reviewerStore
    */
-  public function __construct(DifferentialRevision $rawRevision, string $actorEmail, PhabricatorUserStore $userStore, PhabricatorReviewerStore $reviewerStore) {
+  public function __construct(DifferentialRevision $rawRevision, string $actorEmail, PhabricatorUserStore $userStore) {
     $this->rawRevision = $rawRevision;
     $this->actorEmail = $actorEmail;
     $this->userStore = $userStore;
-    $this->reviewerStore = $reviewerStore;
   }
 
 
@@ -47,7 +43,7 @@ class ResolveUsers {
         continue;
       }
 
-      $reviewer = $this->reviewerStore->findReviewer($reviewer->getReviewerPHID());
+      $reviewer = $this->userStore->findReviewerByPHID($reviewer->getReviewerPHID());
       foreach ($reviewer->toRecipients($this->actorEmail) as $recipient) {
         $recipients[] = $recipient;
       }
@@ -74,7 +70,7 @@ class ResolveUsers {
       $isActionable = EmailReviewer::isActionable($allReviewerStatuses, $rawReviewer) && $revisionChangedToNeedReview;
       $status = EmailReviewer::translateStatus($rawReviewer->getReviewerStatus());
 
-      $reviewer = $this->reviewerStore->findReviewer($reviewerPHID);
+      $reviewer = $this->userStore->findReviewerByPHID($reviewerPHID);
       $reviewers[] = new EmailReviewer($reviewer->name(), $isActionable, $status, $reviewer->toRecipients($this->actorEmail));
     }
     return $reviewers;

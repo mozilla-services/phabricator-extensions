@@ -65,7 +65,6 @@ phutil_register_library_map(array(
     'PhabricatorFeedIDQuery' => 'feed/query/PhabricatorFeedIDQuery.php',
     'PhabricatorLandoConfigOptions' => 'lando/config/PhabricatorLandoConfigOptions.php',
     'PhabricatorReviewer' => 'email/adapter/PhabricatorReviewer.php',
-    'PhabricatorReviewerStore' => 'email/adapter/PhabricatorReviewerStore.php',
     'PhabricatorStory' => 'email/adapter/PhabricatorStory.php',
     'PhabricatorStoryBuilder' => 'email/adapter/PhabricatorStoryBuilder.php',
     'PhabricatorUserStore' => 'email/adapter/PhabricatorUserStore.php',

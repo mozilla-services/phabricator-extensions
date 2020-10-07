@@ -29,7 +29,7 @@ class SecureEmailRevisionMetadataEdited implements SecureEmailBody, PublicEmailB
   }
 
 
-  public static function from(ResolveUsers $resolveRecipients, ResolveRevisionStatus $resolveRevisionStatus, TransactionList $transactions, DifferentialRevision $rawRevision, PhabricatorReviewerStore $reviewerStore, string $actorEmail) {
+  public static function from(ResolveUsers $resolveRecipients, ResolveRevisionStatus $resolveRevisionStatus, TransactionList $transactions, DifferentialRevision $rawRevision, PhabricatorUserStore $userStore, string $actorEmail) {
     $isTitleChanged = $transactions->containsType('differential.revision.title');
     $customFieldTx = $transactions->getTransactionWithType('core:customfield');
     if ($customFieldTx) {
@@ -60,7 +60,7 @@ class SecureEmailRevisionMetadataEdited implements SecureEmailBody, PublicEmailB
             continue;
           }
           $processedReviewerPHIDs[] = $reviewerPHID;
-          $reviewers[] = EmailMetadataEditedReviewer::from($reviewerPHID, $rawRevision, $reviewersTx, $reviewerStore, $revisionChangedToNeedReview, $actorEmail);
+          $reviewers[] = EmailMetadataEditedReviewer::from($reviewerPHID, $rawRevision, $reviewersTx, $userStore, $revisionChangedToNeedReview, $actorEmail);
         }
       }
     } else {
