@@ -69,7 +69,7 @@ class PhabricatorStory {
       }
 
       $transactions = [];
-      foreach ($internalData['transactionPHIDs'] as $phid) {
+      foreach ($internalData['transactionPHIDs'] ?? [] as $phid) {
         $transactions[] = $rawStory->getObject($phid);
       }
 
