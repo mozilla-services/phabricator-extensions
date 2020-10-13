@@ -12,10 +12,10 @@ version: 2
 jobs:
   build:
     docker:
-      - image: docker:18.06.0-ce-git
+      - image: docker:18.09.3-git
     steps:
       - setup_remote_docker:
-          version: 18.06.0-ce
+          version: 18.09.3
       - checkout
       - run:
           name: Install pip
@@ -36,6 +36,14 @@ jobs:
             invoke version > version.json && \
             mkdir /artifacts && \
             cp version.json /artifacts/version.json
+      - run:
+          name: Login to Dockerhub
+          command: |
+            if [[ -z "${DOCKER_USER}" || -z "${DOCKER_PASS}" ]]; then
+              echo "Skipping Login to Dockerhub, credentials not available."
+            else
+              echo "${DOCKER_PASS}" | docker login -u="${DOCKER_USER}" --password-stdin
+            fi
       - run: invoke build
       - run: invoke build_test
       - run: invoke test
@@ -45,7 +53,6 @@ jobs:
           name: Deploy to docker hub
           command: |
             [[ -n "$DOCKERHUB_REPO" && -n "$DOCKER_USER" && -n "$DOCKER_PASS" ]] || exit 0
-            docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
             docker tag "${DOCKERHUB_REPO}" "${DOCKERHUB_REPO}:${CIRCLE_SHA1}"
             docker push "${DOCKERHUB_REPO}:${CIRCLE_SHA1}"
             if [[ "$CIRCLE_BRANCH" == "master" ]]; then
