@@ -35,7 +35,7 @@ class EmailRevision {
 
     return new EmailRevision(
       $rawRevision->getID(),
-      $rawRevision->getTitle(),
+      str_replace("\n", ' ', $rawRevision->getTitle()),
       PhabricatorEnv::getProductionURI($rawRevision->getURI()),
       $bug
     );
