@@ -156,7 +156,6 @@ RUN { \
     } | tee /usr/local/etc/php/conf.d/opcache.ini
 
 USER app
-VOLUME ["/app"]
 
 FROM base as development
 
@@ -171,7 +170,6 @@ RUN { \
     } | tee /usr/local/etc/php/conf.d/xdebug.ini
 
 USER app
-VOLUME ["/app"]
 
 FROM base AS test
 
