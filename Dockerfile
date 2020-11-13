@@ -107,19 +107,22 @@ RUN curl -fsSL https://github.com/phacility/phabricator/archive/${PHABRICATOR_GI
 ENV COMPOSER_VENDOR_DIR /app/phabricator/externals/extensions
 RUN composer global require hirak/prestissimo
 
-COPY --chown=app:app . /app
-
-USER root
-RUN pip install --require-hashes -r requirements.txt
-USER app
-
-# Move static resources to phabricator, add files to celerity map array
+# Move static resources to phabricator
 COPY moz-extensions/src/motd/css/MozillaMOTD.css /app/phabricator/webroot/rsrc/css/MozillaMOTD.css
 COPY moz-extensions/src/auth/PhabricatorBMOAuth.css /app/phabricator/webroot/rsrc/css/PhabricatorBMOAuth.css
 COPY moz-extensions/src/auth/PhabricatorBMOAuth.js /app/phabricator/webroot/rsrc/js/PhabricatorBMOAuth.js
 
-# Install dependencies
+# Install Python dependencies
+COPY --chown=app requirements.txt ./
+USER root
+RUN pip install --require-hashes -r requirements.txt
+USER app
+
+# Install PHP dependencies
+COPY --chown=app composer.json composer.lock ./
 RUN composer install --no-dev
+
+COPY --chown=app patches patches
 
 # Apply customization patches
 # Phabricator
@@ -135,9 +138,10 @@ RUN \
     echo custom/moz-extensions > /app/phabricator/conf/local/ENVIRONMENT
 COPY moz-extensions.conf.php /app/phabricator/conf/custom/
 
+COPY --chown=app entrypoint.sh LICENSE phabext.json update_version_json.py wait-for-mysql.php ./
+COPY --chown=app nginx/ nginx/
 # Update version.json
-RUN chmod +x /app/update_version_json.py /app/entrypoint.sh /app/wait-for-mysql.php /app/moz-extensions/bin/* \
-    && /app/update_version_json.py
+RUN chmod +x /app/update_version_json.py /app/entrypoint.sh /app/wait-for-mysql.php && /app/update_version_json.py
 
 FROM base AS production
 
@@ -156,6 +160,8 @@ RUN { \
     } | tee /usr/local/etc/php/conf.d/opcache.ini
 
 USER app
+COPY --chown=app moz-extensions moz-extensions
+RUN chmod +x /app/moz-extensions/bin/*
 
 FROM base as development
 
@@ -180,4 +186,7 @@ RUN apk --update --no-cache add \
     git \
     make
 
-COPY test-arcconfig /app/.arcconfig
+USER app
+COPY --chown=app test-arcconfig /app/.arcconfig
+COPY --chown=app moz-extensions moz-extensions
+RUN chmod +x /app/moz-extensions/bin/*
