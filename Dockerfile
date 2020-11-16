@@ -138,7 +138,7 @@ RUN \
     echo custom/moz-extensions > /app/phabricator/conf/local/ENVIRONMENT
 COPY moz-extensions.conf.php /app/phabricator/conf/custom/
 
-COPY --chown=app entrypoint.sh LICENSE phabext.json update_version_json.py wait-for-mysql.php ./
+COPY --chown=app entrypoint.sh LICENSE update_version_json.py wait-for-mysql.php ./
 COPY --chown=app nginx/ nginx/
 # Update version.json
 RUN chmod +x /app/update_version_json.py /app/entrypoint.sh /app/wait-for-mysql.php && /app/update_version_json.py
