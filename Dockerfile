@@ -187,6 +187,8 @@ RUN apk --update --no-cache add \
     make
 
 USER app
-COPY --chown=app test-arcconfig /app/.arcconfig
+COPY --chown=app .git .git
+COPY --chown=app .arcunit .arcunit
+COPY --chown=app test-arcconfig .arcconfig
 COPY --chown=app moz-extensions moz-extensions
 RUN chmod +x /app/moz-extensions/bin/*
