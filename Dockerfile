@@ -160,6 +160,8 @@ RUN { \
     } | tee /usr/local/etc/php/conf.d/opcache.ini
 
 USER app
+# Using a wildcard so that the COPY still succeeds, even if version.json doesn't exist.
+COPY --chown=app version.json* ./
 COPY --chown=app moz-extensions moz-extensions
 RUN chmod +x /app/moz-extensions/bin/*
 
