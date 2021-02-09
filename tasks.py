@@ -45,7 +45,7 @@ def imageid(ctx):
 
 
 @task
-def build_test(ctx):
+def buildtest(ctx):
     """Test phabricator extensions."""
     ctx.run("docker-compose build test_phab")
 
