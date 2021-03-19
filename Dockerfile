@@ -29,7 +29,6 @@ RUN apk --no-cache --update add \
     g++ \
     git \
     libjpeg-turbo \
-    libmcrypt \
     libpng \
     make \
     mariadb-client \
@@ -46,7 +45,6 @@ RUN apk --no-cache add --virtual build-dependencies \
         curl-dev \
         freetype-dev \
         libjpeg-turbo-dev \
-        libmcrypt-dev \
         libpng-dev \
         libzip-dev \
         mariadb-dev \
@@ -63,8 +61,6 @@ RUN apk --no-cache add --virtual build-dependencies \
         pcntl \
     && pecl install apcu-5.1.17 \
     && docker-php-ext-enable apcu \
-    && pecl install mcrypt-1.0.2 \
-    && docker-php-ext-enable mcrypt \
     && pecl install zip-1.15.4 \
     && docker-php-ext-enable zip \
     && apk del build-dependencies
