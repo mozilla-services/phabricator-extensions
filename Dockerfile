@@ -1,4 +1,4 @@
-FROM php:7.3.17-fpm-alpine AS base
+FROM php:7.4.16-fpm-alpine AS base
 
 LABEL maintainer="dkl@mozilla.com"
 
@@ -30,14 +30,16 @@ RUN apk --no-cache --update add \
     git \
     libjpeg-turbo \
     libpng \
+    libzip \
     make \
     mariadb-client \
     ncurses \
+    oniguruma-dev \
+    patch \
     procps \
-    py-pygments \
-    libzip \
-    python-dev \
-    py-pip
+    py3-pip \
+    py3-pygments \
+    python3-dev
 
 # Build PHP extensions
 RUN apk --no-cache add --virtual build-dependencies \
@@ -49,9 +51,8 @@ RUN apk --no-cache add --virtual build-dependencies \
         libzip-dev \
         mariadb-dev \
     && docker-php-ext-configure gd \
-        --with-freetype-dir=/usr/include \
-        --with-jpeg-dir=/usr/include \
-        --with-png-dir=/usr/include \
+        --with-freetype \
+        --with-jpeg \
     && docker-php-ext-install -j "$(nproc)" \
         curl \
         gd \
@@ -61,7 +62,7 @@ RUN apk --no-cache add --virtual build-dependencies \
         pcntl \
     && pecl install apcu-5.1.17 \
     && docker-php-ext-enable apcu \
-    && pecl install zip-1.15.4 \
+    && pecl install zip-1.15.5 \
     && docker-php-ext-enable zip \
     && apk del build-dependencies
 
@@ -101,7 +102,6 @@ RUN curl -fsSL https://github.com/phacility/phabricator/archive/${PHABRICATOR_GI
     && ./arcanist/support/xhpast/build-xhpast.php
 
 ENV COMPOSER_VENDOR_DIR /app/phabricator/externals/extensions
-RUN composer global require hirak/prestissimo
 
 # Move static resources to phabricator
 COPY moz-extensions/src/motd/css/MozillaMOTD.css /app/phabricator/webroot/rsrc/css/MozillaMOTD.css
