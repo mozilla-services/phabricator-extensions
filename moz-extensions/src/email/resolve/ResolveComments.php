@@ -21,7 +21,7 @@ class ResolveComments {
   public function resolveSecureComments(SecureEventPings $pings): SecureRevisionComments {
     $commentCount = 0;
 
-    $commentTransaction = $this->transactions->getTransactionWithType('core:comment');
+    $commentTransaction = $this->transactions->attemptGetTransactionWithType('core:comment');
     if ($commentTransaction) {
       $comment = $commentTransaction->getComment()->getContent();
       $commentCount++;
@@ -46,7 +46,7 @@ class ResolveComments {
    * @return EmailCommentMessage|null
    */
   private function resolveMainComment(PublicEventPings $pings): ?EmailCommentMessage {
-    $commentTransaction = $this->transactions->getTransactionWithType('core:comment');
+    $commentTransaction = $this->transactions->attemptGetTransactionWithType('core:comment');
     if (!$commentTransaction) {
       return null;
     } else {

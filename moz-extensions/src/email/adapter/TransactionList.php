@@ -26,7 +26,7 @@ class TransactionList {
     return $lowest;
   }
 
-  public function getTransactionWithType($type): ?DifferentialTransaction {
+  public function attemptGetTransactionWithType($type): ?DifferentialTransaction {
     $matching = $this->getAllTransactionsWithType($type);
 
     if (count($matching) > 1) {
@@ -35,6 +35,14 @@ class TransactionList {
       return null;
     }
     return current($matching);
+  }
+
+  public function getTransactionWithType(string $type): DifferentialTransaction {
+    $transaction = $this->attemptGetTransactionWithType($type);
+    if (!$transaction) {
+      throw new RuntimeException('Expected a transaction to match type');
+    }
+    return $transaction;
   }
 
   /**

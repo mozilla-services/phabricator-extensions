@@ -27,14 +27,14 @@ class SecureEmailRevisionMetadataEdited implements SecureEmailBody, PublicEmailB
   public static function from(ResolveUsers $resolveRecipients, ResolveRevisionStatus $resolveRevisionStatus, TransactionList $transactions, DifferentialRevision $rawRevision, PhabricatorUserStore $userStore, string $actorEmail): SecureEmailRevisionMetadataEdited
   {
     $isTitleChanged = $transactions->containsType('differential.revision.title');
-    $customFieldTx = $transactions->getTransactionWithType('core:customfield');
+    $customFieldTx = $transactions->attemptGetTransactionWithType('core:customfield');
     if ($customFieldTx) {
       $isBugChanged = $customFieldTx->getMetadataValue('customfield:key') == 'differential:bugzilla-bug-id';
     } else {
       $isBugChanged = false;
     }
 
-    $rawRevisionStatusTx = $transactions->getTransactionWithType('differential.revision.status');
+    $rawRevisionStatusTx = $transactions->attemptGetTransactionWithType('differential.revision.status');
     if ($rawRevisionStatusTx) {
       $oldRevisionStatus = $rawRevisionStatusTx->getOldValue();
       $newRevisionStatus = $rawRevisionStatusTx->getNewValue();
