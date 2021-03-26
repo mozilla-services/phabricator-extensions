@@ -4,11 +4,9 @@
 class SecureEmailRevisionCommented implements SecureEmailBody
 {
   /** @var EmailRecipient[] */
-  public $reviewers;
-  /** @var EmailRecipient|null */
-  public $author;
-  /** @var string */
-  public $transactionLink;
+  public array $reviewers;
+  public ?EmailRecipient $author;
+  public string $transactionLink;
 
   /**
    * @param EmailRecipient[] $reviewers

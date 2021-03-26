@@ -2,7 +2,8 @@
 
 
 class PublicEventPings {
-  private $pingedUsers;
+  /** @var array<string, PublicPing> */
+  private array $pingedUsers;
 
   public function __construct() {
     $this->pingedUsers = [];
@@ -21,8 +22,6 @@ class PublicEventPings {
   }
 
   /**
-   * @param string $actorEmail
-   * @param string $transactionLink
    * @return EmailRevisionCommentPinged[]
    */
   public function intoBodies(string $actorEmail, string $transactionLink): array {

@@ -3,7 +3,6 @@
 
 class EmailAPIAuthorization {
   /**
-   * @param PhabricatorUser $user
    * @throws ConduitException
    */
   public static function assert(PhabricatorUser $user) {

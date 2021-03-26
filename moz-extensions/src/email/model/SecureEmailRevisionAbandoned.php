@@ -4,11 +4,9 @@
 class SecureEmailRevisionAbandoned implements SecureEmailBody
 {
   /** @var EmailRecipient[] */
-  public $reviewers;
-  /** @var int */
-  public $commentCount;
-  /** @var string */
-  public $transactionLink;
+  public array $reviewers;
+  public int $commentCount;
+  public string $transactionLink;
 
   /**
    * @param EmailRecipient[] $reviewers

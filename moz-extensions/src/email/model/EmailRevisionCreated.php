@@ -4,9 +4,9 @@
 class EmailRevisionCreated implements PublicEmailBody
 {
   /** @var EmailAffectedFile[] */
-  public $affectedFiles;
+  public array $affectedFiles;
   /** @var EmailReviewer[] */
-  public $reviewers;
+  public array $reviewers;
 
   /**
    * @param EmailAffectedFile[] $affectedFiles

@@ -2,23 +2,14 @@
 
 
 class EmailDiffLine {
-  /** @var int */
-  public $lineNumber;
-  /** @var string ("added", "removed" or "no-change) */
-  public $type;
-  /** @var string */
-  public $rawContent;
+  public int $lineNumber;
+  /** one of "added", "removed" or "no-change */
+  public string $type;
+  public string $rawContent;
 
-  /**
-   * @param int $lineNumber
-   * @param string $type
-   * @param string $rawContent
-   */
   public function __construct(int $lineNumber, string $type, string $rawContent) {
     $this->lineNumber = $lineNumber;
     $this->type = $type;
     $this->rawContent = $rawContent;
   }
-
-
 }

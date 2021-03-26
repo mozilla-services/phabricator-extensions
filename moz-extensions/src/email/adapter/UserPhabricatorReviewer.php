@@ -2,12 +2,8 @@
 
 
 class UserPhabricatorReviewer implements PhabricatorReviewer {
-  /** @var PhabricatorUser */
-  private $rawUser;
+  private PhabricatorUser $rawUser;
 
-  /**
-   * @param PhabricatorUser $rawUser
-   */
   public function __construct(PhabricatorUser $rawUser) {
     $this->rawUser = $rawUser;
   }

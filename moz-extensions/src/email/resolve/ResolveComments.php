@@ -2,18 +2,10 @@
 
 
 class ResolveComments {
-  /** @var TransactionList */
-  public $transactions;
-  /** @var DifferentialRevision */
-  public $rawRevision;
-  /** @var PhabricatorUserStore */
-  public $userStore;
+  public TransactionList $transactions;
+  public DifferentialRevision $rawRevision;
+  public PhabricatorUserStore $userStore;
 
-  /**
-   * @param TransactionList $transactions
-   * @param DifferentialRevision $rawRevision
-   * @param PhabricatorUserStore $userStore
-   */
   public function __construct(TransactionList $transactions, DifferentialRevision $rawRevision, PhabricatorUserStore $userStore) {
     $this->transactions = $transactions;
     $this->rawRevision = $rawRevision;
@@ -68,7 +60,6 @@ class ResolveComments {
   }
 
   /**
-   * @param PublicEventPings $pings
    * @return EmailInlineComment[]
    */
   private function resolveInlineComments(PublicEventPings $pings): array {
@@ -164,8 +155,9 @@ class ResolveComments {
     return $inlineComments;
   }
 
-  private function findPingedUsers(string $comment) {
-    // According to Phabricator, usernames are contrained such that:
+  private function findPingedUsers(string $comment): array
+  {
+    // According to Phabricator, usernames are constrained such that:
     // > Usernames must contain only numbers, letters, period, underscore, and hyphen, and can not end with a period.
     // > They must have no more than 64 characters.
 
@@ -179,7 +171,8 @@ class ResolveComments {
     }
   }
 
-  private static function renderCommentMarkup($markup) {
+  private static function renderCommentMarkup($markup): EmailCommentMessage
+  {
     $asText = self::createMarkupEngine(PhutilRemarkupEngine::MODE_TEXT)->markupText($markup);
     $asHtml = self::createMarkupEngine(PhutilRemarkupEngine::MODE_DEFAULT)->markupText($markup);
     return new EmailCommentMessage($asText, $asHtml);

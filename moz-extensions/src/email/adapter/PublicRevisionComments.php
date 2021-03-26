@@ -2,12 +2,10 @@
 
 
 class PublicRevisionComments {
-  /** @var EmailCommentMessage|null $mainCommentMessage */
-  public $mainCommentMessage;
+  public ?EmailCommentMessage $mainCommentMessage;
   /** @var EmailInlineComment[] */
-  public $inlineComments;
-  /** @var PublicEventPings */
-  public $pings;
+  public array $inlineComments;
+  public PublicEventPings $pings;
 
   /**
    * @param EmailCommentMessage|null $mainCommentMessage

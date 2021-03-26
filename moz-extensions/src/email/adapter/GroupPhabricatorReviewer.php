@@ -2,10 +2,9 @@
 
 
 class GroupPhabricatorReviewer implements PhabricatorReviewer {
-  /** @var string */
-  private $name;
-  /** @var PhabricatorUser */
-  private $rawUsers;
+  private string $name;
+  /** @var PhabricatorUser[] */
+  private array $rawUsers;
 
   /**
    * @param string $name

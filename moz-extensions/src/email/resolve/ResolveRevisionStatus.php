@@ -2,12 +2,8 @@
 
 
 class ResolveRevisionStatus {
-  /** @var DifferentialRevision */
-  public $rawRevision;
+  public DifferentialRevision $rawRevision;
 
-  /**
-   * @param DifferentialRevision $rawRevision
-   */
   public function __construct(DifferentialRevision $rawRevision) {
     $this->rawRevision = $rawRevision;
   }

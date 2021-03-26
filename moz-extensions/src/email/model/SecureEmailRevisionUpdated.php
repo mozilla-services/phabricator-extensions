@@ -3,14 +3,11 @@
 
 class SecureEmailRevisionUpdated implements SecureEmailBody
 {
-  /** @var string */
-  public $landoLink;
-  /** @var string */
-  public $newChangesLink;
-  /** @var bool */
-  public $isReadyToLand;
+  public string $landoLink;
+  public string $newChangesLink;
+  public bool $isReadyToLand;
   /** @var EmailReviewer[] */
-  public $reviewers;
+  public array $reviewers;
 
   /**
    * @param string $landoLink

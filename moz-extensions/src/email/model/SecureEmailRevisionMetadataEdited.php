@@ -2,16 +2,12 @@
 
 
 class SecureEmailRevisionMetadataEdited implements SecureEmailBody, PublicEmailBody {
-  /** @var bool */
-  public $isReadyToLand;
-  /** @var bool */
-  public $isTitleChanged;
-  /** @var bool */
-  public $isBugChanged;
-  /** @var EmailRecipient|null */
-  public $author;
+  public bool $isReadyToLand;
+  public bool $isTitleChanged;
+  public bool $isBugChanged;
+  public ?EmailRecipient $author;
   /** @var EmailMetadataEditedReviewer[] */
-  public $reviewers;
+  public array $reviewers;
 
   /**
    * @param bool $isReadyToLand
@@ -28,8 +24,8 @@ class SecureEmailRevisionMetadataEdited implements SecureEmailBody, PublicEmailB
     $this->reviewers = $reviewers;
   }
 
-
-  public static function from(ResolveUsers $resolveRecipients, ResolveRevisionStatus $resolveRevisionStatus, TransactionList $transactions, DifferentialRevision $rawRevision, PhabricatorUserStore $userStore, string $actorEmail) {
+  public static function from(ResolveUsers $resolveRecipients, ResolveRevisionStatus $resolveRevisionStatus, TransactionList $transactions, DifferentialRevision $rawRevision, PhabricatorUserStore $userStore, string $actorEmail): SecureEmailRevisionMetadataEdited
+  {
     $isTitleChanged = $transactions->containsType('differential.revision.title');
     $customFieldTx = $transactions->getTransactionWithType('core:customfield');
     if ($customFieldTx) {

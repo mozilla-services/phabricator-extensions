@@ -2,19 +2,12 @@
 
 
 class RevisionCreatedHeuristic {
-  /** @var bool */
-  private $authorIsPhabBot;
-  /** @var bool */
-  private $includesViewPolicyChange;
-  /** @var bool */
-  private $includesEditPolicyChange;
-  /** @var bool */
-  private $includesRevisionRequestChange;
-  /** @var bool */
-  private $includesCoreEdgeChange;
+  private bool $authorIsPhabBot;
+  private bool $includesViewPolicyChange;
+  private bool $includesEditPolicyChange;
+  private bool $includesRevisionRequestChange;
+  private bool $includesCoreEdgeChange;
 
-  /**
-   */
   public function __construct() {
     $this->authorIsPhabBot = false;
     $this->includesViewPolicyChange = false;
@@ -43,7 +36,8 @@ class RevisionCreatedHeuristic {
     $this->includesCoreEdgeChange = true;
   }
 
-  public function check() {
+  public function check(): bool
+  {
     return $this->authorIsPhabBot &&
       $this->includesViewPolicyChange &&
       $this->includesEditPolicyChange &&

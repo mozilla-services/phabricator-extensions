@@ -3,18 +3,15 @@
 
 class EmailRevisionLanded implements PublicEmailBody
 {
-  /** @var string|null @deprecated */
-  public $mainComment;
-  /** @var EmailCommentMessage|null */
-  public $mainCommentMessage;
+  /** @deprecated */
+  public ?string $mainComment;
+  public ?EmailCommentMessage $mainCommentMessage;
   /** @var EmailInlineComment[] */
-  public $inlineComments;
-  /** @var string */
-  public $transactionLink;
+  public array $inlineComments;
+  public string $transactionLink;
   /** @var EmailRecipient[] */
-  public $reviewers;
-  /** @var EmailRecipient|null */
-  public $author;
+  public array $reviewers;
+  public ?EmailRecipient $author;
 
   /**
    * @param EmailCommentMessage|null $mainCommentMessage

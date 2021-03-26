@@ -2,7 +2,8 @@
 
 
 class BugStore {
-  private $cache;
+  /** @var array<string, string> */
+  private array $cache;
 
   public function __construct() {
     $this->cache = [];

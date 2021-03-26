@@ -4,7 +4,7 @@
 class SecureEmailRevisionCreated implements SecureEmailBody
 {
   /** @var EmailReviewer[] */
-  public $reviewers;
+  public array $reviewers;
 
   /**
    * @param EmailReviewer[] $reviewers

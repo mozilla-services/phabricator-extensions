@@ -2,14 +2,12 @@
 
 
 class EmailReviewer {
-  /** @var string */
-  public $name;
-  /** @var bool */
-  public $isActionable;
-  /** @var string either 'accepted', 'requested-changes' 'unreviewed' or 'blocking' */
-  public $status;
+  public string $name;
+  public bool $isActionable;
+  /** either 'accepted', 'requested-changes' 'unreviewed' or 'blocking' */
+  public string $status;
   /** @var EmailRecipient[] */
-  public $recipients;
+  public array $recipients;
 
   /**
    * @param string $name

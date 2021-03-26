@@ -1,19 +1,23 @@
 <?php
 
 final class FeedForEmailStatusAPIMethod extends ConduitAPIMethod {
-  public function getAPIMethodName() {
+  public function getAPIMethodName(): string
+  {
     return 'feed.for_email.status';
   }
 
-  public function getMethodDescription() {
+  public function getMethodDescription(): string
+  {
     return 'Provides the "query key" of the most recent feed story';
   }
 
-  protected function defineParamTypes() {
+  protected function defineParamTypes(): array
+  {
     return array();
   }
 
-  protected function defineReturnType() {
+  protected function defineReturnType(): string
+  {
     return 'str';
   }
 

@@ -3,22 +3,16 @@
 
 class EmailRevisionAccepted implements PublicEmailBody
 {
-  /** @var string|null @deprecated */
-  public $mainComment;
-  /** @var EmailCommentMessage|null */
-  public $mainCommentMessage;
+  public ?string $mainComment;
+  public ?EmailCommentMessage $mainCommentMessage;
   /** @var EmailInlineComment[] */
-  public $inlineComments;
-  /** @var string */
-  public $transactionLink;
-  /** @var string */
-  public $landoLink;
-  /** @var bool */
-  public $isReadyToLand;
+  public array $inlineComments;
+  public string $transactionLink;
+  public string $landoLink;
+  public bool $isReadyToLand;
   /** @var EmailRecipient[] */
-  public $reviewers;
-  /** @var EmailRecipient|null */
-  public $author;
+  public array $reviewers;
+  public ?EmailRecipient $author;
 
   /**
    * @param EmailCommentMessage|null $mainCommentMessage

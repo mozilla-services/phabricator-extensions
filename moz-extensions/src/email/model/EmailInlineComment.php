@@ -2,26 +2,16 @@
 
 
 class EmailInlineComment {
-  /** @var string */
-  public $fileContext;
-  /** @var string */
-  public $link;
-  /** @var string @deprecated */
-  public $text;
-  /** @var EmailCommentMessage */
-  public $message;
-  /** @var string "reply" if context is EmailReplyContext, otherwise "code" */
-  public $contextKind;
+  public string $fileContext;
+  public string $link;
+  /** @deprecated */
+  public string $text;
+  public EmailCommentMessage $message;
+  /** "reply" if context is EmailReplyContext, otherwise "code" */
+  public string $contextKind;
   /** @var EmailReplyContext|EmailCodeContext */
   public $context;
 
-  /**
-   * @param string $fileContext
-   * @param string $link
-   * @param EmailCommentMessage $message
-   * @param string $contextKind
-   * @param EmailCodeContext|EmailReplyContext $context
-   */
   public function __construct(string $fileContext, string $link, EmailCommentMessage $message, string $contextKind, $context) {
     $this->fileContext = $fileContext;
     $this->link = $link;

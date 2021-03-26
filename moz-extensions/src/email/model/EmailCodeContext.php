@@ -3,7 +3,7 @@
 
 class EmailCodeContext {
   /** @var EmailDiffLine[] */
-  public $diff;
+  public array $diff;
 
   /**
    * @param EmailDiffLine[] $diff

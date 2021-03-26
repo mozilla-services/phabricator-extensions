@@ -2,22 +2,16 @@
 
 
 class PhabricatorStoryBuilder {
-  public $transactions;
-  public $eventKind;
-  public $revisionPHID;
-  public $actorPHID;
-  public $isBroadcastable;
-  private $revision;
-  private $actor;
-  private $key;
-  private $timestamp;
+  public TransactionList $transactions;
+  public EventKind $eventKind;
+  public string $revisionPHID;
+  public string $actorPHID;
+  public bool $isBroadcastable;
+  private DifferentialRevision $revision;
+  private PhabricatorUser $actor;
+  private string $key;
+  private int $timestamp;
 
-  /**
-   * @param EventKind $eventKind
-   * @param array $transactions
-   * @param string $key
-   * @param int $timestamp
-   */
   public function __construct(EventKind $eventKind, array $transactions, string $key, int $timestamp) {
     $this->eventKind = $eventKind;
     $this->transactions = new TransactionList($transactions);
@@ -36,7 +30,8 @@ class PhabricatorStoryBuilder {
     $this->actor = $actor;
   }
 
-  public function asStory() {
+  public function asStory(): PhabricatorStory
+  {
     return new PhabricatorStory($this->eventKind, $this->transactions, $this->revision, $this->actor, $this->key, $this->timestamp);
   }
 }

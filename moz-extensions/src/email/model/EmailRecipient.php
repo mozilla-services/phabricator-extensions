@@ -2,21 +2,11 @@
 
 
 class EmailRecipient {
-  /** @var string */
-  public $email;
-  /** @var string */
-  public $username;
-  /** @var string */
-  public $timezoneOffset;
-  /** @var bool */
-  public $isActor;
+  public string $email;
+  public string $username;
+  public int $timezoneOffset;
+  public bool $isActor;
 
-  /**
-   * @param string $email
-   * @param string $username
-   * @param DateTimeZone $timezone
-   * @param bool $isActor
-   */
   public function __construct(string $email, string $username, DateTimeZone $timezone, bool $isActor) {
     $this->email = $email;
     $this->username = $username;

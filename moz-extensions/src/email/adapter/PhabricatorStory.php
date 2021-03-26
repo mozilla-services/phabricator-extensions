@@ -2,27 +2,13 @@
 
 
 class PhabricatorStory {
-  /** @var EventKind */
-  public $eventKind;
-  /** @var TransactionList */
-  public $transactions;
-  /** @var DifferentialRevision */
-  public $revision;
-  /** @var PhabricatorUser */
-  public $actor;
-  /** @var string */
-  public $key;
-  /** @var int */
-  public $timestamp;
+  public EventKind $eventKind;
+  public TransactionList $transactions;
+  public DifferentialRevision $revision;
+  public PhabricatorUser $actor;
+  public string $key;
+  public int $timestamp;
 
-  /**
-   * @param EventKind $eventKind
-   * @param TransactionList $transactions
-   * @param DifferentialRevision $revision
-   * @param PhabricatorUser $actor
-   * @param string $key
-   * @param int $timestamp
-   */
   public function __construct(EventKind $eventKind, TransactionList $transactions, DifferentialRevision $revision, PhabricatorUser $actor, string $key, int $timestamp) {
     $this->eventKind = $eventKind;
     $this->transactions = $transactions;

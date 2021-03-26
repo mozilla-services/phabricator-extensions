@@ -2,16 +2,13 @@
 
 
 class EmailRevisionCommentPinged implements PublicEmailBody {
-  /** @var EmailRecipient */
-  public $recipient;
-  /** @var string */
-  public $transactionLink;
-  /** @var string|null @deprecated */
-  public $pingedMainComment;
-  /** @var EmailCommentMessage|null */
-  public $pingedMainCommentMessage;
+  public EmailRecipient $recipient;
+  public string $transactionLink;
+  /** @deprecated */
+  public ?string $pingedMainComment;
+  public ?EmailCommentMessage $pingedMainCommentMessage;
   /** @var EmailInlineComment[] */
-  public $pingedInlineComments;
+  public array $pingedInlineComments;
 
   /**
    * @param EmailRecipient $recipient

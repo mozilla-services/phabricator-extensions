@@ -3,16 +3,14 @@
 
 class EmailRevisionAbandoned implements PublicEmailBody
 {
-  /** @var string|null @deprecated */
-  public $mainComment;
-  /** @var EmailCommentMessage|null */
-  public $mainCommentMessage;
+  /** @deprecated */
+  public ?string $mainComment;
+  public ?EmailCommentMessage $mainCommentMessage;
   /** @var EmailInlineComment[] */
-  public $inlineComments;
-  /** @var string */
-  public $transactionLink;
+  public array $inlineComments;
+  public string $transactionLink;
   /** @var EmailRecipient[] */
-  public $reviewers;
+  public array $reviewers;
 
   /**
    * @param EmailCommentMessage|null $mainCommentMessage

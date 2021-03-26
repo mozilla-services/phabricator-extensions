@@ -3,18 +3,13 @@
 
 class SecureEmailRevisionAccepted implements SecureEmailBody
 {
-  /** @var string */
-  public $landoLink;
-  /** @var bool */
-  public $isReadyToLand;
+  public string $landoLink;
+  public bool $isReadyToLand;
   /** @var EmailRecipient[] */
-  public $reviewers;
-  /** @var EmailRecipient|null */
-  public $author;
-  /** @var int */
-  public $commentCount;
-  /** @var string */
-  public $transactionLink;
+  public array $reviewers;
+  public ?EmailRecipient $author;
+  public int $commentCount;
+  public string $transactionLink;
 
   /**
    * @param string $landoLink

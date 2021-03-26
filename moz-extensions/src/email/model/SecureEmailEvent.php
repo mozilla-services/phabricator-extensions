@@ -2,30 +2,15 @@
 
 
 class SecureEmailEvent {
-  /** @var string */
-  public $eventKind;
-  /** @var bool */
-  public $isSecure;
-  /** @var string */
-  public $actorName;
-  /** @var SecureEmailRevision */
-  public $revision;
-  /** @var SecureEmailBody */
-  public $body;
-  /** @var string */
-  public $key;
-  /** @var int time of event in seconds since epoch */
-  public $timestamp;
+  public string $eventKind;
+  public bool $isSecure;
+  public string $actorName;
+  public SecureEmailRevision $revision;
+  public SecureEmailBody $body;
+  public string $key;
+  /** time of event in seconds since epoch */
+  public int $timestamp;
 
-  /**
-   * @param string $eventKind
-   * @param string $actorName
-   * @param DifferentialRevision $rawRevision
-   * @param SecureEmailBody $body
-   * @param BugStore $bugStore
-   * @param string $key
-   * @param int $timestamp
-   */
   public function __construct(string $eventKind, string $actorName, DifferentialRevision $rawRevision, SecureEmailBody $body, BugStore $bugStore, string $key, int $timestamp) {
     $this->eventKind = $eventKind;
     $this->isSecure = true;

@@ -2,21 +2,11 @@
 
 
 class EmailRevision {
-  /** @var int */
-  public $revisionId;
-  /** @var string */
-  public $name;
-  /** @var string */
-  public $link;
-  /** @var EmailBug|null */
-  public $bug;
+  public int $revisionId;
+  public string $name;
+  public string $link;
+  public ?EmailBug $bug;
 
-  /**
-   * @param int $revisionId
-   * @param string $name
-   * @param string $link
-   * @param EmailBug|null $bug
-   */
   public function __construct(int $revisionId, string $name, string $link, ?EmailBug $bug) {
     $this->revisionId = $revisionId;
     $this->name = $name;
@@ -24,7 +14,8 @@ class EmailRevision {
     $this->bug = $bug;
   }
 
-  public static function from(DifferentialRevision $rawRevision, BugStore $bugStore) {
+  public static function from(DifferentialRevision $rawRevision, BugStore $bugStore): EmailRevision
+  {
     $secureBug = $bugStore->resolveBug($rawRevision);
     if (!$secureBug) {
       $bug = null;

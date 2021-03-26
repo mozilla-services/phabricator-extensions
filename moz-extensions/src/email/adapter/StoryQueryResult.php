@@ -2,10 +2,9 @@
 
 
 class StoryQueryResult {
-  /** @var string */
-  public $lastKey;
+  public string $lastKey;
   /** @var PhabricatorStory[] */
-  public $stories;
+  public array $stories;
 
   /**
    * @param string $lastKey

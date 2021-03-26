@@ -4,11 +4,9 @@
 class SecureEmailRevisionReclaimed implements SecureEmailBody
 {
   /** @var EmailReviewer[] */
-  public $reviewers;
-  /** @var int */
-  public $commentCount;
-  /** @var string */
-  public $transactionLink;
+  public array $reviewers;
+  public int $commentCount;
+  public string $transactionLink;
 
   /**
    * @param EmailReviewer[] $reviewers

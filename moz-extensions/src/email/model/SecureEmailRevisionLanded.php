@@ -4,13 +4,10 @@
 class SecureEmailRevisionLanded implements SecureEmailBody
 {
   /** @var EmailRecipient[] */
-  public $reviewers;
-  /** @var EmailRecipient|null */
-  public $author;
-  /** @var int */
-  public $commentCount;
-  /** @var string */
-  public $transactionLink;
+  public array $reviewers;
+  public ?EmailRecipient $author;
+  public int $commentCount;
+  public string $transactionLink;
 
   /**
    * @param EmailRecipient[] $reviewers

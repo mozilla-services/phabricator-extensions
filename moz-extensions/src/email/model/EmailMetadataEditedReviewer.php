@@ -2,16 +2,14 @@
 
 
 class EmailMetadataEditedReviewer {
-  /** @var string */
-  public $name;
-  /** @var bool */
-  public $isActionable;
-  /** @var string either 'accepted', 'requested-changes' 'unreviewed' or 'blocking' */
-  public $status;
-  /** @var string either 'added', 'removed' or 'no-change' */
-  public $metadataChange;
+  public string $name;
+  public bool $isActionable;
+  /** either 'accepted', 'requested-changes' 'unreviewed' or 'blocking' */
+  public string $status;
+  /** either 'added', 'removed' or 'no-change' */
+  public string $metadataChange;
   /** @var EmailRecipient[] */
-  public $recipients;
+  public array $recipients;
 
   /**
    * @param string $name
@@ -28,7 +26,8 @@ class EmailMetadataEditedReviewer {
     $this->recipients = $recipients;
   }
 
-  public static function from(string $reviewerPHID, DifferentialRevision $rawRevision, ReviewersTransaction $reviewersTx, PhabricatorUserStore $userStore, bool $revisionChangedToNeedReview, string $actorEmail) {
+  public static function from(string $reviewerPHID, DifferentialRevision $rawRevision, ReviewersTransaction $reviewersTx, PhabricatorUserStore $userStore, bool $revisionChangedToNeedReview, string $actorEmail): EmailMetadataEditedReviewer
+  {
     $status = $reviewersTx->getReviewerStatus($reviewerPHID);
     $metadataChange = $reviewersTx->getReviewerChange($reviewerPHID);
 

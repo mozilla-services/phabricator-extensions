@@ -4,15 +4,12 @@
 class EmailRevisionUpdated implements PublicEmailBody
 {
   /** @var EmailAffectedFile[] */
-  public $affectedFiles;
-  /** @var string */
-  public $landoLink;
-  /** @var string */
-  public $newChangesLink;
-  /** @var bool */
-  public $isReadyToLand;
+  public array $affectedFiles;
+  public string $landoLink;
+  public string $newChangesLink;
+  public bool $isReadyToLand;
   /** @var EmailReviewer[] */
-  public $reviewers;
+  public array $reviewers;
 
   /**
    * @param EmailAffectedFile[] $affectedFiles

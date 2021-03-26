@@ -2,18 +2,10 @@
 
 
 class ResolveUsers {
-  /** @var DifferentialRevision */
-  public $rawRevision;
-  /** @var string */
-  public $actorEmail;
-  /** @var PhabricatorUserStore */
-  public $userStore;
+  public DifferentialRevision $rawRevision;
+  public string $actorEmail;
+  public PhabricatorUserStore $userStore;
 
-  /**
-   * @param DifferentialRevision $rawRevision
-   * @param string $actorEmail
-   * @param PhabricatorUserStore $userStore
-   */
   public function __construct(DifferentialRevision $rawRevision, string $actorEmail, PhabricatorUserStore $userStore) {
     $this->rawRevision = $rawRevision;
     $this->actorEmail = $actorEmail;

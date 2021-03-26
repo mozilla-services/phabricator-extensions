@@ -2,12 +2,13 @@
 
 
 class TransactionList {
-  private $transactions;
+  /** @var DifferentialTransaction[] */
+  private array $transactions;
 
   /**
-   * @param $transactions
+   * @param DifferentialTransaction[] $transactions
    */
-  public function __construct($transactions) {
+  public function __construct(array $transactions) {
     $this->transactions = $transactions;
   }
 
@@ -25,7 +26,7 @@ class TransactionList {
     return $lowest;
   }
 
-  public function getTransactionWithType($type) {
+  public function getTransactionWithType($type): ?DifferentialTransaction {
     $matching = $this->getAllTransactionsWithType($type);
 
     if (count($matching) > 1) {
@@ -36,13 +37,18 @@ class TransactionList {
     return current($matching);
   }
 
-  public function getAllTransactionsWithType($type) {
+  /**
+   * @return DifferentialTransaction[]
+   */
+  public function getAllTransactionsWithType(string $type): array
+  {
     return array_filter($this->transactions, function($transaction) use ($type) {
       return $transaction->getTransactionType() == $type;
     });
   }
 
-  public function containsType(string $type) {
+  public function containsType(string $type): bool
+  {
     return !empty(array_filter($this->transactions, function ($transaction) use ($type) {
       return $transaction->getTransactionType() == $type;
     }));

@@ -2,16 +2,11 @@
 
 
 class PublicPing {
-  /** @var PhabricatorUser */
-  public $targetUser;
-  /** @var EmailCommentMessage|null */
-  public $mainCommentMessage;
+  public PhabricatorUser $targetUser;
+  public ?EmailCommentMessage $mainCommentMessage;
   /** @var EmailInlineComment[] */
-  public $inlineComments;
+  public array $inlineComments;
 
-  /**
-   * @param PhabricatorUser $targetUser
-   */
   public function __construct(PhabricatorUser $targetUser) {
     $this->targetUser = $targetUser;
     $this->inlineComments = [];

@@ -2,26 +2,24 @@
 
 
 class EventKind {
-  public static $ABANDON = 'revision-abandoned';
-  public static $METADATA_EDIT = 'revision-metadata-edited';
-  public static $RECLAIM = 'revision-reclaimed';
-  public static $ACCEPT = 'revision-accepted';
-  public static $COMMENT = 'revision-commented';
-  public static $UPDATE = 'revision-updated';
-  public static $REJECT = 'revision-requested-changes';
-  public static $REQUEST_REVIEW = 'revision-requested-review';
-  public static $CLOSE = 'revision-landed';
-  public static $CREATE = 'revision-created';
-  public static $PINGED = 'revision-comment-pinged';
+  public static string $ABANDON = 'revision-abandoned';
+  public static string $METADATA_EDIT = 'revision-metadata-edited';
+  public static string $RECLAIM = 'revision-reclaimed';
+  public static string $ACCEPT = 'revision-accepted';
+  public static string $COMMENT = 'revision-commented';
+  public static string $UPDATE = 'revision-updated';
+  public static string $REJECT = 'revision-requested-changes';
+  public static string $REQUEST_REVIEW = 'revision-requested-review';
+  public static string $CLOSE = 'revision-landed';
+  public static string $CREATE = 'revision-created';
+  public static string $PINGED = 'revision-comment-pinged';
 
-  /** @var string */
-  public $publicKind;
-  /** @var string */
-  private $mainTransactionType;
+  public string $publicKind;
+  private ?string $mainTransactionType;
 
   /**
    * @param string $publicKind public identifier value in "kind" property of {@link EmailEvent}
-   * @param string $phabricatorType internal type for main transaction
+   * @param string|null $phabricatorType internal type for main transaction
    */
   public function __construct(string $publicKind, ?string $phabricatorType) {
     $this->publicKind = $publicKind;
@@ -34,10 +32,8 @@ class EventKind {
    * For example, the "differential.revision.abandon" transaction is most important for "abandon" events.
    * However, others (such as the "metadata edited" or "comment" events) don't have a single transaction type
    * that's guaranteed to exist, so we instead consider each transaction equally important and grab any one of them.
-   *
-   * @param TransactionList $transactionList
    */
-  public function findMainTransaction(TransactionList $transactionList) {
+  public function findMainTransaction(TransactionList $transactionList): DifferentialTransaction {
     if ($this->mainTransactionType) {
       return $transactionList->getTransactionWithType($this->mainTransactionType);
     } else {
@@ -58,7 +54,8 @@ class EventKind {
   }
 
 
-  public static function mainKind(array $transactions, PhabricatorUserStore $userStore) {
+  public static function mainKind(array $transactions, PhabricatorUserStore $userStore): ?EventKind
+  {
     // Identifying a "revision created" event is ... tricky. We can't just look for "core:create", because
     // that event happens before we identify if a revision is secure or not. So, instead, we try to detect when
     // the admin bot does its "security detection" work. When we find events that match this heuristic, we assume

@@ -2,8 +2,10 @@
 
 
 class PhabricatorUserStore {
-  private $PHIDCache;
-  private $usernameCache;
+  /** @var array<string, PhabricatorUser> */
+  private array $PHIDCache;
+  /** @var array<string, PhabricatorUser> */
+  private array $usernameCache;
 
   public function __construct() {
     $this->PHIDCache = [];
@@ -37,10 +39,6 @@ class PhabricatorUserStore {
     return $user;
   }
 
-  /**
-   * @param string $PHID
-   * @return PhabricatorReviewer
-   */
   public function findReviewerByPHID(string $PHID): PhabricatorReviewer {
     if (substr($PHID, 0, strlen('PHID-PROJ')) === "PHID-PROJ") {
       // This is a group reviewer
@@ -69,7 +67,6 @@ class PhabricatorUserStore {
   /**
    * @param string[] $PHIDs
    * @return PhabricatorUser[]
-   * @throws PhutilInvalidStateException
    */
   public function queryAll(array $PHIDs): array {
     $users = (new PhabricatorPeopleQuery())

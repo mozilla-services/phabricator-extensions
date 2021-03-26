@@ -2,18 +2,10 @@
 
 
 class ResolveCodeChange {
-  /** @var TransactionList */
-  public $transactions;
-  /** @var DifferentialRevision */
-  public $rawRevision;
-  /** @var PhabricatorDiffStore */
-  public $diffStore;
+  public TransactionList $transactions;
+  public DifferentialRevision $rawRevision;
+  public PhabricatorDiffStore $diffStore;
 
-  /**
-   * @param TransactionList $transactions
-   * @param DifferentialRevision $rawRevision
-   * @param PhabricatorDiffStore $diffStore
-   */
   public function __construct(TransactionList $transactions, DifferentialRevision $rawRevision, PhabricatorDiffStore $diffStore) {
     $this->transactions = $transactions;
     $this->rawRevision = $rawRevision;

@@ -2,13 +2,14 @@
 
 
 class PhabricatorDiffStore {
-  private $cache;
+  /** @var array<string, DifferentialDiff> */
+  private array $cache;
 
   public function __construct() {
     $this->cache = [];
   }
 
-  public function find(string $PHID) {
+  public function find(string $PHID): DifferentialDiff {
     if (array_key_exists($PHID, $this->cache)) {
       return $this->cache[$PHID];
     }

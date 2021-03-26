@@ -3,14 +3,11 @@
 
 class SecureEmailRevisionRequestedChanges implements SecureEmailBody
 {
-  /** @var string */
-  public $transactionLink;
+  public string $transactionLink;
   /** @var EmailRecipient[] */
-  public $reviewers;
-  /** @var EmailRecipient|null */
-  public $author;
-  /** @var int */
-  public $commentCount;
+  public array $reviewers;
+  public ?EmailRecipient $author;
+  public int $commentCount;
 
   /**
    * @param string $transactionLink
