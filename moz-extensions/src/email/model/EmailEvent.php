@@ -2,24 +2,28 @@
 
 
 class EmailEvent {
-  public string $eventKind;
-  public bool $isSecure;
-  public string $actorName;
-  public EmailRevision $revision;
-  public PublicEmailBody $body;
   public string $key;
   /** time of event in seconds since epoch */
   public int $timestamp;
+  public bool $isSecure;
+  public MinimalEmailContext $minimalContext;
+  /** @var PublicEmailContext|SecureEmailContext|null */
+  public $context;
 
-  public function __construct(string $eventKind, string $actorName, EmailRevision $revision, PublicEmailBody $body, string $key, int $timestamp) {
-    $this->eventKind = $eventKind;
-    $this->isSecure = false;
-    $this->actorName = $actorName;
-    $this->revision = $revision;
-    $this->body = $body;
+  /**
+   * @param string $key
+   * @param int $timestamp
+   * @param bool $isSecure
+   * @param MinimalEmailContext $minimalContext
+   * @param PublicEmailContext|SecureEmailContext|null $context
+   */
+  public function __construct(string $key, int $timestamp, bool $isSecure, MinimalEmailContext $minimalContext, $context)
+  {
     $this->key = $key;
     $this->timestamp = $timestamp;
+    $this->isSecure = $isSecure;
+    $this->minimalContext = $minimalContext;
+    $this->context = $context;
   }
-
 
 }

@@ -18,7 +18,7 @@ class EventKind {
   private ?string $mainTransactionType;
 
   /**
-   * @param string $publicKind public identifier value in "kind" property of {@link EmailEvent}
+   * @param string $publicKind public identifier value in "kind" property of {@link PublicEmailContext}
    * @param string|null $phabricatorType internal type for main transaction
    */
   public function __construct(string $publicKind, ?string $phabricatorType) {

@@ -44,45 +44,48 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
     $result = PhabricatorStory::queryStories($userStore, $limit, $after);
     $emailEvents = [];
     foreach ($result->stories as $story) {
+      $rawRevision = $story->revision;
+
+      /** @var array $revisionProjects */
+      $revisionProjects = PhabricatorEdgeQuery::loadDestinationPHIDs(
+        $rawRevision->getPHID(),
+        PhabricatorProjectObjectHasProjectEdgeType::EDGECONST
+      );
+
+      if (!$revisionProjects) {
+        $isSecure = false;
+      } else {
+        $secureTag = (new PhabricatorProjectQuery())
+          ->setViewer(PhabricatorUser::getOmnipotentUser())
+          ->withNames(['secure-revision'])
+          ->executeOne();
+        $isSecure = in_array($secureTag->getPHID(), $revisionProjects);
+      }
+
+      $actorEmail = $story->actor->loadPrimaryEmailAddress();
+      $resolveUsers = new ResolveUsers($rawRevision, $actorEmail, $userStore);
+      $resolveComments = new ResolveComments($story->transactions, $rawRevision, $userStore);
+      $resolveCodeChange = new ResolveCodeChange($story->transactions, $rawRevision, $diffStore);
+      $resolveRevisionStatus = new ResolveRevisionStatus($rawRevision);
+
+      // Resolve information that is needed for "minimal context" emails.
+      $minimalContext = new MinimalEmailContext(MinimalEmailRevision::from($rawRevision), $resolveUsers->resolveAllPossibleRecipients());
+
+      // I don't really like this stateful-ness (using $securePings in the "if ($isSecure)" blocks, using
+      // $publicPings in the "else {}" down below). However, I don't want to duplicate the big
+      // "if ($eventKind->publicKind == ...)" tree.
+      // We _could_ do some magic where we add a
+      // "static function build($resolveRecipients, $resolveComments, ...): EventClass" to each event, then
+      // reflect on the EventKind to dynamically call this static method. However, this would be pretty "magical" and
+      // hard to understand, so  I'm not sure it's worth doing to remove this small bit of method state.
+      if ($isSecure) {
+        $securePings = new SecureEventPings();
+      } else {
+        $publicPings = new PublicEventPings();
+      }
+
+      $eventKind = $story->eventKind;
       try {
-        $rawRevision = $story->revision;
-
-        /** @var array $revisionProjects */
-        $revisionProjects = PhabricatorEdgeQuery::loadDestinationPHIDs(
-          $rawRevision->getPHID(),
-          PhabricatorProjectObjectHasProjectEdgeType::EDGECONST
-        );
-
-        if (!$revisionProjects) {
-          $isSecure = false;
-        } else {
-          $secureTag = (new PhabricatorProjectQuery())
-            ->setViewer(PhabricatorUser::getOmnipotentUser())
-            ->withNames(['secure-revision'])
-            ->executeOne();
-          $isSecure = in_array($secureTag->getPHID(), $revisionProjects);
-        }
-
-        $actorEmail = $story->actor->loadPrimaryEmailAddress();
-        $resolveUsers = new ResolveUsers($rawRevision, $actorEmail, $userStore);
-        $resolveComments = new ResolveComments($story->transactions, $rawRevision, $userStore);
-        $resolveCodeChange = new ResolveCodeChange($story->transactions, $rawRevision, $diffStore);
-        $resolveRevisionStatus = new ResolveRevisionStatus($rawRevision);
-
-        // I don't really like this stateful-ness (using $securePings in the "if ($isSecure)" blocks, using
-        // $publicPings in the "else {}" down below). However, I don't want to duplicate the big
-        // "if ($eventKind->publicKind == ...)" tree.
-        // We _could_ do some magic where we add a
-        // "static function build($resolveRecipients, $resolveComments, ...): EventClass" to each event, then
-        // reflect on the EventKind to dynamically call this static method. However, this would be pretty "magical" and
-        // hard to understand, so  I'm not sure it's worth doing to remove this small bit of method state.
-        if ($isSecure) {
-          $securePings = new SecureEventPings();
-        } else {
-          $publicPings = new PublicEventPings();
-        }
-
-        $eventKind = $story->eventKind;
         if ($eventKind->publicKind == EventKind::$ABANDON) {
           if ($isSecure) {
             $comments = $resolveComments->resolveSecureComments($securePings);
@@ -255,30 +258,46 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
           continue;
         }
 
-        $createSecureEmail = function($kind, $body) use ($story, $rawRevision, $bugStore) {
-          return new SecureEmailEvent($kind, $story->actor->getUserName(), $rawRevision, $body, $bugStore, $story->key, $story->timestamp);
+        $createSecureContext = function ($kind, $body) use ($story, $rawRevision, $bugStore) {
+          return new SecureEmailContext($kind, $story->actor->getUserName(), SecureEmailRevision::from($rawRevision, $bugStore), $body);
         };
-        $createPublicEmail = function($kind, $body) use ($story, $rawRevision, $bugStore) {
-          return new EmailEvent($kind, $story->actor->getUserName(), EmailRevision::from($rawRevision, $bugStore), $body, $story->key, $story->timestamp);
+        $createPublicContext = function ($kind, $body) use ($story, $rawRevision, $bugStore) {
+          return new PublicEmailContext($kind, $story->actor->getUserName(), EmailRevision::from($rawRevision, $bugStore), $body);
         };
 
+        $emailContexts = [];
         if ($isSecure) {
-          $emailEvents[] = $createSecureEmail($eventKind->publicKind, $body);
+          $emailContexts[] = $createSecureContext($eventKind->publicKind, $body);
           foreach ($securePings->intoBodies($actorEmail, $story->getTransactionLink()) as $body) {
-            $emailEvents[] = $createSecureEmail(EventKind::$PINGED, $body);
+            $emailContexts[] = $createSecureContext(EventKind::$PINGED, $body);
           }
         } else {
-          $emailEvents[] = $createPublicEmail($eventKind->publicKind, $body);
+          $emailContexts[] = $createPublicContext($eventKind->publicKind, $body);
           foreach ($publicPings->intoBodies($actorEmail, $story->getTransactionLink()) as $body) {
-            $emailEvents[] = $createPublicEmail(EventKind::$PINGED, $body);
+            $emailContexts[] = $createPublicContext(EventKind::$PINGED, $body);
           }
+        }
+
+        foreach ($emailContexts as $context) {
+          $emailEvents[] = new EmailEvent($story->key, $story->timestamp, $isSecure, $minimalContext, $context);
         }
       }
       catch (Throwable $e) {
-        // Report error to sentry, but attempt to recover and continue sending email events that don't cause exceptions
+        // An error occurred while getting contextual information for this story's emails.
+        // This could have been caused by issues within our custom Phabricator Emails logic,
+        // or could be because a recent Phabricator change has broken an existing expectation.
+        //
+        // Report the error the Sentry, then send a single "minimal" email that:
+        // * Contains so little information that it's unlikely to fail
+        // * Contains enough information so it's actionable for the recipient - it's expected
+        //   that the user will want to manually view the revision on Phabricator to see the
+        //   changes that the emails weren't able to display.
         SentryLoggerPlugin::handleError(PhutilErrorHandler::EXCEPTION, $e, []);
         error_log($e);
-        $storyErrors++;
+
+        // "minimal" emails have no security-sensitive context, so they can be
+        // considered "isSecure: false"
+        $emailEvents[] = new EmailEvent($story->key, $story->timestamp, false, $minimalContext, null);
       }
     }
 

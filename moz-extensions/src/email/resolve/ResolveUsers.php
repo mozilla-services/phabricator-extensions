@@ -15,7 +15,6 @@ class ResolveUsers {
 
   /**
    * @return EmailRecipient
-   * @throws Exception
    */
   public function resolveAuthorAsRecipient(): ?EmailRecipient {
     $authorPHID = $this->rawRevision->getAuthorPHID();
@@ -26,7 +25,6 @@ class ResolveUsers {
 
   /**
    * @return EmailRecipient[]
-   * @throws Exception
    */
   public function resolveReviewersAsRecipients(): array {
     $recipients = [];
@@ -67,5 +65,18 @@ class ResolveUsers {
     }
     return $reviewers;
 
+  }
+
+  /**
+   * @return EmailRecipient[]
+   */
+  public function resolveAllPossibleRecipients(): array
+  {
+    $recipients = $this->resolveReviewersAsRecipients();
+    $author = $this->resolveAuthorAsRecipient();
+    if ($author) {
+      $recipients[] = $author;
+    }
+    return $recipients;
   }
 }
