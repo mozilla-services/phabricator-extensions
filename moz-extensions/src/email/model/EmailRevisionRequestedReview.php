@@ -3,8 +3,6 @@
 
 class EmailRevisionRequestedReview implements PublicEmailBody
 {
-  /** @deprecated */
-  public ?string $mainComment;
   public ?EmailCommentMessage $mainCommentMessage;
   /** @var EmailInlineComment[] */
   public array $inlineComments;
@@ -20,7 +18,6 @@ class EmailRevisionRequestedReview implements PublicEmailBody
    */
   public function __construct(?EmailCommentMessage $mainCommentMessage, array $inlineComments, string $transactionLink, array $reviewers)
   {
-    $this->mainComment = $mainCommentMessage ? $mainCommentMessage->asText : null;
     $this->mainCommentMessage = $mainCommentMessage;
     $this->inlineComments = $inlineComments;
     $this->transactionLink = $transactionLink;
