@@ -74,7 +74,7 @@ class ResolveComments {
         ->needHunks(true)
         ->executeOne();
 
-      $filename = basename($changeset->getFilename());
+      $filename = '/' . $changeset->getDisplayFilename();
 
       $link = '/' . $this->rawRevision->getMonogram()
         . '?id=' . $changeset->getDiffID()
