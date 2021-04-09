@@ -9,6 +9,7 @@
 phutil_register_library_map(array(
   '__library_version__' => 2,
   'class' => array(
+    'Actor' => 'email/model/Actor.php',
     'BMOExternalAccountSearchConduitAPIMethod' => 'conduit/BMOExternalAccountSearchConduitAPIMethod.php',
     'BugStore' => 'email/adapter/BugStore.php',
     'BugzillaAccountSearchConduitAPIMethod' => 'conduit/BugzillaAccountSearchConduitAPIMethod.php',

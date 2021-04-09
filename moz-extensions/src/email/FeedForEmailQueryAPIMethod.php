@@ -258,11 +258,12 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
           continue;
         }
 
-        $createSecureContext = function ($kind, $body) use ($story, $rawRevision, $bugStore) {
-          return new SecureEmailContext($kind, $story->actor->getUserName(), SecureEmailRevision::from($rawRevision, $bugStore), $body);
+        $actor = Actor::from($story->actor);
+        $createSecureContext = function ($kind, $body) use ($actor, $rawRevision, $bugStore) {
+          return new SecureEmailContext($kind, $actor, SecureEmailRevision::from($rawRevision, $bugStore), $body);
         };
-        $createPublicContext = function ($kind, $body) use ($story, $rawRevision, $bugStore) {
-          return new PublicEmailContext($kind, $story->actor->getUserName(), EmailRevision::from($rawRevision, $bugStore), $body);
+        $createPublicContext = function ($kind, $body) use ($actor, $rawRevision, $bugStore) {
+          return new PublicEmailContext($kind, $actor, EmailRevision::from($rawRevision, $bugStore), $body);
         };
 
         $emailContexts = [];
