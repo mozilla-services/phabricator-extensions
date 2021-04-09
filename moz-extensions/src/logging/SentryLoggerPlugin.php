@@ -80,6 +80,16 @@ class SentryLoggerPlugin extends Phobject {
       };
       array_walk_recursive($request['data'], $sanitize, $fields_re);
 
+      if (array_key_exists('params', $request['data'])) {
+        try {
+          $params = phutil_json_decode($request['data']['params']);
+          array_walk_recursive($params, $sanitize, $fields_re);
+          $request['data']['params'] = phutil_json_encode($params);
+        } catch (PhutilJSONParserException $ex) {
+          // data['params'] wasn't JSON, so we're finished sanitizing the request data.
+        }
+      }
+
       // Sanitize query string
       $query_data = self::parse_query_str($request['query_string']);
       array_walk_recursive($query_data, $sanitize, $fields_re);
