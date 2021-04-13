@@ -8,6 +8,8 @@ class SecureEmailRevisionMetadataEdited implements SecureEmailBody, PublicEmailB
   public ?EmailRecipient $author;
   /** @var EmailMetadataEditedReviewer[] */
   public array $reviewers;
+  /** @var EmailRecipient[] */
+  public array $subscribers;
 
   /**
    * @param bool $isReadyToLand
@@ -15,13 +17,15 @@ class SecureEmailRevisionMetadataEdited implements SecureEmailBody, PublicEmailB
    * @param bool $isBugChanged
    * @param EmailRecipient|null $author
    * @param EmailMetadataEditedReviewer[] $reviewers
+   * @param EmailRecipient[] $subscribers
    */
-  public function __construct(bool $isReadyToLand, bool $isTitleChanged, bool $isBugChanged, ?EmailRecipient $author, array $reviewers) {
+  public function __construct(bool $isReadyToLand, bool $isTitleChanged, bool $isBugChanged, ?EmailRecipient $author, array $reviewers, array $subscribers) {
     $this->isReadyToLand = $isReadyToLand;
     $this->isTitleChanged = $isTitleChanged;
     $this->isBugChanged = $isBugChanged;
     $this->author = $author;
     $this->reviewers = $reviewers;
+    $this->subscribers = $subscribers;
   }
 
   public static function from(ResolveUsers $resolveRecipients, ResolveRevisionStatus $resolveRevisionStatus, TransactionList $transactions, DifferentialRevision $rawRevision, PhabricatorUserStore $userStore, string $actorEmail): SecureEmailRevisionMetadataEdited
@@ -72,6 +76,6 @@ class SecureEmailRevisionMetadataEdited implements SecureEmailBody, PublicEmailB
       }
     }
 
-    return new SecureEmailRevisionMetadataEdited($resolveRevisionStatus->resolveIsReadyToLand(), $isTitleChanged, $isBugChanged, $resolveRecipients->resolveAuthorAsRecipient(), $reviewers);
+    return new SecureEmailRevisionMetadataEdited($resolveRevisionStatus->resolveIsReadyToLand(), $isTitleChanged, $isBugChanged, $resolveRecipients->resolveAuthorAsRecipient(), $reviewers, $resolveRecipients->resolveSubscribersAsRecipients());
   }
 }

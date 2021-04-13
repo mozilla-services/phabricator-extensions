@@ -70,13 +70,26 @@ class ResolveUsers {
   /**
    * @return EmailRecipient[]
    */
+  public function resolveSubscribersAsRecipients(): array {
+    $recipientPHIDs = PhabricatorSubscribersQuery::loadSubscribersForPHID($this->rawRevision->getPHID());
+    $recipients = array_map(fn (string $phid) => EmailRecipient::from($this->userStore->find($phid), $this->actorEmail), $recipientPHIDs);
+    return array_values(array_filter($recipients));
+  }
+
+  /**
+   * @return EmailRecipient[]
+   */
   public function resolveAllPossibleRecipients(): array
   {
-    $recipients = $this->resolveReviewersAsRecipients();
+    $subscribers = $this->resolveSubscribersAsRecipients();
+    $reviewers = $this->resolveReviewersAsRecipients();
     $author = $this->resolveAuthorAsRecipient();
     if ($author) {
-      $recipients[] = $author;
+      $authorList = [$author];
+    } else {
+      $authorList = [];
     }
-    return $recipients;
+
+    return array_merge($subscribers, $reviewers, $authorList);
   }
 }

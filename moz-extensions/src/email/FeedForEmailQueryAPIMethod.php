@@ -91,6 +91,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
             $comments = $resolveComments->resolveSecureComments($securePings);
             $body = new SecureEmailRevisionAbandoned(
               $resolveUsers->resolveReviewersAsRecipients(),
+              $resolveUsers->resolveSubscribersAsRecipients(),
               $comments->count,
               $story->getTransactionLink()
             );
@@ -100,15 +101,17 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
               $comments->mainCommentMessage,
               $comments->inlineComments,
               $story->getTransactionLink(),
-              $resolveUsers->resolveReviewersAsRecipients()
+              $resolveUsers->resolveReviewersAsRecipients(),
+              $resolveUsers->resolveSubscribersAsRecipients()
             );
           }
         } else if ($eventKind->publicKind == EventKind::$RECLAIM) {
-          $reviewers = $reviewers = $resolveUsers->resolveReviewers(true);
+          $reviewers = $resolveUsers->resolveReviewers(true);
           if ($isSecure) {
             $comments = $resolveComments->resolveSecureComments($securePings);
             $body = new SecureEmailRevisionReclaimed(
               $reviewers,
+              $resolveUsers->resolveSubscribersAsRecipients(),
               $comments->count,
               $story->getTransactionLink()
             );
@@ -118,13 +121,15 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
               $comments->mainCommentMessage,
               $comments->inlineComments,
               $story->getTransactionLink(),
-              $reviewers
+              $reviewers,
+              $resolveUsers->resolveSubscribersAsRecipients(),
             );
           }
         } else if ($eventKind->publicKind == EventKind::$COMMENT) {
           if ($isSecure) {
             $resolveComments->resolveSecureComments($securePings);
             $body = new SecureEmailRevisionCommented(
+              $resolveUsers->resolveSubscribersAsRecipients(),
               $resolveUsers->resolveReviewersAsRecipients(),
               $resolveUsers->resolveAuthorAsRecipient(),
               $story->getTransactionLink()
@@ -135,6 +140,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
               $story->getTransactionLink(),
               $comments->mainCommentMessage,
               $comments->inlineComments,
+              $resolveUsers->resolveSubscribersAsRecipients(),
               $resolveUsers->resolveReviewersAsRecipients(),
               $resolveUsers->resolveAuthorAsRecipient()
             );
@@ -143,6 +149,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
           if ($isSecure) {
             $comments = $resolveComments->resolveSecureComments($securePings);
             $body = new SecureEmailRevisionLanded(
+              $resolveUsers->resolveSubscribersAsRecipients(),
               $resolveUsers->resolveReviewersAsRecipients(),
               $resolveUsers->resolveAuthorAsRecipient(),
               $comments->count,
@@ -154,6 +161,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
               $comments->mainCommentMessage,
               $comments->inlineComments,
               $story->getTransactionLink(),
+              $resolveUsers->resolveSubscribersAsRecipients(),
               $resolveUsers->resolveReviewersAsRecipients(),
               $resolveUsers->resolveAuthorAsRecipient()
             );
@@ -163,6 +171,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
             $comments = $resolveComments->resolveSecureComments($securePings);
             $body = new SecureEmailRevisionRequestedChanges(
               $story->getTransactionLink(),
+              $resolveUsers->resolveSubscribersAsRecipients(),
               $resolveUsers->resolveReviewersAsRecipients(),
               $resolveUsers->resolveAuthorAsRecipient(),
               $comments->count
@@ -173,6 +182,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
               $story->getTransactionLink(),
               $comments->mainCommentMessage,
               $comments->inlineComments,
+              $resolveUsers->resolveSubscribersAsRecipients(),
               $resolveUsers->resolveReviewersAsRecipients(),
               $resolveUsers->resolveAuthorAsRecipient()
             );
@@ -183,6 +193,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
             $comments = $resolveComments->resolveSecureComments($securePings);
             $body = new SecureEmailRevisionRequestedReview(
               $reviewers,
+              $resolveUsers->resolveSubscribersAsRecipients(),
               $comments->count,
               $story->getTransactionLink()
             );
@@ -192,15 +203,23 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
               $comments->mainCommentMessage,
               $comments->inlineComments,
               $story->getTransactionLink(),
-              $reviewers
+              $reviewers,
+              $resolveUsers->resolveSubscribersAsRecipients(),
             );
           }
         } else if ($eventKind->publicKind == EventKind::$CREATE) {
           $reviewers = $resolveUsers->resolveReviewers(true);
           if ($isSecure) {
-            $body = new SecureEmailRevisionCreated($reviewers);
+            $body = new SecureEmailRevisionCreated(
+              $reviewers,
+              $resolveUsers->resolveSubscribersAsRecipients()
+            );
           } else {
-            $body = new EmailRevisionCreated($resolveCodeChange->resolveAffectedFiles(), $reviewers);
+            $body = new EmailRevisionCreated(
+              $resolveCodeChange->resolveAffectedFiles(),
+              $reviewers,
+              $resolveUsers->resolveSubscribersAsRecipients()
+            );
           }
         } else if ($eventKind->publicKind == EventKind::$ACCEPT) {
           if ($isSecure) {
@@ -208,6 +227,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
             $body = new SecureEmailRevisionAccepted(
               $resolveRevisionStatus->resolveLandoLink(),
               $resolveRevisionStatus->resolveIsReadyToLand(),
+              $resolveUsers->resolveSubscribersAsRecipients(),
               $resolveUsers->resolveReviewersAsRecipients(),
               $resolveUsers->resolveAuthorAsRecipient(),
               $comments->count,
@@ -221,6 +241,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
               $story->getTransactionLink(),
               $resolveRevisionStatus->resolveLandoLink(),
               $resolveRevisionStatus->resolveIsReadyToLand(),
+              $resolveUsers->resolveSubscribersAsRecipients(),
               $resolveUsers->resolveReviewersAsRecipients(),
               $resolveUsers->resolveAuthorAsRecipient()
             );
@@ -232,7 +253,8 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
               $resolveRevisionStatus->resolveLandoLink(),
               $resolveCodeChange->resolveNewChangesLink(),
               $resolveRevisionStatus->resolveIsReadyToLand(),
-              $reviewers
+              $reviewers,
+              $resolveUsers->resolveSubscribersAsRecipients()
             );
           } else {
             $body = new EmailRevisionUpdated(
@@ -240,7 +262,8 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
               $resolveRevisionStatus->resolveLandoLink(),
               $resolveCodeChange->resolveNewChangesLink(),
               $resolveRevisionStatus->resolveIsReadyToLand(),
-              $reviewers
+              $reviewers,
+              $resolveUsers->resolveSubscribersAsRecipients()
             );
           }
         } else if ($eventKind->publicKind == EventKind::$METADATA_EDIT) {
