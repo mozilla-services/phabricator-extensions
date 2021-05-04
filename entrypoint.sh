@@ -115,6 +115,8 @@ case "$ARG" in
       check_database
       ./bin/config set auth.require-approval false
       ./bin/config set bugzilla.require_mfa false
+      # Default to Mozilla's implementation for submitting emails.
+      ./bin/config set email.default 2
       ./bin/config set phabricator.show-prototypes true
       ./bin/config set storage.mysql-engine.max-size 8388608
       start dev

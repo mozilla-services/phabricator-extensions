@@ -1,17 +1,17 @@
 diff --git a/src/applications/settings/setting/PhabricatorEmailNotificationsSetting.php b/src/applications/settings/setting/PhabricatorEmailNotificationsSetting.php
-index dfbedb3a12..d5fad0617e 100644
+index dfbedb3a12..9313415452 100644
 --- a/src/applications/settings/setting/PhabricatorEmailNotificationsSetting.php
 +++ b/src/applications/settings/setting/PhabricatorEmailNotificationsSetting.php
 @@ -7,6 +7,7 @@ final class PhabricatorEmailNotificationsSetting
-
+ 
    const VALUE_SEND_MAIL = '0';
    const VALUE_NO_MAIL = '1';
 +  const VALUE_MOZILLA_MAIL = '2';
-
+ 
    public function getSettingName() {
      return pht('Email Notifications');
-@@ -22,12 +23,19 @@ final class PhabricatorEmailNotificationsSetting
-
+@@ -22,21 +23,33 @@ final class PhabricatorEmailNotificationsSetting
+ 
    protected function getControlInstructions() {
      return pht(
 -      'If you disable **Email Notifications**, Phabricator will never '.
@@ -31,11 +31,17 @@ index dfbedb3a12..d5fad0617e 100644
 +      "//Regardless of this setting, you will still receive some ".
 +      "administrative email, like password reset email.//");
    }
-
+ 
    public function getSettingDefaultValue() {
-@@ -36,7 +44,8 @@ final class PhabricatorEmailNotificationsSetting
-
+-    return self::VALUE_SEND_MAIL;
++    return PhabricatorEnv::getEnvConfig('email.default');
+   }
+ 
    protected function getSelectOptions() {
++    return self::getOptions();
++  }
++
++  public static function getOptions() {
      return array(
 -      self::VALUE_SEND_MAIL => pht('Enable Email Notifications'),
 +      self::VALUE_MOZILLA_MAIL => pht('Mozilla Notifications'),
@@ -48,7 +54,7 @@ index f910c2b039..92b39283d0 100644
 --- a/src/applications/settings/setting/PhabricatorEmailSelfActionsSetting.php
 +++ b/src/applications/settings/setting/PhabricatorEmailSelfActionsSetting.php
 @@ -22,8 +22,8 @@ final class PhabricatorEmailSelfActionsSetting
-
+ 
    protected function getControlInstructions() {
      return pht(
 -      'If you disable **Self Actions**, Phabricator will not notify '.
@@ -56,5 +62,5 @@ index f910c2b039..92b39283d0 100644
 +      'If you disable **Self Actions**, Legacy Phabricator Notifications '.
 +      'will not notify you about actions you take.');
    }
-
+ 
    public function getSettingDefaultValue() {
