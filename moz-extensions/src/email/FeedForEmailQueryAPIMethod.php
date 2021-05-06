@@ -149,7 +149,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
         } else if ($eventKind->publicKind == EventKind::$CLOSE) {
           if ($isSecure) {
             $comments = $resolveComments->resolveSecureComments($securePings);
-            $body = new SecureEmailRevisionLanded(
+            $body = new SecureEmailRevisionClosed(
               $resolveUsers->resolveSubscribersAsRecipients(),
               $resolveUsers->resolveReviewersAsRecipients(),
               $resolveUsers->resolveAuthorAsRecipient(),
@@ -158,13 +158,28 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
             );
           } else {
             $comments = $resolveComments->resolvePublicComments($publicPings);
-            $body = new EmailRevisionLanded(
+            $body = new EmailRevisionClosed(
               $comments->mainCommentMessage,
               $comments->inlineComments,
               $story->getTransactionLink(),
               $resolveUsers->resolveSubscribersAsRecipients(),
               $resolveUsers->resolveReviewersAsRecipients(),
               $resolveUsers->resolveAuthorAsRecipient()
+            );
+          }
+        } else if ($eventKind->publicKind == EventKind::$LAND) {
+          if ($isSecure) {
+            $body = new SecureEmailRevisionLanded(
+              $resolveUsers->resolveSubscribersAsRecipients(),
+              $resolveUsers->resolveReviewersAsRecipients(),
+              $resolveUsers->resolveAuthorAsRecipient(),
+            );
+          } else {
+            $body = EmailRevisionLanded::from(
+              $resolveUsers,
+              $resolveRepositoryDetails,
+              $story->transactions,
+              $rawRevision,
             );
           }
         } else if ($eventKind->publicKind == EventKind::$REJECT) {

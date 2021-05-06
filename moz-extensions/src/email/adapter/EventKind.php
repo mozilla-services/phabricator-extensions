@@ -10,7 +10,8 @@ class EventKind {
   public static string $UPDATE = 'revision-updated';
   public static string $REJECT = 'revision-requested-changes';
   public static string $REQUEST_REVIEW = 'revision-requested-review';
-  public static string $CLOSE = 'revision-landed';
+  public static string $CLOSE = 'revision-closed';
+  public static string $LAND = 'revision-landed';
   public static string $CREATE = 'revision-created';
   public static string $PINGED = 'revision-comment-pinged';
 
@@ -69,7 +70,9 @@ class EventKind {
       // revisions are automatically _updated_ to match their associated landed revision in the
       // repository. We want these to be properly recognized as landings and not misrepresented
       // as changes to the patch by the author.
-      return new EventKind(self::$CLOSE, 'differential.revision.close');
+      $revisionCloseTx = $transactions->getTransactionWithType('differential.revision.close');
+      $kind = $revisionCloseTx->getMetadataValue('isCommitClose') ? self::$LAND : self::$CLOSE;
+      return new EventKind($kind, 'differential.revision.close');
     } else if ($transactions->containsType('differential:update')) {
       return new EventKind(self::$UPDATE, 'differential:update');
     } else if ($transactions->containsOneOfType([
