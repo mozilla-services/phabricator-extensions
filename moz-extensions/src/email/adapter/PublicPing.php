@@ -10,6 +10,7 @@ class PublicPing {
   public function __construct(PhabricatorUser $targetUser) {
     $this->targetUser = $targetUser;
     $this->inlineComments = [];
+    $this->mainCommentMessage = null;
   }
 
   public function setMainComment(EmailCommentMessage $message) {
