@@ -61,4 +61,26 @@ class TransactionList {
       return $transaction->getTransactionType() == $type;
     }));
   }
+
+  /**
+   * @param string[] $types
+   * @return bool
+   */
+  public function containsOneOfType(array $types): bool
+  {
+    return !empty(array_filter($this->transactions, function ($transaction) use ($types) {
+      return in_array($transaction->getTransactionType(), $types);
+    }));
+  }
+
+  /**
+   * @param string[] $types
+   * @return bool
+   */
+  public function containsAllOfTypes(array $types): bool
+  {
+    return empty(array_filter($types, function ($type) {
+      return !$this->containsType($type);
+    }));
+  }
 }

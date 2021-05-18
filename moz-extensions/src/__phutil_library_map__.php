@@ -84,7 +84,6 @@ phutil_register_library_map(array(
     'ResolveRevisionStatus' => 'email/resolve/ResolveRevisionStatus.php',
     'ResolveUsers' => 'email/resolve/ResolveUsers.php',
     'ReviewersTransaction' => 'email/adapter/ReviewersTransaction.php',
-    'RevisionCreatedHeuristic' => 'email/adapter/RevisionCreatedHeuristic.php',
     'SecureEmailBody' => 'email/model/SecureEmailBody.php',
     'SecureEmailBug' => 'email/model/SecureEmailBug.php',
     'SecureEmailContext' => 'email/model/SecureEmailContext.php',

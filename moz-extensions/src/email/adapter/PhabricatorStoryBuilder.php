@@ -12,9 +12,9 @@ class PhabricatorStoryBuilder {
   private string $key;
   private int $timestamp;
 
-  public function __construct(EventKind $eventKind, array $transactions, string $key, int $timestamp) {
+  public function __construct(EventKind $eventKind, TransactionList $transactions, string $key, int $timestamp) {
     $this->eventKind = $eventKind;
-    $this->transactions = new TransactionList($transactions);
+    $this->transactions = $transactions;
     $this->revisionPHID = $eventKind->findMainTransaction($this->transactions)->getObjectPHID();
     $this->key = $key;
     $this->timestamp = $timestamp;

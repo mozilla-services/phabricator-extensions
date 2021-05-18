@@ -54,65 +54,58 @@ class EventKind {
   }
 
 
-  public static function mainKind(array $transactions, PhabricatorUserStore $userStore): ?EventKind
+  public static function mainKind(TransactionList $transactions, PhabricatorUserStore $userStore): ?EventKind
   {
-    // Identifying a "revision created" event is ... tricky. We can't just look for "core:create", because
-    // that event happens before we identify if a revision is secure or not. So, instead, we try to detect when
-    // the admin bot does its "security detection" work. When we find events that match this heuristic, we assume
-    // that a revision was created.
-    // The heuristic is:
-    // * author of transaction is "phab-bot"
-    // * there's four transactions in the story: "core:view-policy", "core:edit-policy",
-    //   "differential.revision.request" and "core:edge"
-    $revisionCreatedHeuristic = new RevisionCreatedHeuristic();
-
-    // If any other kind matches, then that's the primary event kind.
-    // Otherwise, if the only relevant transaction kind is the comment, then the commenting is the only relevant event.
-    $includesComment = false;
-
-    foreach ($transactions as $transaction) {
-      $type = $transaction->getTransactionType();
-      if ($type == 'differential.revision.abandon') {
-        return new EventKind(self::$ABANDON, 'differential.revision.abandon');
-      } else if ($type == 'differential.revision.reclaim') {
-        return new EventKind(self::$RECLAIM, 'differential.revision.reclaim');
-      } else if ($type == 'differential.revision.accept') {
-        return new EventKind(self::$ACCEPT, 'differential.revision.accept');
-      } else if ($type == 'differential:update') {
-        return new EventKind(self::$UPDATE, 'differential:update');
-      } else if ($type == 'differential.revision.reject') {
-        return new EventKind(self::$REJECT, 'differential.revision.reject');
-      } else if ($type == 'differential.revision.request') {
-        $rawActor = $userStore->find($transaction->getAuthorPHID());
-        if ($rawActor->getUserName() == 'phab-bot') {
-          // It was a bot requesting a review, probably part of the "revision created" workflow
-          $revisionCreatedHeuristic->authorIsPhabBot();
-          $revisionCreatedHeuristic->includesRevisionRequestChange();
-        } else {
-          // it was not phab-bot requesting a review, so this is probably a real review request
-          return new EventKind(self::$REQUEST_REVIEW, 'differential.revision.request');
-        }
-      } else if ($type == 'differential.revision.close') {
-        return new EventKind(self::$CLOSE, 'differential.revision.close');
-      } else if ($type == 'core:view-policy') {
-        $revisionCreatedHeuristic->includesViewPolicyChange();
-      } else if ($type == 'core:edit-policy') {
-        $revisionCreatedHeuristic->includesEditPolicyChange();
-      } else if ($type == 'core:edge') {
-        $revisionCreatedHeuristic->includesCoreEdgeChange();
-      } else if (in_array($type, ['core:comment', 'differential:inline'])) {
-        $includesComment = true;
-        continue;
-      } else if (in_array($type, ['core:customfield', 'differential.revision.title', 'differential.revision.reviewers'])) {
-        return new EventKind(self::$METADATA_EDIT, null);
+    if ($transactions->containsType('differential.revision.abandon')) {
+      return new EventKind(self::$ABANDON, 'differential.revision.abandon');
+    } else if ($transactions->containsType('differential.revision.reclaim')) {
+      return new EventKind(self::$RECLAIM, 'differential.revision.reclaim');
+    } else if ($transactions->containsType('differential.revision.accept')) {
+      return new EventKind(self::$ACCEPT, 'differential.revision.accept');
+    } else if ($transactions->containsType('differential.revision.reject')) {
+      return new EventKind(self::$REJECT, 'differential.revision.reject');
+    } else if ($transactions->containsType('differential.revision.close')) {
+      // Check for "revision has been closed" before "revision has been updated", because
+      // revisions are automatically _updated_ to match their associated landed revision in the
+      // repository. We want these to be properly recognized as landings and not misrepresented
+      // as changes to the patch by the author.
+      return new EventKind(self::$CLOSE, 'differential.revision.close');
+    } else if ($transactions->containsType('differential:update')) {
+      return new EventKind(self::$UPDATE, 'differential:update');
+    } else if ($transactions->containsOneOfType([
+      'core:customfield',
+      'differential.revision.title',
+      'differential.revision.reviewers',
+    ])) {
+      return new EventKind(self::$METADATA_EDIT, null);
+    } else if ($transactions->containsType('differential.revision.request')) {
+      $reviewRequestTx = $transactions->getTransactionWithType('differential.revision.request');
+      $rawActor = $userStore->find($reviewRequestTx->getAuthorPHID());
+      if ($rawActor->getUserName() != 'phab-bot') {
+        return new EventKind(self::$REQUEST_REVIEW, 'differential.revision.request');
       }
-    }
 
-    if ($revisionCreatedHeuristic->check()) {
-      return new EventKind(self::$CREATE, null);
-    }
-    
-    if ($includesComment) {
+      // Identifying a "revision created" event is ... tricky. We can't just look for "core:create", because
+      // that event happens before we identify if a revision is secure or not. So, instead, we try to identify when
+      // "phab-bot" does its "secure-revision detection" work and marks the revision as ready-for-review.
+      // The heuristic for identifying this is:
+      // * A review was requested.
+      // * The review requester was "phab-bot".
+      // * In addition to requesting the review, there are also transactions for:
+      //    * "core:view-policy"
+      //    * "core:edit-policy"
+      //    * "core:edge"
+      if ($transactions->containsAllOfTypes([
+        'core:view-policy',
+        'core:edit-policy',
+        'core:edge',
+      ])) {
+        return new EventKind(self::$CREATE, null);
+      }
+    } else if ($transactions->containsOneOfType([
+      'core:comment',
+      'differential:inline',
+    ])) {
       return new EventKind(self::$COMMENT, null);
     }
 

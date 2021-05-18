@@ -62,6 +62,7 @@ class PhabricatorStory {
           $transactions[] = $transaction;
         }
       }
+      $transactions = new TransactionList($transactions);
 
       $eventKind = EventKind::mainKind($transactions, $userStore);
       if (!$eventKind) {
