@@ -3,7 +3,6 @@
 
 class EmailRevisionAccepted implements PublicEmailBody
 {
-  public ?string $mainComment;
   public ?EmailCommentMessage $mainCommentMessage;
   /** @var EmailInlineComment[] */
   public array $inlineComments;
@@ -27,7 +26,6 @@ class EmailRevisionAccepted implements PublicEmailBody
    * @param EmailRecipient|null $author
    */
   public function __construct(?EmailCommentMessage $mainCommentMessage, array $inlineComments, string $transactionLink, string $landoLink, bool $isReadyToLand, array $subscribers, array $reviewers, ?EmailRecipient $author) {
-    $this->mainComment = $mainCommentMessage ? $mainCommentMessage->asText : null;
     $this->mainCommentMessage = $mainCommentMessage;
     $this->inlineComments = $inlineComments;
     $this->transactionLink = $transactionLink;
