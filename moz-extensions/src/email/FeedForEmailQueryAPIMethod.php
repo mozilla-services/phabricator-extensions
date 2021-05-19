@@ -66,6 +66,7 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
       $resolveUsers = new ResolveUsers($rawRevision, $actorEmail, $userStore);
       $resolveComments = new ResolveComments($story->transactions, $rawRevision, $userStore);
       $resolveCodeChange = new ResolveCodeChange($story->transactions, $rawRevision, $diffStore);
+      $resolveRepositoryDetails = new ResolveRepositoryDetails();
       $resolveRevisionStatus = new ResolveRevisionStatus($rawRevision);
 
       // Resolve information that is needed for "minimal context" emails.
@@ -285,8 +286,8 @@ final class FeedForEmailQueryAPIMethod extends ConduitAPIMethod {
         $createSecureContext = function ($kind, $body) use ($actor, $rawRevision, $bugStore) {
           return new SecureEmailContext($kind, $actor, SecureEmailRevision::from($rawRevision, $bugStore), $body);
         };
-        $createPublicContext = function ($kind, $body) use ($actor, $rawRevision, $bugStore) {
-          return new PublicEmailContext($kind, $actor, EmailRevision::from($rawRevision, $bugStore), $body);
+        $createPublicContext = function ($kind, $body) use ($actor, $rawRevision, $bugStore, $resolveRepositoryDetails) {
+          return new PublicEmailContext($kind, $actor, EmailRevision::from($rawRevision, $bugStore, $resolveRepositoryDetails), $body);
         };
 
         $emailContexts = [];

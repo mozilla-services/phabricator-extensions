@@ -81,6 +81,7 @@ phutil_register_library_map(array(
     'PublicRevisionComments' => 'email/adapter/PublicRevisionComments.php',
     'ResolveCodeChange' => 'email/resolve/ResolveCodeChange.php',
     'ResolveComments' => 'email/resolve/ResolveComments.php',
+    'ResolveRepositoryDetails' => 'email/resolve/ResolveRepositoryDetails.php',
     'ResolveRevisionStatus' => 'email/resolve/ResolveRevisionStatus.php',
     'ResolveUsers' => 'email/resolve/ResolveUsers.php',
     'ReviewersTransaction' => 'email/adapter/ReviewersTransaction.php',
