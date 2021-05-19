@@ -56,7 +56,11 @@ class PhabricatorStory {
 
       $transactions = [];
       foreach ($internalData['transactionPHIDs'] ?? [] as $phid) {
-        $transactions[] = $rawStory->getObject($phid);
+        $transaction = $rawStory->getObject($phid);
+        // Don't include transactions by other piggy-backing authors, like Herald.
+        if ($transaction->getAuthorPHID() == $storyData->getAuthorPHID()) {
+          $transactions[] = $transaction;
+        }
       }
 
       $eventKind = EventKind::mainKind($transactions, $userStore);
