@@ -1,4 +1,4 @@
-FROM php:7.4.16-fpm-alpine AS base
+FROM php:7.4.19-fpm-alpine AS base
 
 LABEL maintainer="dkl@mozilla.com"
 
@@ -9,8 +9,8 @@ CMD ["/app/entrypoint.sh", "start"]
 
 # Git commit SHAs for the build artifacts we want to grab.
 # From https://github.com/phacility/phabricator/tree/stable
-# Promote 2021 Week 13 plus 2 extra commits
-ENV PHABRICATOR_GIT_SHA 2afedad61c5181bb4f832cea27b9b59df19f3fd5
+# Promote 2021 Week 21
+ENV PHABRICATOR_GIT_SHA 2124c8af6d2dfa588a744d894576bd20546a31a6
 # From https://github.com/phacility/arcanist/tree/stable
 # Promote 2021 Week 13
 ENV ARCANIST_GIT_SHA 7af9846f994a8d0a1fc89af996e3ddd81f01765e
