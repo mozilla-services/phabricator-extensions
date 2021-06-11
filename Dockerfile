@@ -118,6 +118,10 @@ USER app
 COPY --chown=app composer.json composer.lock ./
 RUN composer install --no-dev
 
+# Copy mercurial extension, and enable it.
+COPY --chown=app hgext hgext
+COPY --chown=app .hgrc /app/.hgrc
+
 COPY --chown=app patches patches
 
 # Apply customization patches
