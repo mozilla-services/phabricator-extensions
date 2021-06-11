@@ -72,7 +72,10 @@ class ResolveUsers {
    */
   public function resolveSubscribersAsRecipients(): array {
     $recipientPHIDs = PhabricatorSubscribersQuery::loadSubscribersForPHID($this->rawRevision->getPHID());
-    $recipients = array_map(fn (string $phid) => EmailRecipient::from($this->userStore->find($phid), $this->actorEmail), $recipientPHIDs);
+
+    $recipientUsers = array_map(fn (string $phid) => $this->userStore->findAllBySubscribersById($phid), $recipientPHIDs);
+    $recipientUsers = array_merge(...$recipientUsers); // Flatten array of arrays
+    $recipients = array_map(fn (PhabricatorUser $user) => EmailRecipient::from($user, $this->actorEmail), $recipientUsers);
     return array_values(array_filter($recipients));
   }
 

@@ -39,27 +39,38 @@ class PhabricatorUserStore {
     return $user;
   }
 
+  /**
+   * @return PhabricatorUser[]
+   */
+  public function findAllBySubscribersById(string $PHID): array {
+    if (substr($PHID, 0, strlen('PHID-PROJ')) === "PHID-PROJ") {
+      // This is a group subscriber
+      $project = self::fetchProject($PHID);
+      return array_values($this->queryAll($project->getMemberPHIDs()));
+    } else if (substr($PHID, 0, strlen('PHID-OPKG')) == 'PHID-OPKG') {
+      // This is a "code owner" subscriber
+      $package = self::fetchPackage($PHID);
+      return array_values($this->queryAll($package->getOwnerPHIDs()));
+    } else {
+      // PHID type must be "PHID-USER".
+      return [$this->find($PHID)];
+    }
+  }
+
   public function findReviewerByPHID(string $PHID): PhabricatorReviewer {
     if (substr($PHID, 0, strlen('PHID-PROJ')) === "PHID-PROJ") {
       // This is a group reviewer
-      $project = (new PhabricatorProjectQuery())
-        ->setViewer(PhabricatorUser::getOmnipotentUser())
-        ->needMembers(true)
-        ->withPHIDs([$PHID])
-        ->executeOne();
+      $project = self::fetchProject($PHID);
       $users = array_values($this->queryAll($project->getMemberPHIDs()));
       return new GroupPhabricatorReviewer($project->getDisplayName(), $users);
     } else if (substr($PHID, 0, strlen('PHID-OPKG')) == 'PHID-OPKG') {
       // This is a "code owner" reviewer
-      $package = (new PhabricatorOwnersPackageQuery())
-        ->setViewer(PhabricatorUser::getOmnipotentUser())
-        ->withPHIDs([$PHID])
-        ->executeOne();
+      $package = self::fetchPackage($PHID);
       $users = array_values($this->queryAll($package->getOwnerPHIDs()));
       return new GroupPhabricatorReviewer($package->getName(), $users);
     } else {
-      // PHID type must be "PHID-USER" if it's not "PHID-PROJ".
-      // So, this is a single user reviewer
+      // PHID type must be "PHID-USER".
+      // So, this is a single user reviewer.
       return new UserPhabricatorReviewer($this->find($PHID));
     }
   }
@@ -78,5 +89,20 @@ class PhabricatorUserStore {
       $this->PHIDCache[$user->getPHID()] = $user;
     }
     return $users;
+  }
+
+  private static function fetchProject(string $PHID): PhabricatorProject {
+    return (new PhabricatorProjectQuery())
+      ->setViewer(PhabricatorUser::getOmnipotentUser())
+      ->needMembers(true)
+      ->withPHIDs([$PHID])
+      ->executeOne();
+  }
+
+  private static function fetchPackage(string $PHID): PhabricatorOwnersPackage {
+    return (new PhabricatorOwnersPackageQuery())
+      ->setViewer(PhabricatorUser::getOmnipotentUser())
+      ->withPHIDs([$PHID])
+      ->executeOne();
   }
 }
