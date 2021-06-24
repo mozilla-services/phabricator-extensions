@@ -23,13 +23,8 @@ class EmailRecipient {
     $preferences = (new PhabricatorUserPreferencesQuery())
       ->setViewer(PhabricatorUser::getOmnipotentUser())
       ->withUserPHIDs([$user->getPHID()])
+      ->needSyntheticPreferences(true)
       ->executeOne();
-
-    if (!$preferences) {
-      // User doesn't have any non-default preferences, and the default email preference is not to use
-      // these new Mozilla emails, so don't count them as a recipient
-      return null;
-    }
 
     $timezonePref = $preferences->getPreference('timezone');
     if ($timezonePref) {
