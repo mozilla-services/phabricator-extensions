@@ -66,14 +66,21 @@ PHPStorm as the example IDE, though any Xdebug-compatible app should work.
 
 1. Start the development environment from the `suite` repository.
 1. Configure your IDE/debugger's Xdebug settings:
-    1. It should be listening for Xdebug on port 9000 (the default Xdebug port)
+    1. Port 9000 should be included in the list of XDebug ports.
     1. It should accept at least 10 simultaneous connections
+    1. Uncheck the "Notify if debug session was finished without being paused" option so that PhpStorm doesn't
+       continually pop up a notification if web requests succeed without hitting a breakpoint. This allows background
+       requests (fetching resources, `bmo.feed` requests, etc) to function without triggering warnings.
     ![](docs/debug-settings.png)
 1. Configure your source mappings from your host's directories to your server's (docker container's) directories
-    1. It's recommended to have the `libphutil` and `phabricator` source code in your PHP's includes
+    1. It's recommended to have the `arcanist` and `phabricator` source code in your PHP's includes
     so that you can step into (debug) and Intellisense the vendor code ![](docs/phabricator-includes.png)
+       * This can be set up by cloning [phabricator](https://github.com/phacility/phabricator) and
+         [arcanist](https://github.com/phacility/arcanist), then checking out the appropriate commits as defined in
+         this repository's `Dockerfile`.
     1. Create a new "server" configuration with the host as `phabricator.test` and the path mappings as shown below: ![](docs/mappings.png)
 1. Test your mappings
+    1. Enable the debugger in PhpStorm ![](docs/listening-debugger.png) 
     1. Set a breakpoint in `LandoLinkEventListener`
     1. Go to [`phabricator.test/D1`](http://phabricator.test/D1)
     1. Your IDE should have stopped the control flow on your breakpoint and be showing you debugger details ![](docs/debugger.png)
