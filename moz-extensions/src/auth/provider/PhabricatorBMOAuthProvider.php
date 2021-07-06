@@ -45,7 +45,7 @@ final class PhabricatorBMOAuthProvider
     list($account, $response) = parent::processLoginRequest($controller);
 
     // If mfa is disabled in Bugzilla, do not allow login
-    if (!$adapter->getAccountMFA()) {
+    if (PhabricatorEnv::getEnvConfig('bugzilla.require_mfa') && !$adapter->getAccountMFA()) {
       $bugzilla_url = PhabricatorEnv::getEnvConfig('bugzilla.url') . '/userprefs.cgi?tab=mfa';
       $error_content = phutil_safe_html(
           'Login using Bugzilla requires multi-factor authentication ' .
