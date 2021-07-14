@@ -1,3 +1,6 @@
+## NOTICE: This repository has moved to [mozilla-conduit/phabricator](https://github.com/mozilla-conduit/phabricator). All future work will be done there.
+***
+
 # Mozilla Phabricator
 
 ## Prerequisites
@@ -80,7 +83,7 @@ PHPStorm as the example IDE, though any Xdebug-compatible app should work.
          this repository's `Dockerfile`.
     1. Create a new "server" configuration with the host as `phabricator.test` and the path mappings as shown below: ![](docs/mappings.png)
 1. Test your mappings
-    1. Enable the debugger in PhpStorm ![](docs/listening-debugger.png) 
+    1. Enable the debugger in PhpStorm ![](docs/listening-debugger.png)
     1. Set a breakpoint in `LandoLinkEventListener`
     1. Go to [`phabricator.test/D1`](http://phabricator.test/D1)
     1. Your IDE should have stopped the control flow on your breakpoint and be showing you debugger details ![](docs/debugger.png)
